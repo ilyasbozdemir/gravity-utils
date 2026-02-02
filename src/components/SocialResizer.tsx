@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { ArrowLeft, Instagram, Facebook, Youtube, Twitter, Download, Monitor, Smartphone, Crop } from 'lucide-react';
+import { ArrowLeft, Instagram, Facebook, Youtube, Twitter, Download, Monitor, Smartphone } from 'lucide-react';
 
 interface SocialResizerProps {
     file: File;
@@ -79,8 +79,8 @@ export const SocialResizer: React.FC<SocialResizerProps> = ({ file, onBack }) =>
                             key={idx}
                             onClick={() => setSelectedPreset(preset)}
                             className={`flex items-center gap-3 p-3 rounded-lg border text-left transition-all ${selectedPreset.name === preset.name
-                                    ? 'bg-violet-500/20 border-violet-500/50 text-white'
-                                    : 'bg-white/5 border-white/10 hover:bg-white/10 text-slate-300'
+                                ? 'bg-violet-500/20 border-violet-500/50 text-white'
+                                : 'bg-white/5 border-white/10 hover:bg-white/10 text-slate-300'
                                 }`}
                         >
                             <div className="p-2 bg-white/10 rounded-md">{preset.icon}</div>

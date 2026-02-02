@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, FileText, Split, Scissors, Download } from 'lucide-react';
+import { ArrowLeft, FileText, Scissors, Download } from 'lucide-react';
 import { PDFDocument } from 'pdf-lib';
 
 interface PdfManagerProps {
