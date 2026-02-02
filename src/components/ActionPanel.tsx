@@ -2,7 +2,7 @@
 import React from 'react';
 import {
     FileType, Archive, X, FileCode2, Binary, Image as ImageIcon,
-    Hash, FileJson, FileText, Smartphone, Shield, QrCode, Crop, FileDigit
+    Hash, FileJson, FileText, Smartphone, Shield, QrCode, Crop, FileDiff
 } from 'lucide-react';
 
 interface ActionPanelProps {
@@ -103,7 +103,7 @@ export const ActionPanel: React.FC<ActionPanelProps> = ({ file, onClear, onActio
                             {recommended.includes('inspect') && renderButton('inspect', <Archive size={28} />, 'İçeriği İncele', isOffice ? 'Belge Detayları' : 'Arşiv Dosyaları', '#f472b6', true)}
                             {recommended.includes('optimize') && renderButton('optimize', <ImageIcon size={28} />, 'Sıkıştır', 'Dosya Boyutunu Düşür', '#34d399', true)}
                             {recommended.includes('text') && renderButton('text', <FileText size={28} />, 'Metni Analiz Et', 'İstatistikler', '#a78bfa', true)}
-                            {recommended.includes('pdf') && renderButton('pdf', <FileDigit size={28} />, 'PDF İşlemleri', 'Ayır / Birleştir', '#ef4444', true)}
+                            {recommended.includes('pdf') && renderButton('pdf', <FileDiff size={28} />, 'PDF İşlemleri', 'Ayır / Birleştir', '#ef4444', true)}
                             {recommended.includes('social') && renderButton('social', <Crop size={28} />, 'Sosyal Medya', 'Boyutlandır', '#e879f9', true)}
                             {recommended.includes('exif') && renderButton('exif', <Shield size={28} />, 'Güvenli Paylaş', 'Exif Sil', '#10b981', true)}
                         </div>
@@ -136,7 +136,7 @@ export const ActionPanel: React.FC<ActionPanelProps> = ({ file, onClear, onActio
                             isOffice ? 'Word/Excel İçeriği' : (isArchive ? 'Arşiv/Paket Analizi' : 'Dosya Yapısı'),
                             '#f472b6'
                         )}
-                        {isPdf && renderButton('pdf', <FileDigit size={28} />, 'PDF Araçları', 'Böl / Düzenle', '#ef4444')}
+                        {isPdf && renderButton('pdf', <FileDiff size={28} />, 'PDF Araçları', 'Böl / Düzenle', '#ef4444')}
                     </div>
                 </div>
 
