@@ -16,7 +16,7 @@ interface ZipItem {
 
 interface PreviewState {
     item: ZipItem;
-    type: 'image' | 'text' | 'unsupported';
+    type: 'image' | 'text' | 'video' | 'audio' | 'pdf' | 'unsupported';
     content: string | null;
     loading: boolean;
 }
@@ -28,15 +28,18 @@ export const ZipInspector: React.FC<ZipInspectorProps> = ({ file, onBack }) => {
     const [preview, setPreview] = useState<PreviewState | null>(null);
     const [copying, setCopying] = useState(false);
 
+    const [groupedItems, setGroupedItems] = useState<{ media: ZipItem[], content: ZipItem[], other: ZipItem[] } | null>(null);
+
     useEffect(() => {
         const loadZip = async () => {
             try {
                 setLoading(true);
                 setError(null);
+                setItems([]);
+                setGroupedItems(null);
 
-                // Attempt to read as ZIP if extension matches simple check
-                // or just try and catch.
                 const isArchive = /\.(zip|jar|apk|docx|xlsx|pptx|odt|ods|odp)$/i.test(file.name);
+                const isOffice = /\.(docx|xlsx|pptx|odt|ods|odp)$/i.test(file.name);
 
                 if (isArchive) {
                     try {
@@ -44,21 +47,41 @@ export const ZipInspector: React.FC<ZipInspectorProps> = ({ file, onBack }) => {
                         const loadedZip = await zip.loadAsync(file);
                         const fileItems: ZipItem[] = [];
                         loadedZip.forEach((relativePath, zipEntry) => {
-                            fileItems.push({
-                                path: relativePath,
-                                isDir: zipEntry.dir,
-                                obj: zipEntry,
-                                type: 'zip'
-                            });
+                            if (!zipEntry.dir) {
+                                fileItems.push({
+                                    path: relativePath,
+                                    isDir: false,
+                                    obj: zipEntry,
+                                    type: 'zip'
+                                });
+                            }
                         });
-                        setItems(fileItems.sort((a, b) => a.path.localeCompare(b.path)));
+
+                        const sortedItems = fileItems.sort((a, b) => a.path.localeCompare(b.path));
+                        setItems(sortedItems);
+
+                        if (isOffice) {
+                            const media: ZipItem[] = [];
+                            const content: ZipItem[] = [];
+                            const other: ZipItem[] = [];
+
+                            sortedItems.forEach(item => {
+                                const path = item.path.toLowerCase();
+                                if (path.includes('media/') || /\.(png|jpg|jpeg|gif|emf|wmf|tiff|svg|webp|bmp|ico)$/.test(path)) {
+                                    media.push(item);
+                                } else if (path.endsWith('.xml') && !path.includes('rels') && !path.includes('[content_types]')) {
+                                    content.push(item);
+                                } else {
+                                    other.push(item);
+                                }
+                            });
+                            setGroupedItems({ media, content, other });
+                        }
+
                     } catch (zipErr) {
-                        // If zip fail, maybe it's just a misnamed file, treat as direct?
-                        // But usually we just throw error for archives.
                         throw zipErr;
                     }
                 } else {
-                    // Treat as direct single file
                     const singleItem: ZipItem = {
                         path: file.name,
                         isDir: false,
@@ -66,20 +89,12 @@ export const ZipInspector: React.FC<ZipInspectorProps> = ({ file, onBack }) => {
                         type: 'direct'
                     };
                     setItems([singleItem]);
-                    // Auto open preview for single file
-                    // But we can't call handlePreview directly here easily due to closure/async
-                    // Let's set a small timeout or just let user click? 
-                    // User said "ekrana bas", so auto-preview is better.
                     setTimeout(() => handlePreview(singleItem), 100);
                 }
 
                 setLoading(false);
             } catch (e: any) {
                 console.error(e);
-                // Fallback: If zip failed, maybe show as direct file?
-                // Useful if someone renames file.txt to file.zip
-                // But for now let's show error to be safe, or just fallback to direct view?
-                // Let's fallback to direct view if it fails!
                 const singleItem: ZipItem = {
                     path: file.name,
                     isDir: false,
@@ -88,7 +103,6 @@ export const ZipInspector: React.FC<ZipInspectorProps> = ({ file, onBack }) => {
                 };
                 setItems([singleItem]);
                 setTimeout(() => handlePreview(singleItem), 100);
-
                 setLoading(false);
             }
         };
@@ -104,7 +118,6 @@ export const ZipInspector: React.FC<ZipInspectorProps> = ({ file, onBack }) => {
             if (preview.item.type === 'direct') {
                 const f = preview.item.obj as File;
                 const buffer = await f.arrayBuffer();
-                // Convert buffer to base64
                 let binary = '';
                 const bytes = new Uint8Array(buffer);
                 const len = bytes.byteLength;
@@ -117,7 +130,6 @@ export const ZipInspector: React.FC<ZipInspectorProps> = ({ file, onBack }) => {
                 base64 = await zipObj.async('base64');
             }
 
-            // Detect mime type for Data URI
             const ext = preview.item.path.split('.').pop()?.toLowerCase();
             let mime = 'application/octet-stream';
             if (['jpg', 'jpeg'].includes(ext || '')) mime = 'image/jpeg';
@@ -128,7 +140,6 @@ export const ZipInspector: React.FC<ZipInspectorProps> = ({ file, onBack }) => {
             else if (['ico'].includes(ext || '')) mime = 'image/x-icon';
             else if (['bmp'].includes(ext || '')) mime = 'image/bmp';
 
-            // For images (and some others), construct Data URI
             const isImage = ['jpg', 'jpeg', 'png', 'svg', 'gif', 'webp', 'bmp', 'ico'].includes(ext || '');
             const textToCopy = isImage ? `data:${mime};base64,${base64}` : base64;
 
@@ -150,21 +161,15 @@ export const ZipInspector: React.FC<ZipInspectorProps> = ({ file, onBack }) => {
             let formatted = content;
 
             if (content.trim().startsWith('{') || content.trim().startsWith('[')) {
-                // Try JSON
                 try {
                     const obj = JSON.parse(content);
                     formatted = JSON.stringify(obj, null, 2);
-                } catch (e) {
-                    // Not JSON or invalid
-                }
+                } catch (e) { }
             } else if (content.trim().startsWith('<')) {
-                // Basic XML formatting
                 try {
                     const xml = new DOMParser().parseFromString(content, 'application/xml');
                     const errorNode = xml.querySelector('parsererror');
                     if (!errorNode) {
-                        // Use a serializer but it doesn't format. 
-                        // Fallback to simple regex approach for display purposes
                         let pad = 0;
                         formatted = content.replace(/>\s*</g, '><')
                             .replace(/(>)(<)(\/*)/g, '$1\r\n$2$3');
@@ -173,9 +178,9 @@ export const ZipInspector: React.FC<ZipInspectorProps> = ({ file, onBack }) => {
                         lines.forEach(line => {
                             let indent = 0;
                             if (line.match(/^<\w/) && !line.match(/>.*<\//)) {
-                                indent = 1; // Opening tag
+                                indent = 1;
                             } else if (line.match(/^<\/\w/)) {
-                                if (pad > 0) pad -= 1; // Closing tag
+                                if (pad > 0) pad -= 1;
                             }
 
                             formatted += new Array(pad * 2).fill(' ').join('') + line + '\n';
@@ -205,7 +210,6 @@ export const ZipInspector: React.FC<ZipInspectorProps> = ({ file, onBack }) => {
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            // Extract filename from path (handle nested paths)
             const parts = item.path.split('/');
             const name = parts[parts.length - 1] || 'download';
             a.download = name;
@@ -223,26 +227,42 @@ export const ZipInspector: React.FC<ZipInspectorProps> = ({ file, onBack }) => {
         if (item.isDir) return;
 
         const name = item.path.toLowerCase();
-        // Check for common image extensions
         const isImage = /\.(jpg|jpeg|png|gif|webp|svg|bmp|ico)$/.test(name);
-        // Check for text extensions
-        const isText = /\.(txt|md|json|js|ts|tsx|jsx|css|html|xml|log|ini|yml|yaml|sql|c|cpp|h|java|py|rb|php|gitignore)$/.test(name);
+        const isVideo = /\.(mp4|webm|ogg|mov|avi|mkv)$/.test(name);
+        const isAudio = /\.(mp3|wav|aac|m4a|flac)$/.test(name);
+        const isPdf = /\.(pdf)$/.test(name);
+
+        // Known binaries that we shouldn't try to read as text by default
+        const isBinary = /\.(exe|dll|so|dylib|bin|iso|img|dmg|zip|rar|7z|tar|gz)$/.test(name);
 
         setPreview({ item, type: 'unsupported', content: null, loading: true });
 
         try {
-            if (isImage) {
+            if (isImage || isVideo || isAudio || isPdf) {
                 let url: string;
+                let blob: Blob;
+
                 if (item.type === 'direct') {
-                    url = URL.createObjectURL(item.obj as File);
+                    blob = item.obj as File;
                 } else {
-                    const blob = await (item.obj as JSZip.JSZipObject).async('blob');
-                    url = URL.createObjectURL(blob);
+                    blob = await (item.obj as JSZip.JSZipObject).async('blob');
                 }
-                setPreview({ item, type: 'image', content: url, loading: false });
-            } else if (isText || !isImage) {
-                // Default to text if not image? Risky for binaries but user wants to "see inside".
-                // Let's try to read as text.
+
+                // Force correct MIME types for known extensions if blob type is generic
+                if (isPdf && blob.type !== 'application/pdf') blob = new Blob([blob], { type: 'application/pdf' });
+                if (isVideo && !blob.type.startsWith('video/')) {
+                    // Simple mapping or let browser detect
+                }
+
+                url = URL.createObjectURL(blob);
+
+                if (isImage) setPreview({ item, type: 'image', content: url, loading: false });
+                else if (isVideo) setPreview({ item, type: 'video', content: url, loading: false });
+                else if (isAudio) setPreview({ item, type: 'audio', content: url, loading: false });
+                else if (isPdf) setPreview({ item, type: 'pdf', content: url, loading: false });
+
+            } else if (!isBinary) {
+                // Try to read as text
                 let text = '';
                 if (item.type === 'direct') {
                     text = await (item.obj as File).text();
@@ -250,9 +270,9 @@ export const ZipInspector: React.FC<ZipInspectorProps> = ({ file, onBack }) => {
                     text = await (item.obj as JSZip.JSZipObject).async('string');
                 }
 
-                // If it looks binary, maybe warn?
-                // Simple check for null bytes?
-                if (text.includes('\0') && text.length > 100) {
+                // Check for binary content (null bytes)
+                // A text file shouldn't have null bytes usually
+                if (text.includes('\0') && text.length > 500) { // Slight tolerance
                     setPreview({ item, type: 'unsupported', content: null, loading: false });
                 } else {
                     setPreview({ item, type: 'text', content: text, loading: false });
@@ -282,7 +302,6 @@ export const ZipInspector: React.FC<ZipInspectorProps> = ({ file, onBack }) => {
         let nextIndex = currentIndex;
         let found = false;
 
-        // Find next/prev non-directory item
         while (!found) {
             if (direction === 'next') {
                 nextIndex = (nextIndex + 1) % items.length;
@@ -290,7 +309,6 @@ export const ZipInspector: React.FC<ZipInspectorProps> = ({ file, onBack }) => {
                 nextIndex = (nextIndex - 1 + items.length) % items.length;
             }
 
-            // Prevent infinite loop if all items are directories or empty list (though list check handles empty)
             if (nextIndex === currentIndex) break;
 
             if (!items[nextIndex].isDir) {
@@ -299,7 +317,6 @@ export const ZipInspector: React.FC<ZipInspectorProps> = ({ file, onBack }) => {
         }
 
         if (found) {
-            // Revoke current object url if image
             if (preview.type === 'image' && preview.content) {
                 URL.revokeObjectURL(preview.content);
             }
@@ -321,13 +338,55 @@ export const ZipInspector: React.FC<ZipInspectorProps> = ({ file, onBack }) => {
 
     const isOffice = /\.(docx|xlsx|pptx|odt|ods|odp)$/i.test(file.name);
 
+    const renderFileList = (list: ZipItem[], title?: string) => {
+        if (!list || list.length === 0) return null;
+        return (
+            <div style={{ marginBottom: title ? '1.5rem' : 0 }}>
+                {title && (
+                    <h4 style={{ margin: '0 0 0.5rem 0', opacity: 0.8, fontSize: '0.9rem', color: '#94a3b8', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '4px' }}>
+                        {title} ({list.length})
+                    </h4>
+                )}
+                {list.map((item) => (
+                    <div
+                        key={item.path}
+                        className="flex-center"
+                        style={{
+                            justifyContent: 'space-between',
+                            padding: '8px 16px',
+                            borderBottom: '1px solid rgba(255,255,255,0.05)',
+                            cursor: item.isDir ? 'default' : 'pointer',
+                            transition: 'background 0.2s'
+                        }}
+                        onMouseEnter={(e) => !item.isDir && (e.currentTarget.style.background = 'rgba(255,255,255,0.05)')}
+                        onMouseLeave={(e) => !item.isDir && (e.currentTarget.style.background = 'transparent')}
+                        onClick={() => !item.isDir && handlePreview(item)}
+                        title={item.isDir ? 'Klasör' : 'Önizlemek için tıkla'}
+                    >
+                        <div className="flex-center" style={{ gap: '10px', overflow: 'hidden' }}>
+                            {item.isDir ? (
+                                <Folder size={16} color="#fbbf24" style={{ flexShrink: 0 }} />
+                            ) : (
+                                <FileIcon size={16} color="#94a3b8" style={{ flexShrink: 0 }} />
+                            )}
+                            <span style={{ fontFamily: 'monospace', fontSize: '0.9rem', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>
+                                {item.path}
+                            </span>
+                        </div>
+                        {!item.isDir && <Eye size={14} style={{ opacity: 0.5, flexShrink: 0 }} />}
+                    </div>
+                ))}
+            </div>
+        );
+    };
+
     return (
         <div className="glass-panel" style={{ maxWidth: '800px', margin: '0 auto', padding: '2rem', animation: 'fadeIn 0.5s ease' }}>
             <div className="flex-center" style={{ justifyContent: 'flex-start', gap: '1rem', marginBottom: '1.5rem' }}>
                 <button onClick={onBack} className="glass-button" title="Geri" aria-label="Geri" style={{ padding: '8px' }}><ArrowLeft size={18} /></button>
                 <div style={{ textAlign: 'left' }}>
                     <h2 style={{ margin: 0, fontSize: '1.5rem' }}>{isOffice ? 'Belge İçeriği' : 'Arşiv İnceleyici'}</h2>
-                    {isOffice && <span className="text-sm" style={{ opacity: 0.7 }}>Office Belgesi Yapısı (XML)</span>}
+                    {isOffice && <span className="text-sm" style={{ opacity: 0.7 }}>Office dosya yapısı ayrıştırıldı</span>}
                 </div>
             </div>
             <p className="text-sm" style={{ textAlign: 'left', marginBottom: '1rem' }}>
@@ -338,31 +397,18 @@ export const ZipInspector: React.FC<ZipInspectorProps> = ({ file, onBack }) => {
             {error && <div className="p-4" style={{ color: '#f87171', background: 'rgba(239, 68, 68, 0.1)', borderRadius: '8px' }}>{error}</div>}
 
             {!loading && !error && (
-                <div style={{ maxHeight: '400px', overflowY: 'auto', textAlign: 'left', background: 'rgba(0,0,0,0.2)', borderRadius: '8px' }}>
+                <div style={{ maxHeight: '600px', overflowY: 'auto', textAlign: 'left', background: 'rgba(0,0,0,0.2)', borderRadius: '8px' }}>
                     {items.length === 0 && <div className="p-4 text-sm">Arşiv boş veya okunamadı.</div>}
-                    {items.map((item) => (
-                        <div
-                            key={item.path}
-                            className="flex-center"
-                            style={{
-                                justifyContent: 'space-between',
-                                padding: '8px 16px',
-                                borderBottom: '1px solid rgba(255,255,255,0.05)',
-                                cursor: item.isDir ? 'default' : 'pointer',
-                                transition: 'background 0.2s'
-                            }}
-                            onMouseEnter={(e) => !item.isDir && (e.currentTarget.style.background = 'rgba(255,255,255,0.05)')}
-                            onMouseLeave={(e) => !item.isDir && (e.currentTarget.style.background = 'transparent')}
-                            onClick={() => !item.isDir && handlePreview(item)}
-                            title={item.isDir ? 'Klasör' : 'Önizlemek için tıkla'}
-                        >
-                            <div className="flex-center" style={{ gap: '10px', overflow: 'hidden' }}>
-                                {item.isDir ? <Folder size={16} color="#fbbf24" style={{ flexShrink: 0 }} /> : <FileIcon size={16} color="#94a3b8" style={{ flexShrink: 0 }} />}
-                                <span style={{ fontFamily: 'monospace', fontSize: '0.9rem', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>{item.path}</span>
-                            </div>
-                            {!item.isDir && <Eye size={14} style={{ opacity: 0.5, flexShrink: 0 }} />}
+
+                    {groupedItems ? (
+                        <div style={{ padding: '10px' }}>
+                            {renderFileList(groupedItems.media, 'Medya Dosyaları')}
+                            {renderFileList(groupedItems.content, 'Belge İçeriği (XML)')}
+                            {renderFileList(groupedItems.other, 'Yapısal ve Diğer Dosyalar')}
                         </div>
-                    ))}
+                    ) : (
+                        renderFileList(items)
+                    )}
                 </div>
             )}
 
@@ -412,6 +458,12 @@ export const ZipInspector: React.FC<ZipInspectorProps> = ({ file, onBack }) => {
                                 </div>
                             ) : preview.type === 'image' ? (
                                 <img src={preview.content!} alt="Preview" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', borderRadius: '4px' }} />
+                            ) : preview.type === 'video' ? (
+                                <video controls src={preview.content!} style={{ maxWidth: '100%', maxHeight: '100%', borderRadius: '4px' }} />
+                            ) : preview.type === 'audio' ? (
+                                <audio controls src={preview.content!} style={{ width: '100%', maxWidth: '400px' }} />
+                            ) : preview.type === 'pdf' ? (
+                                <iframe src={preview.content!} style={{ width: '100%', height: '100%', border: 'none', borderRadius: '4px' }} title="PDF Preview" />
                             ) : preview.type === 'text' ? (
                                 <pre style={{
                                     fontFamily: 'monospace',
@@ -440,3 +492,4 @@ export const ZipInspector: React.FC<ZipInspectorProps> = ({ file, onBack }) => {
         </div>
     );
 };
+
