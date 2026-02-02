@@ -2,13 +2,13 @@
 import React from 'react';
 import {
     FileType, Archive, X, FileCode2, Binary, Image as ImageIcon,
-    Hash, FileJson, FileText, Smartphone, Shield, QrCode, Crop, FileDiff
+    Hash, FileJson, FileText, Smartphone, Shield, QrCode, Crop, FileDiff, Calculator
 } from 'lucide-react';
 
 interface ActionPanelProps {
     file: File;
     onClear: () => void;
-    onAction: (action: 'convert' | 'inspect' | 'base64' | 'optimize' | 'hash' | 'json' | 'text' | 'pdf' | 'exif' | 'qr' | 'social' | 'favicon') => void;
+    onAction: (action: 'convert' | 'inspect' | 'base64' | 'optimize' | 'hash' | 'json' | 'text' | 'pdf' | 'exif' | 'qr' | 'social' | 'favicon' | 'units') => void;
 }
 
 export const ActionPanel: React.FC<ActionPanelProps> = ({ file, onClear, onAction }) => {
@@ -20,7 +20,7 @@ export const ActionPanel: React.FC<ActionPanelProps> = ({ file, onClear, onActio
     const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
 
     const getRecommendedActions = () => {
-        const actions: ('convert' | 'inspect' | 'base64' | 'optimize' | 'hash' | 'json' | 'text' | 'pdf' | 'exif' | 'qr' | 'social' | 'favicon')[] = [];
+        const actions: ('convert' | 'inspect' | 'base64' | 'optimize' | 'hash' | 'json' | 'text' | 'pdf' | 'exif' | 'qr' | 'social' | 'favicon' | 'units')[] = [];
         const ext = file.name.split('.').pop()?.toLowerCase();
 
         if (ext === 'webp' || ext === 'avif') actions.push('convert');
@@ -34,13 +34,16 @@ export const ActionPanel: React.FC<ActionPanelProps> = ({ file, onClear, onActio
         if (isText && !isJson) actions.push('text');
         if (isPdf) actions.push('pdf');
 
+        // Always recommend units if it looks like a CAD file or just generally
+        if (['dwg', 'dxf', 'kmz', 'kml'].includes(ext || '')) actions.push('units');
+
         return actions;
     };
 
     const recommended = getRecommendedActions();
 
     const renderButton = (
-        action: 'convert' | 'inspect' | 'base64' | 'optimize' | 'hash' | 'json' | 'text' | 'pdf' | 'exif' | 'qr' | 'social' | 'favicon',
+        action: 'convert' | 'inspect' | 'base64' | 'optimize' | 'hash' | 'json' | 'text' | 'pdf' | 'exif' | 'qr' | 'social' | 'favicon' | 'units',
         icon: React.ReactNode,
         title: string,
         desc: string,
@@ -48,11 +51,11 @@ export const ActionPanel: React.FC<ActionPanelProps> = ({ file, onClear, onActio
         highlight: boolean = false
     ) => (
         <button
-            className={`flex flex - col items - center justify - start text - center w - full min - h - [140px] p - 5 gap - 2 border text - white rounded - lg font - medium cursor - pointer transition - all duration - 200 group relative overflow - hidden
+            className={`flex flex-col items-center justify-start text-center w-full min-h-[140px] p-5 gap-2 border text-white rounded-lg font-medium cursor-pointer transition-all duration-200 group relative overflow-hidden
                 ${highlight
                     ? 'bg-violet-500/20 border-violet-500/60 shadow-[0_0_20px_rgba(139,92,246,0.3)] hover:bg-violet-500/30'
                     : 'bg-blue-500/20 border-blue-500/40 hover:bg-blue-500/40 hover:-translate-y-0.5 hover:shadow-[0_0_15px_rgba(59,130,246,0.3)]'
-                } `}
+                }`}
             onClick={() => onAction(action)}
         >
             {highlight && (
@@ -62,7 +65,7 @@ export const ActionPanel: React.FC<ActionPanelProps> = ({ file, onClear, onActio
             )}
             <div style={{ color: colorClass }} className="mb-1 transform group-hover:scale-110 transition-transform duration-200">{icon}</div>
             <div className="text-base font-semibold">{title}</div>
-            <div className={`text - xs ${highlight ? 'text-violet-200' : 'opacity-80'} `}>{desc}</div>
+            <div className={`text-xs ${highlight ? 'text-violet-200' : 'opacity-80'}`}>{desc}</div>
         </button>
     );
 
@@ -106,6 +109,7 @@ export const ActionPanel: React.FC<ActionPanelProps> = ({ file, onClear, onActio
                             {recommended.includes('pdf') && renderButton('pdf', <FileDiff size={28} />, 'PDF İşlemleri', 'Ayır / Birleştir', '#ef4444', true)}
                             {recommended.includes('social') && renderButton('social', <Crop size={28} />, 'Sosyal Medya', 'Boyutlandır', '#e879f9', true)}
                             {recommended.includes('exif') && renderButton('exif', <Shield size={28} />, 'Güvenli Paylaş', 'Exif Sil', '#10b981', true)}
+                            {recommended.includes('units') && renderButton('units', <Calculator size={28} />, 'Birim Çevirici', 'Alan / Uzunluk', '#f97316', true)}
                         </div>
                     </div>
                 )}
@@ -137,6 +141,14 @@ export const ActionPanel: React.FC<ActionPanelProps> = ({ file, onClear, onActio
                             '#f472b6'
                         )}
                         {isPdf && renderButton('pdf', <FileDiff size={28} />, 'PDF Araçları', 'Böl / Düzenle', '#ef4444')}
+                    </div>
+                </div>
+
+                {/* Category: Teknik / Belediye */}
+                <div className="text-left">
+                    <h3 className="mb-4 opacity-70 text-sm uppercase tracking-wider font-medium">Teknik / Fen İşleri</h3>
+                    <div className="grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))] gap-4">
+                        {renderButton('units', <Calculator size={28} />, 'Arazi / Alan', 'Dönüm, m², Hektar', '#f97316')}
                     </div>
                 </div>
 

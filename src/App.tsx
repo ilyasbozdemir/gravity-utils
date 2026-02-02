@@ -14,10 +14,12 @@ import { QrManager } from './components/QrManager';
 import { SocialResizer } from './components/SocialResizer';
 import { FaviconGenerator } from './components/FaviconGenerator';
 
+import { UnitConverter } from './components/UnitConverter';
+
 import { Zap } from 'lucide-react';
 import { LandingHero } from './components/LandingHero';
 
-type ViewType = 'home' | 'convert' | 'inspect' | 'base64' | 'optimize' | 'hash' | 'json' | 'text' | 'pdf' | 'exif' | 'qr' | 'social' | 'favicon';
+type ViewType = 'home' | 'convert' | 'inspect' | 'base64' | 'optimize' | 'hash' | 'json' | 'text' | 'pdf' | 'exif' | 'qr' | 'social' | 'favicon' | 'units';
 
 function App() {
   const [file, setFile] = useState<File | null>(null);
@@ -38,6 +40,7 @@ function App() {
       qr: 'QR Kod & Barkod - Gravity Utils',
       social: 'Sosyal Medya Boyutlandırıcı - Gravity Utils',
       favicon: 'Favicon Oluşturucu - Gravity Utils',
+      units: 'Teknik Birim Çevirici - Gravity Utils',
     };
     document.title = titles[view] || 'Gravity Utils';
   }, [view]);
@@ -130,6 +133,10 @@ function App() {
             {view === 'favicon' && (
               <FaviconGenerator file={file} onBack={() => setView('home')} />
             )}
+
+            {view === 'units' && (
+              <UnitConverter file={file} onBack={() => setView('home')} />
+            )}
           </div>
         )}
       </main>
@@ -137,9 +144,12 @@ function App() {
       {!file && (
         <footer className="text-sm p-8 text-center opacity-50 border-t border-white/5 flex flex-col gap-2">
           <p>© 2026 Gravity Utils. Tarayıcı tabanlı güvenli araçlar.</p>
-          <p className="text-xs">
-            Powered by <a href="https://ilyasbozdemir.dev" target="_blank" rel="noopener noreferrer" className="text-violet-400 hover:text-violet-300 no-underline transition-colors">ilyasbozdemir.dev</a>
-          </p>
+          <div className="text-xs flex items-center justify-center gap-1">
+            <span className="opacity-50">Powered by</span>
+            <a href="https://ilyasbozdemir.dev" target="_blank" rel="noopener noreferrer" className="text-violet-400 hover:text-white font-medium no-underline transition-colors">
+              ilyasbozdemir.dev
+            </a>
+          </div>
         </footer>
       )}
     </div>
