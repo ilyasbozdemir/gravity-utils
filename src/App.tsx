@@ -105,8 +105,11 @@ function App() {
       </main>
 
       {!file && (
-        <footer className="text-sm p-8 text-center opacity-50 border-t border-white/5">
+        <footer className="text-sm p-8 text-center opacity-50 border-t border-white/5 flex flex-col gap-2">
           <p>© 2026 Gravity Utils. Tarayıcı tabanlı güvenli araçlar.</p>
+          <p className="text-xs">
+            Powered by <a href="https://ilyasbozdemir.dev" target="_blank" rel="noopener noreferrer" className="text-violet-400 hover:text-violet-300 no-underline transition-colors">ilyasbozdemir.dev</a>
+          </p>
         </footer>
       )}
     </div>

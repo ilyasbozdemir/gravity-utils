@@ -18,20 +18,45 @@ export const ActionPanel: React.FC<ActionPanelProps> = ({ file, onClear, onActio
     const isOffice = /\.(docx|xlsx|pptx|odt|ods|odp)$/i.test(file.name);
     const isArchive = /\.(zip|rar|7z|tar|gz|apk|jar|war)$/i.test(file.name);
 
+    const getRecommendedActions = () => {
+        const actions: ('convert' | 'inspect' | 'base64' | 'optimize' | 'hash' | 'json' | 'text')[] = [];
+        const ext = file.name.split('.').pop()?.toLowerCase();
+
+        if (ext === 'webp' || ext === 'avif') actions.push('convert'); // WebP to PNG needs distinct highlighting
+        if (isJson) actions.push('json');
+        if (isArchive || isOffice) actions.push('inspect');
+        if (isImage && !['webp', 'avif', 'svg'].includes(ext || '')) actions.push('optimize');
+        if (isText && !isJson) actions.push('text');
+
+        return actions;
+    };
+
+    const recommended = getRecommendedActions();
+
     const renderButton = (
         action: 'convert' | 'inspect' | 'base64' | 'optimize' | 'hash' | 'json' | 'text',
         icon: React.ReactNode,
         title: string,
         desc: string,
-        colorClass: string
+        colorClass: string,
+        highlight: boolean = false
     ) => (
         <button
-            className="flex flex-col items-center justify-start text-center w-full h-full p-5 gap-2 bg-blue-500/20 border border-blue-500/40 text-white rounded-lg font-medium cursor-pointer hover:bg-blue-500/40 hover:-translate-y-0.5 hover:shadow-[0_0_15px_rgba(59,130,246,0.3)] transition-all duration-200"
+            className={`flex flex-col items-center justify-start text-center w-full h-full p-5 gap-2 border text-white rounded-lg font-medium cursor-pointer transition-all duration-200 group relative overflow-hidden
+                ${highlight
+                    ? 'bg-violet-500/20 border-violet-500/60 shadow-[0_0_20px_rgba(139,92,246,0.3)] hover:bg-violet-500/30'
+                    : 'bg-blue-500/20 border-blue-500/40 hover:bg-blue-500/40 hover:-translate-y-0.5 hover:shadow-[0_0_15px_rgba(59,130,246,0.3)]'
+                }`}
             onClick={() => onAction(action)}
         >
-            <div style={{ color: colorClass }} className="mb-1">{icon}</div>
+            {highlight && (
+                <div className="absolute top-0 right-0 bg-violet-500 text-white text-[10px] px-2 py-0.5 rounded-bl-lg font-bold">
+                    ÖNERİLEN
+                </div>
+            )}
+            <div style={{ color: colorClass }} className="mb-1 transform group-hover:scale-110 transition-transform duration-200">{icon}</div>
             <div className="text-base font-semibold">{title}</div>
-            <div className="text-xs opacity-80">{desc}</div>
+            <div className={`text-xs ${highlight ? 'text-violet-200' : 'opacity-80'}`}>{desc}</div>
         </button>
     );
 
@@ -59,6 +84,22 @@ export const ActionPanel: React.FC<ActionPanelProps> = ({ file, onClear, onActio
             </div>
 
             <div className="flex flex-col gap-8">
+
+                {/* Recommended Section (Conditional) */}
+                {recommended.length > 0 && (
+                    <div className="text-left">
+                        <h3 className="mb-4 text-violet-300 text-sm uppercase tracking-wider font-bold flex items-center gap-2">
+                            ✨ Sizin İçin Önerilenler
+                        </h3>
+                        <div className="grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))] gap-4">
+                            {recommended.includes('convert') && renderButton('convert', <FileType size={28} />, 'Dönüştür', 'WebP -> PNG / JPG', '#fbbf24', true)}
+                            {recommended.includes('json') && renderButton('json', <FileJson size={28} />, 'JSON Formatla', 'Okunabilir Yap', '#22d3ee', true)}
+                            {recommended.includes('inspect') && renderButton('inspect', <Archive size={28} />, 'İçeriği İncele', isOffice ? 'Belge Detayları' : 'Arşiv Dosyaları', '#f472b6', true)}
+                            {recommended.includes('optimize') && renderButton('optimize', <ImageIcon size={28} />, 'Sıkıştır', 'Dosya Boyutunu Düşür', '#34d399', true)}
+                            {recommended.includes('text') && renderButton('text', <FileText size={28} />, 'Metni Analiz Et', 'İstatistikler', '#a78bfa', true)}
+                        </div>
+                    </div>
+                )}
 
                 {/* Category: Dosya İşlemleri */}
                 <div className="text-left">
