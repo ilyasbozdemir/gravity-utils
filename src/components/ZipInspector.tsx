@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import JSZip from 'jszip';
-import { File as FileIcon, Folder, Download, ArrowLeft, X, Eye, FileText, Image as ImageIcon, ChevronLeft, ChevronRight, Copy, Check, Code } from 'lucide-react';
+import { File as FileIcon, Folder, Download, ArrowLeft, X, Eye, ChevronLeft, ChevronRight, Copy, Check, Code } from 'lucide-react';
 
 interface ZipInspectorProps {
     file: File;

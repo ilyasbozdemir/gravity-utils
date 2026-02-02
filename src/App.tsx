@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { FileDropper } from './components/FileDropper';
+
 import { ActionPanel } from './components/ActionPanel';
 import { FileConverter } from './components/FileConverter';
 import { ZipInspector } from './components/ZipInspector';
@@ -8,7 +8,7 @@ import { ImageOptimizer } from './components/ImageOptimizer';
 import { HashGenerator } from './components/HashGenerator';
 import { JsonFormatter } from './components/JsonFormatter';
 import { TextAnalyzer } from './components/TextAnalyzer';
-import { FeatureShowcase } from './components/FeatureShowcase';
+
 import { Zap } from 'lucide-react';
 import { LandingHero } from './components/LandingHero';
 
