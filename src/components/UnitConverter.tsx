@@ -276,12 +276,12 @@ export const UnitConverter: React.FC<UnitConverterProps> = ({ onBack }) => {
                 <button onClick={onBack} className="glass-button p-2"><ArrowLeft size={18} /></button>
                 <h2 className="text-xl font-bold m-0 flex items-center gap-2">
                     <Calculator className="text-indigo-400" />
-                    Teknik ve İdari Araçlar
+                    Mühendislik ve Hesaplama
                 </h2>
             </div>
 
             <p className="text-slate-400 mb-8 text-center bg-white/5 p-4 rounded-lg">
-                Belediye, Fen İşleri ve Teknik Personel için Kapsamlı Hesaplama Seti
+                Arazi, Tarih ve Harita işlemleri için pratik teknik araç seti.
             </p>
 
             <div className="flex border-b border-white/10 mb-8 overflow-x-auto">

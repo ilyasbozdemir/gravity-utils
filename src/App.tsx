@@ -59,11 +59,16 @@ function App() {
     setView('home');
   };
 
+  const handleToolSelect = (tool: ViewType) => {
+    setFile(null); // Ensure no file is active
+    setView(tool);
+  };
+
   return (
     <div className="flex flex-col min-h-screen box-border">
 
-      {/* Show simple header only when a file is active */}
-      {file && (
+      {/* Show simple header only when NOT on landing page (either file active OR specific view active) */}
+      {(file || view !== 'home') && (
         <header className="px-8 py-6 border-b border-white/5 flex items-center justify-between bg-slate-900/80 backdrop-blur-md sticky top-0 z-40">
           <div className="flex items-center gap-2.5 cursor-pointer" onClick={clearFile}>
             <Zap size={24} color="#a78bfa" fill="rgba(167, 139, 250, 0.2)" />
@@ -76,13 +81,15 @@ function App() {
       )}
 
       <main className="w-full flex-1 flex flex-col">
-        {!file && (
-          <LandingHero onFileSelect={handleFileSelect} />
+        {/* Landing Page: Show if NO file AND view IS home */}
+        {!file && view === 'home' && (
+          <LandingHero onFileSelect={handleFileSelect} onToolSelect={handleToolSelect} />
         )}
 
-        {file && (
+        {/* Action Panel or Specific Tools: Show if FILE exists OR view is NOT home */}
+        {(file || view !== 'home') && (
           <div className="p-8 max-w-[1200px] mx-auto w-full animate-[fadeIn_0.5s_ease]">
-            {view === 'home' && (
+            {view === 'home' && file && (
               <ActionPanel file={file} onClear={clearFile} onAction={handleAction} />
             )}
 

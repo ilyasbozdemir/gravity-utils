@@ -1,12 +1,12 @@
-import React from 'react';
-import { FileType, Archive, Image as ImageIcon, ShieldCheck, Zap, Star } from 'lucide-react';
+import { FileType, Archive, Image as ImageIcon, ShieldCheck, Zap, Star, Calculator } from 'lucide-react';
 import { FileDropper } from './FileDropper';
 
 interface LandingHeroProps {
     onFileSelect: (file: File) => void;
+    onToolSelect: (tool: 'units') => void;
 }
 
-export const LandingHero: React.FC<LandingHeroProps> = ({ onFileSelect }) => {
+export const LandingHero: React.FC<LandingHeroProps> = ({ onFileSelect, onToolSelect }) => {
     return (
         <div className="px-4">
             {/* Hero Section */}
@@ -29,10 +29,20 @@ export const LandingHero: React.FC<LandingHeroProps> = ({ onFileSelect }) => {
                     Hepsi tarayıcınızda, kurulumsuz ve %100 güvenli.
                 </p>
 
-                {/* Main Action Area */}
-                <div className="w-full max-w-[600px] relative z-10">
+                <div className="w-full max-w-[600px] relative z-10 flex flex-col gap-4">
                     <div className="p-2 rounded-3xl bg-slate-800/50 backdrop-blur-xl border border-white/10 shadow-xl">
                         <FileDropper onFileSelect={onFileSelect} />
+                    </div>
+
+                    {/* Direct Tool Access */}
+                    <div className="flex justify-center">
+                        <button
+                            onClick={() => onToolSelect('units')}
+                            className="text-slate-400 hover:text-white text-sm flex items-center gap-2 px-4 py-2 rounded-full hover:bg-white/5 transition-colors"
+                        >
+                            <Calculator size={16} className="text-orange-400" />
+                            <span>Mühendislik ve Hesaplama Araçları'na Göz At</span>
+                        </button>
                     </div>
                 </div>
 
