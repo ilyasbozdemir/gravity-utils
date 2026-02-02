@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ArrowLeft, Download, Image as ImageIcon } from 'lucide-react';
+import { ArrowLeft, Image as ImageIcon } from 'lucide-react';
 
 interface FaviconGeneratorProps {
     file: File;
