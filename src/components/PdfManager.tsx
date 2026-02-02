@@ -34,7 +34,7 @@ export const PdfManager: React.FC<PdfManagerProps> = ({ file, onBack }) => {
             newDoc.addPage(copiedPage);
 
             const pdfBytes = await newDoc.save();
-            const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+            const blob = new Blob([pdfBytes as any], { type: 'application/pdf' });
             const url = URL.createObjectURL(blob);
 
             const link = document.createElement('a');
