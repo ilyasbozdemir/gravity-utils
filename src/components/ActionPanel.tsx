@@ -148,7 +148,7 @@ export const ActionPanel: React.FC<ActionPanelProps> = ({ file, onClear, onActio
                 <div className="text-left">
                     <h3 className="mb-4 opacity-70 text-sm uppercase tracking-wider font-medium">Teknik / Fen İşleri</h3>
                     <div className="grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))] gap-4">
-                        {renderButton('units', <Calculator size={28} />, 'Arazi / Alan', 'Dönüm, m², Hektar', '#f97316')}
+                        {renderButton('units', <Calculator size={28} />, 'Belediye & Teknik', 'Ölçek, Tarih, Alan', '#f97316')}
                     </div>
                 </div>
 
