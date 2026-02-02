@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 import { ActionPanel } from './components/ActionPanel';
 import { FileConverter } from './components/FileConverter';
@@ -17,6 +17,20 @@ type ViewType = 'home' | 'convert' | 'inspect' | 'base64' | 'optimize' | 'hash' 
 function App() {
   const [file, setFile] = useState<File | null>(null);
   const [view, setView] = useState<ViewType>('home');
+
+  useEffect(() => {
+    const titles: Record<ViewType, string> = {
+      home: 'Gravity Utils - Güvenli Dosya Araçları',
+      convert: 'Dosya Dönüştürücü - Gravity Utils',
+      inspect: 'Arşiv İnceleyici - Gravity Utils',
+      base64: 'Base64 Araçları - Gravity Utils',
+      optimize: 'Resim Optimizasyon - Gravity Utils',
+      hash: 'Hash Generator - Gravity Utils',
+      json: 'JSON Formatter - Gravity Utils',
+      text: 'Metin Analizi - Gravity Utils',
+    };
+    document.title = titles[view] || 'Gravity Utils';
+  }, [view]);
 
   const handleFileSelect = (f: File) => {
     setFile(f);
