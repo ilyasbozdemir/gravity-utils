@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Calculator, Ruler, Box, Map, Calendar, Clock, Globe } from 'lucide-react';
+import { ArrowLeft, Calculator, Ruler, Box, Map, Calendar, Clock, Globe, Percent, Navigation, Coins } from 'lucide-react';
 
 interface UnitConverterProps {
     file?: File | null;
     onBack: () => void;
 }
 
-type TabType = 'units' | 'date' | 'map';
+type TabType = 'units' | 'date' | 'map' | 'finance' | 'coords';
 type UnitCategory = 'area' | 'length' | 'volume';
 
 // --- SUB-COMPONENTS ---
@@ -265,13 +265,145 @@ const MapTool = () => {
     );
 };
 
+/* 4. Finance Tool (KDV & Stopaj) */
+const FinanceTool = () => {
+    const [amount, setAmount] = useState(1000);
+    const [rate, setRate] = useState(20);
+
+    // Calculate values
+    const kdvAmount = amount * (rate / 100);
+    const total = amount + kdvAmount;
+
+    // Reverse calculation
+    const baseFromTotal = amount / (1 + (rate / 100));
+    const kdvFromTotal = amount - baseFromTotal;
+
+    return (
+        <div className="animate-[fadeIn_0.5s_ease]">
+            <div className="bg-white/5 p-8 rounded-2xl border border-white/10 flex flex-col gap-6">
+                <div className="grid grid-cols-2 gap-4">
+                    <div>
+                        <label className="block text-xs text-slate-400 mb-2 uppercase font-bold">Tutar</label>
+                        <input type="number" value={amount} onChange={(e) => setAmount(Number(e.target.value))} className="glass-input w-full" />
+                    </div>
+                    <div>
+                        <label className="block text-xs text-slate-400 mb-2 uppercase font-bold">Vergi Oranı (%)</label>
+                        <select value={rate} onChange={(e) => setRate(Number(e.target.value))} className="glass-input w-full">
+                            <option value={1} className="bg-slate-800">%1 (KDV)</option>
+                            <option value={10} className="bg-slate-800">%10 (KDV)</option>
+                            <option value={20} className="bg-slate-800">%20 (KDV/Stopaj)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                    {/* Method 1: Forward */}
+                    <div className="bg-white/5 p-4 rounded-xl border border-white/5">
+                        <div className="text-xs text-sky-400 font-bold mb-2 uppercase">KDV Hariçten -> Dahile</div>
+                        <div className="flex justify-between items-center mb-1">
+                            <span className="text-slate-400">KDV Tutarı:</span>
+                            <span className="font-mono">{kdvAmount.toLocaleString('tr-TR', { maximumFractionDigits: 2 })} ₺</span>
+                        </div>
+                        <div className="flex justify-between items-center text-lg font-bold text-sky-300 pt-2 border-t border-white/10">
+                            <span>Toplam:</span>
+                            <span>{total.toLocaleString('tr-TR', { maximumFractionDigits: 2 })} ₺</span>
+                        </div>
+                    </div>
+
+                    {/* Method 2: Reverse */}
+                    <div className="bg-white/5 p-4 rounded-xl border border-white/5">
+                        <div className="text-xs text-purple-400 font-bold mb-2 uppercase">KDV Dahilden -> Harice</div>
+                        <div className="flex justify-between items-center mb-1">
+                            <span className="text-slate-400">Matrah (Ana Para):</span>
+                            <span className="font-mono">{baseFromTotal.toLocaleString('tr-TR', { maximumFractionDigits: 2 })} ₺</span>
+                        </div>
+                        <div className="flex justify-between items-center text-slate-400 pt-2 border-t border-white/10">
+                            <span>İçindeki KDV:</span>
+                            <span className="font-mono">{kdvFromTotal.toLocaleString('tr-TR', { maximumFractionDigits: 2 })} ₺</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+/* 5. Coordinates Tool */
+const CoordTool = () => {
+    const [decLat, setDecLat] = useState<string>("41.0082");
+    const [decLng, setDecLng] = useState<string>("28.9784");
+    const [dmsResult, setDmsResult] = useState("");
+
+    const toDMS = (coordinate: number, type: 'lat' | 'lng') => {
+        const absolute = Math.abs(coordinate);
+        const degrees = Math.floor(absolute);
+        const minutesNotTruncated = (absolute - degrees) * 60;
+        const minutes = Math.floor(minutesNotTruncated);
+        const seconds = ((minutesNotTruncated - minutes) * 60).toFixed(2);
+
+        let direction = "";
+        if (type === 'lat') direction = coordinate >= 0 ? "N" : "S";
+        if (type === 'lng') direction = coordinate >= 0 ? "E" : "W";
+
+        return `${degrees}° ${minutes}' ${seconds}" ${direction}`;
+    }
+
+    const convert = () => {
+        const lat = parseFloat(decLat);
+        const lng = parseFloat(decLng);
+        if (isNaN(lat) || isNaN(lng)) return;
+        setDmsResult(`${toDMS(lat, 'lat')}, ${toDMS(lng, 'lng')}`);
+    }
+
+    return (
+        <div className="animate-[fadeIn_0.5s_ease]">
+            <div className="bg-white/5 p-8 rounded-2xl border border-white/10 flex flex-col gap-6">
+                <div className="grid grid-cols-2 gap-4">
+                    <div>
+                        <label className="block text-xs text-slate-400 mb-2 uppercase font-bold">Enlem (Latitude)</label>
+                        <input type="text" value={decLat} onChange={(e) => setDecLat(e.target.value)} className="glass-input w-full" placeholder="41.0082" />
+                    </div>
+                    <div>
+                        <label className="block text-xs text-slate-400 mb-2 uppercase font-bold">Boylam (Longitude)</label>
+                        <input type="text" value={decLng} onChange={(e) => setDecLng(e.target.value)} className="glass-input w-full" placeholder="28.9784" />
+                    </div>
+                </div>
+
+                <button onClick={convert} className="bg-pink-600/80 hover:bg-pink-500 text-white rounded-lg py-2 font-medium transition-colors">
+                    Dönüştür (Decimal -> DMS)
+                </button>
+
+                {dmsResult && (
+                    <div className="mt-4 pt-6 border-t border-white/10 text-center">
+                        <div className="text-xl font-bold text-pink-300 font-mono tracking-tight select-all">
+                            {dmsResult}
+                        </div>
+                    </div>
+                )}
+            </div>
+        </div>
+    )
+}
+
 // --- MAIN COMPONENT ---
 
 export const UnitConverter: React.FC<UnitConverterProps> = ({ onBack }) => {
     const [activeTab, setActiveTab] = useState<TabType>('units');
 
+    const renderTabButton = (id: TabType, icon: React.ReactNode, label: string, colorClass: string) => (
+        <button
+            onClick={() => setActiveTab(id)}
+            className={`px-5 py-3 font-medium transition-all border-b-2 flex items-center gap-2 whitespace-nowrap outline-none ${activeTab === id
+                    ? `border-${colorClass}-500 text-${colorClass}-400 bg-white/5`
+                    : 'border-transparent text-slate-400 hover:text-white hover:bg-white/5'
+                }`}
+        >
+            {icon} {label}
+        </button>
+    );
+
     return (
-        <div className="glass-panel max-w-[800px] mx-auto p-8 animate-[fadeIn_0.5s_ease]">
+        <div className="glass-panel max-w-[900px] mx-auto p-8 animate-[fadeIn_0.5s_ease]">
             <div className="flex items-center gap-4 mb-6">
                 <button onClick={onBack} className="glass-button p-2"><ArrowLeft size={18} /></button>
                 <h2 className="text-xl font-bold m-0 flex items-center gap-2">
@@ -281,34 +413,23 @@ export const UnitConverter: React.FC<UnitConverterProps> = ({ onBack }) => {
             </div>
 
             <p className="text-slate-400 mb-8 text-center bg-white/5 p-4 rounded-lg">
-                Arazi, Tarih ve Harita işlemleri için pratik teknik araç seti.
+                Arazi, Tarih, KDV ve Koordinat işlemleri için kapsamlı teknik araç seti.
             </p>
 
-            <div className="flex border-b border-white/10 mb-8 overflow-x-auto">
-                <button
-                    onClick={() => setActiveTab('units')}
-                    className={`px-6 py-3 font-medium transition-colors border-b-2 flex items-center gap-2 whitespace-nowrap ${activeTab === 'units' ? 'border-orange-500 text-orange-400' : 'border-transparent text-slate-400 hover:text-white'}`}
-                >
-                    <Ruler size={18} /> Birim Çevirici
-                </button>
-                <button
-                    onClick={() => setActiveTab('date')}
-                    className={`px-6 py-3 font-medium transition-colors border-b-2 flex items-center gap-2 whitespace-nowrap ${activeTab === 'date' ? 'border-blue-500 text-blue-400' : 'border-transparent text-slate-400 hover:text-white'}`}
-                >
-                    <Calendar size={18} /> Tarih & Süre
-                </button>
-                <button
-                    onClick={() => setActiveTab('map')}
-                    className={`px-6 py-3 font-medium transition-colors border-b-2 flex items-center gap-2 whitespace-nowrap ${activeTab === 'map' ? 'border-emerald-500 text-emerald-400' : 'border-transparent text-slate-400 hover:text-white'}`}
-                >
-                    <Globe size={18} /> Harita & Ölçek
-                </button>
+            <div className="flex border-b border-white/10 mb-8 overflow-x-auto no-scrollbar">
+                {renderTabButton('units', <Ruler size={18} />, 'Birim Çevirici', 'orange')}
+                {renderTabButton('finance', <Coins size={18} />, 'KDV & Finans', 'sky')}
+                {renderTabButton('date', <Calendar size={18} />, 'Tarih & Süre', 'blue')}
+                {renderTabButton('map', <Globe size={18} />, 'Harita & Ölçek', 'emerald')}
+                {renderTabButton('coords', <Navigation size={18} />, 'Koordinat', 'pink')}
             </div>
 
             <div className="min-h-[300px]">
                 {activeTab === 'units' && <UnitTool />}
+                {activeTab === 'finance' && <FinanceTool />}
                 {activeTab === 'date' && <DateTool />}
                 {activeTab === 'map' && <MapTool />}
+                {activeTab === 'coords' && <CoordTool />}
             </div>
         </div>
     );
