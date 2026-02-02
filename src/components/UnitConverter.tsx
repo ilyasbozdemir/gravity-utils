@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { ArrowLeft, Calculator, Ruler, Box, Map, Calendar, Clock, Globe, Percent, Navigation, Coins } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { ArrowLeft, Calculator, Ruler, Box, Map, Calendar, Clock, Globe, Navigation, Coins, Delete, X, WifiOff } from 'lucide-react';
 
 interface UnitConverterProps {
     file?: File | null;
@@ -8,6 +8,96 @@ interface UnitConverterProps {
 
 type TabType = 'units' | 'date' | 'map' | 'finance' | 'coords';
 type UnitCategory = 'area' | 'length' | 'volume';
+
+// --- SHARED COMPONENTS ---
+
+const VirtualNumpad = ({ onInput, onClose, onClear, onBackspace }: { onInput: (val: string) => void, onClose: () => void, onClear: () => void, onBackspace: () => void }) => {
+    const keys = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '0'];
+
+    return (
+        <div className="absolute top-full left-0 mt-2 z-50 bg-slate-800 border border-white/20 rounded-xl shadow-2xl p-4 w-[240px] animate-[fadeIn_0.2s_ease]">
+            <div className="flex justify-between items-center mb-4 border-b border-white/10 pb-2">
+                <span className="text-xs font-bold text-slate-400 uppercase">Sanal Klavye</span>
+                <button onClick={onClose} className="text-slate-400 hover:text-white"><X size={16} /></button>
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+                {keys.map(k => (
+                    <button
+                        key={k}
+                        onClick={() => onInput(k)}
+                        className="bg-white/5 hover:bg-white/10 active:bg-orange-500 active:text-white transition-colors p-3 rounded-lg font-mono text-lg font-bold border border-white/5"
+                    >
+                        {k}
+                    </button>
+                ))}
+                <button onClick={onBackspace} className="bg-white/5 hover:bg-red-500/20 text-red-300 transition-colors p-3 rounded-lg flex items-center justify-center">
+                    <Delete size={20} />
+                </button>
+                <button onClick={onClear} className="col-span-3 bg-red-500/10 hover:bg-red-500/20 text-red-300 py-2 rounded-lg text-xs font-bold uppercase tracking-wider mt-2">
+                    Temizle
+                </button>
+            </div>
+        </div>
+    );
+};
+
+const NumpadInput = ({ value, onChange, label, placeholder, type = "number" }: { value: string | number, onChange: (val: string) => void, label?: string, placeholder?: string, type?: string }) => {
+    const [showPad, setShowPad] = useState(false);
+    const containerRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+                setShowPad(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    const handleInput = (val: string) => {
+        const currentVal = value.toString();
+        // Prevent multiple dots
+        if (val === '.' && currentVal.includes('.')) return;
+        onChange(currentVal === '0' && val !== '.' ? val : currentVal + val);
+    };
+
+    const handleBackspace = () => {
+        const str = value.toString();
+        onChange(str.length > 1 ? str.slice(0, -1) : '');
+    };
+
+    return (
+        <div className="relative" ref={containerRef}>
+            {label && <label className="block text-xs text-slate-400 mb-2 uppercase font-bold">{label}</label>}
+            <div className="relative">
+                <input
+                    type={type}
+                    value={value}
+                    onChange={(e) => onChange(e.target.value)}
+                    onFocus={() => setShowPad(true)}
+                    className="glass-input w-full pr-10"
+                    placeholder={placeholder}
+                />
+                <button
+                    onClick={() => setShowPad(!showPad)}
+                    className={`absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-md transition-colors ${showPad ? 'text-orange-400 bg-orange-400/10' : 'text-slate-400 hover:text-white'}`}
+                >
+                    <Calculator size={16} />
+                </button>
+            </div>
+
+            {showPad && (
+                <VirtualNumpad
+                    onInput={handleInput}
+                    onClose={() => setShowPad(false)}
+                    onClear={() => onChange('')}
+                    onBackspace={handleBackspace}
+                />
+            )}
+        </div>
+    );
+};
 
 // --- SUB-COMPONENTS ---
 
@@ -34,7 +124,7 @@ const UnitTool = () => {
     };
 
     const [category, setCategory] = useState<UnitCategory>('area');
-    const [amount, setAmount] = useState<number>(1);
+    const [amount, setAmount] = useState<string>("1");
     const [fromUnit, setFromUnit] = useState(UNITS.area[0]);
     const [toUnit, setToUnit] = useState(UNITS.area[1]);
 
@@ -45,7 +135,8 @@ const UnitTool = () => {
     };
 
     const convert = () => {
-        const baseValue = amount * fromUnit.factor;
+        const val = parseFloat(amount || "0");
+        const baseValue = val * fromUnit.factor;
         const result = baseValue / toUnit.factor;
         return result.toLocaleString('tr-TR', { maximumFractionDigits: 4 });
     };
@@ -75,12 +166,10 @@ const UnitTool = () => {
 
             <div className="bg-white/5 p-8 rounded-2xl border border-white/10 flex flex-col gap-6">
                 <div>
-                    <label className="block text-xs text-slate-400 mb-2 uppercase font-bold">Miktar</label>
-                    <input
-                        type="number"
+                    <NumpadInput
+                        label="Miktar"
                         value={amount}
-                        onChange={(e) => setAmount(Number(e.target.value))}
-                        className="glass-input w-full text-2xl font-mono"
+                        onChange={setAmount}
                     />
                 </div>
 
@@ -128,9 +217,7 @@ const UnitTool = () => {
 const DateTool = () => {
     const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0]);
     const [endDate, setEndDate] = useState(new Date().toISOString().split('T')[0]);
-    const [addDays, setAddDays] = useState(0);
-
-    // Mode: 'diff' (difference between two dates) or 'add' (add days to date)
+    const [addDays, setAddDays] = useState<string>("0");
     const [mode, setMode] = useState<'diff' | 'add'>('diff');
 
     const calculateDifference = () => {
@@ -148,7 +235,7 @@ const DateTool = () => {
 
     const calculateNewDate = () => {
         const date = new Date(startDate);
-        date.setDate(date.getDate() + Number(addDays));
+        date.setDate(date.getDate() + (Number(addDays) || 0));
         return date.toLocaleDateString('tr-TR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
     };
 
@@ -197,8 +284,12 @@ const DateTool = () => {
                             <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="glass-input w-full" />
                         </div>
                         <div>
-                            <label className="block text-xs text-slate-400 mb-2 uppercase font-bold">Eklenecek Gün (+/-)</label>
-                            <input type="number" value={addDays} onChange={(e) => setAddDays(Number(e.target.value))} className="glass-input w-full" placeholder="Örn: 90 veya -30" />
+                            <NumpadInput
+                                label="Eklenecek Gün (+/-)"
+                                value={addDays}
+                                onChange={setAddDays}
+                                placeholder="Örn: 90"
+                            />
                         </div>
                         <div className="mt-4 pt-6 border-t border-white/10 text-center">
                             <div className="text-2xl font-bold text-blue-400">{calculateNewDate()}</div>
@@ -212,12 +303,14 @@ const DateTool = () => {
 
 /* 3. Map Scale Calculator Component */
 const MapTool = () => {
-    const [mapDist, setMapDist] = useState(10); // cm
-    const [scale, setScale] = useState(1000); // 1/1000
+    const [mapDist, setMapDist] = useState<string>("10"); // cm
+    const [scale, setScale] = useState<string>("1000"); // 1/1000
 
     const calculateReal = () => {
+        const dist = parseFloat(mapDist || "0");
+        const sc = parseFloat(scale || "0");
         // Real (m) = Map (cm) * Scale / 100
-        return (mapDist * scale) / 100;
+        return (dist * sc) / 100;
     };
 
     return (
@@ -227,21 +320,17 @@ const MapTool = () => {
 
                 <div className="grid grid-cols-2 gap-6">
                     <div>
-                        <label className="block text-xs text-slate-400 mb-2 uppercase font-bold">Harita Uzunluğu (cm)</label>
-                        <input
-                            type="number"
+                        <NumpadInput
+                            label="Harita Uzunluğu (cm)"
                             value={mapDist}
-                            onChange={(e) => setMapDist(Number(e.target.value))}
-                            className="glass-input w-full"
+                            onChange={setMapDist}
                         />
                     </div>
                     <div>
-                        <label className="block text-xs text-slate-400 mb-2 uppercase font-bold">Ölçek Paydası (1/...)</label>
-                        <input
-                            type="number"
+                        <NumpadInput
+                            label="Ölçek Paydası (1/...)"
                             value={scale}
-                            onChange={(e) => setScale(Number(e.target.value))}
-                            className="glass-input w-full"
+                            onChange={setScale}
                         />
                     </div>
                 </div>
@@ -254,11 +343,9 @@ const MapTool = () => {
                     <div className="text-sm text-slate-500 mt-2">
                         {(calculateReal() / 1000).toLocaleString('tr-TR')} Kilometre
                     </div>
-                </div>
-
-                <div className="mt-8 pt-6 border-t border-white/10 text-left text-xs text-slate-400">
-                    <p><strong>Not:</strong> Harita üzerindeki 1 cm'lik ölçüm, ölçek paydası kadar cm'ye eşittir.</p>
-                    <p className="mt-1">Formül: Gerçek = Harita (cm) × Ölçek / 100 (m için)</p>
+                    <p className="text-xs text-slate-500 mt-4">
+                        * Harita üzerindeki 1 cm'lik ölçüm, ölçek paydası kadar cm'ye eşittir.
+                    </p>
                 </div>
             </div>
         </div>
@@ -267,24 +354,28 @@ const MapTool = () => {
 
 /* 4. Finance Tool (KDV & Stopaj) */
 const FinanceTool = () => {
-    const [amount, setAmount] = useState(1000);
+    const [amount, setAmount] = useState<string>("1000");
     const [rate, setRate] = useState(20);
 
+    const val = parseFloat(amount || "0");
     // Calculate values
-    const kdvAmount = amount * (rate / 100);
-    const total = amount + kdvAmount;
+    const kdvAmount = val * (rate / 100);
+    const total = val + kdvAmount;
 
     // Reverse calculation
-    const baseFromTotal = amount / (1 + (rate / 100));
-    const kdvFromTotal = amount - baseFromTotal;
+    const baseFromTotal = val / (1 + (rate / 100));
+    const kdvFromTotal = val - baseFromTotal;
 
     return (
         <div className="animate-[fadeIn_0.5s_ease]">
             <div className="bg-white/5 p-8 rounded-2xl border border-white/10 flex flex-col gap-6">
                 <div className="grid grid-cols-2 gap-4">
                     <div>
-                        <label className="block text-xs text-slate-400 mb-2 uppercase font-bold">Tutar</label>
-                        <input type="number" value={amount} onChange={(e) => setAmount(Number(e.target.value))} className="glass-input w-full" />
+                        <NumpadInput
+                            label="Tutar"
+                            value={amount}
+                            onChange={setAmount}
+                        />
                     </div>
                     <div>
                         <label className="block text-xs text-slate-400 mb-2 uppercase font-bold">Vergi Oranı (%)</label>
@@ -299,7 +390,7 @@ const FinanceTool = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
                     {/* Method 1: Forward */}
                     <div className="bg-white/5 p-4 rounded-xl border border-white/5">
-                        <div className="text-xs text-sky-400 font-bold mb-2 uppercase">KDV Hariçten -> Dahile</div>
+                        <div className="text-xs text-sky-400 font-bold mb-2 uppercase">KDV Hariçten → Dahile</div>
                         <div className="flex justify-between items-center mb-1">
                             <span className="text-slate-400">KDV Tutarı:</span>
                             <span className="font-mono">{kdvAmount.toLocaleString('tr-TR', { maximumFractionDigits: 2 })} ₺</span>
@@ -312,7 +403,7 @@ const FinanceTool = () => {
 
                     {/* Method 2: Reverse */}
                     <div className="bg-white/5 p-4 rounded-xl border border-white/5">
-                        <div className="text-xs text-purple-400 font-bold mb-2 uppercase">KDV Dahilden -> Harice</div>
+                        <div className="text-xs text-purple-400 font-bold mb-2 uppercase">KDV Dahilden → Harice</div>
                         <div className="flex justify-between items-center mb-1">
                             <span className="text-slate-400">Matrah (Ana Para):</span>
                             <span className="font-mono">{baseFromTotal.toLocaleString('tr-TR', { maximumFractionDigits: 2 })} ₺</span>
@@ -360,17 +451,27 @@ const CoordTool = () => {
             <div className="bg-white/5 p-8 rounded-2xl border border-white/10 flex flex-col gap-6">
                 <div className="grid grid-cols-2 gap-4">
                     <div>
-                        <label className="block text-xs text-slate-400 mb-2 uppercase font-bold">Enlem (Latitude)</label>
-                        <input type="text" value={decLat} onChange={(e) => setDecLat(e.target.value)} className="glass-input w-full" placeholder="41.0082" />
+                        <NumpadInput
+                            label="Enlem (Latitude)"
+                            value={decLat}
+                            onChange={setDecLat}
+                            placeholder="41.0082"
+                            type="text"
+                        />
                     </div>
                     <div>
-                        <label className="block text-xs text-slate-400 mb-2 uppercase font-bold">Boylam (Longitude)</label>
-                        <input type="text" value={decLng} onChange={(e) => setDecLng(e.target.value)} className="glass-input w-full" placeholder="28.9784" />
+                        <NumpadInput
+                            label="Boylam (Longitude)"
+                            value={decLng}
+                            onChange={setDecLng}
+                            placeholder="28.9784"
+                            type="text"
+                        />
                     </div>
                 </div>
 
                 <button onClick={convert} className="bg-pink-600/80 hover:bg-pink-500 text-white rounded-lg py-2 font-medium transition-colors">
-                    Dönüştür (Decimal -> DMS)
+                    Dönüştür (Decimal → DMS)
                 </button>
 
                 {dmsResult && (
@@ -389,6 +490,11 @@ const CoordTool = () => {
 
 export const UnitConverter: React.FC<UnitConverterProps> = ({ onBack }) => {
     const [activeTab, setActiveTab] = useState<TabType>('units');
+    const [isOfflineMode, setIsOfflineMode] = useState(false);
+
+    const toggleOffline = () => {
+        setIsOfflineMode(!isOfflineMode);
+    };
 
     const renderTabButton = (id: TabType, icon: React.ReactNode, label: string, colorClass: string) => (
         <button
@@ -403,17 +509,32 @@ export const UnitConverter: React.FC<UnitConverterProps> = ({ onBack }) => {
     );
 
     return (
-        <div className="glass-panel max-w-[900px] mx-auto p-8 animate-[fadeIn_0.5s_ease]">
-            <div className="flex items-center gap-4 mb-6">
-                <button onClick={onBack} className="glass-button p-2"><ArrowLeft size={18} /></button>
-                <h2 className="text-xl font-bold m-0 flex items-center gap-2">
-                    <Calculator className="text-indigo-400" />
-                    Mühendislik ve Hesaplama
-                </h2>
+        <div className="glass-panel max-w-[900px] mx-auto p-8 animate-[fadeIn_0.5s_ease] relative">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+                <div className="flex items-center gap-4">
+                    <button onClick={onBack} className="glass-button p-2"><ArrowLeft size={18} /></button>
+                    <h2 className="text-xl font-bold m-0 flex items-center gap-2">
+                        <Calculator className="text-indigo-400" />
+                        Mühendislik ve Hesaplama
+                    </h2>
+                </div>
+
+                {/* Offline Toggle/Badge */}
+                <button
+                    onClick={toggleOffline}
+                    className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all border ${isOfflineMode
+                            ? 'bg-emerald-500/10 border-emerald-500/50 text-emerald-400'
+                            : 'bg-white/5 border-white/10 text-slate-400 hover:bg-white/10'
+                        }`}
+                >
+                    <WifiOff size={14} />
+                    {isOfflineMode ? 'Çevrimdışı Modu Aktif' : 'Çevrimdışı Çalışabilir'}
+                </button>
             </div>
 
             <p className="text-slate-400 mb-8 text-center bg-white/5 p-4 rounded-lg">
                 Arazi, Tarih, KDV ve Koordinat işlemleri için kapsamlı teknik araç seti.
+                <span className="block mt-1 text-xs opacity-70">Tüm işlemler tarayıcınızda gerçekleşir, verileriniz sunucuya gönderilmez.</span>
             </p>
 
             <div className="flex border-b border-white/10 mb-8 overflow-x-auto no-scrollbar">
