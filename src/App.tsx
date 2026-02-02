@@ -93,51 +93,51 @@ function App() {
               <ActionPanel file={file} onClear={clearFile} onAction={handleAction} />
             )}
 
-            {view === 'convert' && (
+            {view === 'convert' && file && (
               <FileConverter file={file} onBack={() => setView('home')} />
             )}
 
-            {view === 'inspect' && (
+            {view === 'inspect' && file && (
               <ZipInspector file={file} onBack={() => setView('home')} />
             )}
 
-            {view === 'base64' && (
+            {view === 'base64' && file && (
               <Base64Viewer file={file} onBack={() => setView('home')} />
             )}
 
-            {view === 'optimize' && (
+            {view === 'optimize' && file && (
               <ImageOptimizer file={file} onBack={() => setView('home')} />
             )}
 
-            {view === 'hash' && (
+            {view === 'hash' && file && (
               <HashGenerator file={file} onBack={() => setView('home')} />
             )}
 
-            {view === 'json' && (
+            {view === 'json' && file && (
               <JsonFormatter file={file} onBack={() => setView('home')} />
             )}
 
-            {view === 'text' && (
+            {view === 'text' && file && (
               <TextAnalyzer file={file} onBack={() => setView('home')} />
             )}
 
-            {view === 'pdf' && (
+            {view === 'pdf' && file && (
               <PdfManager file={file} onBack={() => setView('home')} />
             )}
 
-            {view === 'exif' && (
+            {view === 'exif' && file && (
               <ExifCleaner file={file} onBack={() => setView('home')} />
             )}
 
-            {view === 'qr' && (
+            {view === 'qr' && file && (
               <QrManager file={file} onBack={() => setView('home')} />
             )}
 
-            {view === 'social' && (
+            {view === 'social' && file && (
               <SocialResizer file={file} onBack={() => setView('home')} />
             )}
 
-            {view === 'favicon' && (
+            {view === 'favicon' && file && (
               <FaviconGenerator file={file} onBack={() => setView('home')} />
             )}
 
