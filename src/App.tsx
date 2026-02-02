@@ -8,11 +8,16 @@ import { ImageOptimizer } from './components/ImageOptimizer';
 import { HashGenerator } from './components/HashGenerator';
 import { JsonFormatter } from './components/JsonFormatter';
 import { TextAnalyzer } from './components/TextAnalyzer';
+import { PdfManager } from './components/PdfManager';
+import { ExifCleaner } from './components/ExifCleaner';
+import { QrManager } from './components/QrManager';
+import { SocialResizer } from './components/SocialResizer';
+import { FaviconGenerator } from './components/FaviconGenerator';
 
 import { Zap } from 'lucide-react';
 import { LandingHero } from './components/LandingHero';
 
-type ViewType = 'home' | 'convert' | 'inspect' | 'base64' | 'optimize' | 'hash' | 'json' | 'text';
+type ViewType = 'home' | 'convert' | 'inspect' | 'base64' | 'optimize' | 'hash' | 'json' | 'text' | 'pdf' | 'exif' | 'qr' | 'social' | 'favicon';
 
 function App() {
   const [file, setFile] = useState<File | null>(null);
@@ -28,6 +33,11 @@ function App() {
       hash: 'Hash Generator - Gravity Utils',
       json: 'JSON Formatter - Gravity Utils',
       text: 'Metin Analizi - Gravity Utils',
+      pdf: 'PDF Araçları - Gravity Utils',
+      exif: 'Exif Temizleyici - Gravity Utils',
+      qr: 'QR Kod & Barkod - Gravity Utils',
+      social: 'Sosyal Medya Boyutlandırıcı - Gravity Utils',
+      favicon: 'Favicon Oluşturucu - Gravity Utils',
     };
     document.title = titles[view] || 'Gravity Utils';
   }, [view]);
@@ -99,6 +109,26 @@ function App() {
 
             {view === 'text' && (
               <TextAnalyzer file={file} onBack={() => setView('home')} />
+            )}
+
+            {view === 'pdf' && (
+              <PdfManager file={file} onBack={() => setView('home')} />
+            )}
+
+            {view === 'exif' && (
+              <ExifCleaner file={file} onBack={() => setView('home')} />
+            )}
+
+            {view === 'qr' && (
+              <QrManager file={file} onBack={() => setView('home')} />
+            )}
+
+            {view === 'social' && (
+              <SocialResizer file={file} onBack={() => setView('home')} />
+            )}
+
+            {view === 'favicon' && (
+              <FaviconGenerator file={file} onBack={() => setView('home')} />
             )}
           </div>
         )}
