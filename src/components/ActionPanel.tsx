@@ -8,7 +8,7 @@ import {
 interface ActionPanelProps {
     file: File;
     onClear: () => void;
-    onAction: (action: 'convert' | 'inspect' | 'base64' | 'optimize' | 'hash' | 'json' | 'text' | 'pdf' | 'exif' | 'qr' | 'social' | 'favicon' | 'units') => void;
+    onAction: (action: 'convert' | 'inspect' | 'base64' | 'optimize' | 'hash' | 'json' | 'text' | 'pdf' | 'exif' | 'qr' | 'social' | 'favicon' | 'units' | 'encrypt') => void;
 }
 
 export const ActionPanel: React.FC<ActionPanelProps> = ({ file, onClear, onAction }) => {
@@ -20,7 +20,7 @@ export const ActionPanel: React.FC<ActionPanelProps> = ({ file, onClear, onActio
     const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
 
     const getRecommendedActions = () => {
-        const actions: ('convert' | 'inspect' | 'base64' | 'optimize' | 'hash' | 'json' | 'text' | 'pdf' | 'exif' | 'qr' | 'social' | 'favicon' | 'units')[] = [];
+        const actions: ('convert' | 'inspect' | 'base64' | 'optimize' | 'hash' | 'json' | 'text' | 'pdf' | 'exif' | 'qr' | 'social' | 'favicon' | 'units' | 'encrypt')[] = [];
         const ext = file.name.split('.').pop()?.toLowerCase();
 
         if (ext === 'webp' || ext === 'avif') actions.push('convert');
@@ -37,13 +37,16 @@ export const ActionPanel: React.FC<ActionPanelProps> = ({ file, onClear, onActio
         // Always recommend units if it looks like a CAD file or just generally
         if (['dwg', 'dxf', 'kmz', 'kml'].includes(ext || '')) actions.push('units');
 
+        // Always recommend encryption for typically sensitive files
+        if (isOffice || isPdf || isArchive || isText) actions.push('encrypt');
+
         return actions;
     };
 
     const recommended = getRecommendedActions();
 
     const renderButton = (
-        action: 'convert' | 'inspect' | 'base64' | 'optimize' | 'hash' | 'json' | 'text' | 'pdf' | 'exif' | 'qr' | 'social' | 'favicon' | 'units',
+        action: 'convert' | 'inspect' | 'base64' | 'optimize' | 'hash' | 'json' | 'text' | 'pdf' | 'exif' | 'qr' | 'social' | 'favicon' | 'units' | 'encrypt',
         icon: React.ReactNode,
         title: string,
         desc: string,
@@ -110,6 +113,7 @@ export const ActionPanel: React.FC<ActionPanelProps> = ({ file, onClear, onActio
                             {recommended.includes('social') && renderButton('social', <Crop size={28} />, 'Sosyal Medya', 'Boyutlandır', '#e879f9', true)}
                             {recommended.includes('exif') && renderButton('exif', <Shield size={28} />, 'Güvenli Paylaş', 'Exif Sil', '#10b981', true)}
                             {recommended.includes('units') && renderButton('units', <Calculator size={28} />, 'Birim Çevirici', 'Alan / Uzunluk', '#f97316', true)}
+                            {recommended.includes('encrypt') && renderButton('encrypt', <Shield size={28} />, 'Dosyayı Şifrele', 'AES-256 İle Koru', '#10b981', true)}
                         </div>
                     </div>
                 )}
@@ -141,6 +145,7 @@ export const ActionPanel: React.FC<ActionPanelProps> = ({ file, onClear, onActio
                             '#f472b6'
                         )}
                         {isPdf && renderButton('pdf', <FileDiff size={28} />, 'PDF Araçları', 'Böl / Düzenle', '#ef4444')}
+                        {renderButton('encrypt', <Shield size={28} />, 'Şifrele / Çöz', 'AES-256 Güvenlik', '#10b981')}
                     </div>
                 </div>
 

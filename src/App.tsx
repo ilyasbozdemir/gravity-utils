@@ -11,6 +11,7 @@ import { TextAnalyzer } from './components/TextAnalyzer';
 import { PdfManager } from './components/PdfManager';
 import { ExifCleaner } from './components/ExifCleaner';
 import { QrManager } from './components/QrManager';
+import { FileEncryptor } from './components/FileEncryptor';
 import { SocialResizer } from './components/SocialResizer';
 import { FaviconGenerator } from './components/FaviconGenerator';
 
@@ -19,7 +20,7 @@ import { UnitConverter } from './components/UnitConverter';
 import { Zap } from 'lucide-react';
 import { LandingHero } from './components/LandingHero';
 
-type ViewType = 'home' | 'convert' | 'inspect' | 'base64' | 'optimize' | 'hash' | 'json' | 'text' | 'pdf' | 'exif' | 'qr' | 'social' | 'favicon' | 'units';
+type ViewType = 'home' | 'convert' | 'inspect' | 'base64' | 'optimize' | 'hash' | 'json' | 'text' | 'pdf' | 'exif' | 'qr' | 'social' | 'favicon' | 'units' | 'encrypt';
 
 function App() {
   const [file, setFile] = useState<File | null>(null);
@@ -41,6 +42,7 @@ function App() {
       social: 'Sosyal Medya Boyutlandırıcı - Gravity Utils',
       favicon: 'Favicon Oluşturucu - Gravity Utils',
       units: 'Teknik Birim Çevirici - Gravity Utils',
+      encrypt: 'Güvenli Şifreleme - Gravity Utils',
     };
     document.title = titles[view] || 'Gravity Utils';
   }, [view]);
@@ -123,6 +125,10 @@ function App() {
 
             {view === 'pdf' && file && (
               <PdfManager file={file} onBack={() => setView('home')} />
+            )}
+
+            {view === 'encrypt' && file && (
+              <FileEncryptor file={file} onBack={() => setView('home')} />
             )}
 
             {view === 'exif' && file && (
