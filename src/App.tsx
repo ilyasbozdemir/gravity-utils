@@ -123,7 +123,7 @@ function App() {
               <TextAnalyzer file={file} onBack={() => setView('home')} />
             )}
 
-            {view === 'pdf' && file && (
+            {view === 'pdf' && (
               <PdfManager file={file} onBack={() => setView('home')} />
             )}
 
