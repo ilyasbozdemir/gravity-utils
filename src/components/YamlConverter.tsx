@@ -28,8 +28,12 @@ export const YamlConverter: React.FC<YamlConverterProps> = ({ onBack }) => {
                 const yamlObj = yaml.load(input);
                 setOutput(JSON.stringify(yamlObj, null, 2));
             }
-        } catch (err: any) {
-            setError(err.message || 'Dönüştürme sırasında hata oluştu.');
+        } catch (err: unknown) {
+            let message = 'Dönüştürme sırasında hata oluştu.';
+            if (err instanceof Error) {
+                message = err.message;
+            }
+            setError(message);
             setOutput('');
         }
     };

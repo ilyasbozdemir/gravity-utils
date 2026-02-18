@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { ArrowLeft, FileText, Scissors, Download, Layers, Minimize2, Stamp, RefreshCw, Plus, Trash2, ArrowUp, ArrowDown, LayoutGrid, GripVertical, Image as ImageIcon } from 'lucide-react';
-import { PDFDocument, degrees, rgb } from 'pdf-lib';
+import { PDFDocument, degrees, rgb, PDFImage } from 'pdf-lib';
 import * as pdfjsLib from 'pdfjs-dist';
 import fontkit from '@pdf-lib/fontkit';
 import { loadTurkishFont } from '../utils/fontLoader';
@@ -254,7 +254,7 @@ export const PdfManager: React.FC<PdfManagerProps> = ({ file, onBack }) => {
             const font = await pdfDoc.embedFont(fontBytes);
             const pages = pdfDoc.getPages();
 
-            let embeddedImage: any = null;
+            let embeddedImage: PDFImage | null = null;
             if (watermarkType === 'image' && watermarkImage) {
                 embeddedImage = watermarkImage.startsWith('data:image/jpeg') || watermarkImage.startsWith('data:image/jpg')
                     ? await pdfDoc.embedJpg(watermarkImage)
@@ -716,8 +716,9 @@ export const PdfManager: React.FC<PdfManagerProps> = ({ file, onBack }) => {
                                                             const input = document.createElement('input');
                                                             input.type = 'file';
                                                             input.accept = 'image/*';
-                                                            input.onchange = (e: any) => {
-                                                                const file = e.target.files[0];
+                                                            input.onchange = (e: Event) => {
+                                                                const target = e.target as HTMLInputElement;
+                                                                const file = target.files?.[0];
                                                                 if (file) {
                                                                     const reader = new FileReader();
                                                                     reader.onload = () => setWatermarkImage(reader.result as string);

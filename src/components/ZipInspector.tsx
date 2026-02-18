@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import JSZip from 'jszip';
 import { File as FileIcon, Folder, Download, ArrowLeft, X, Eye, ChevronLeft, ChevronRight, Copy, Check, Code, Archive } from 'lucide-react';
 
@@ -39,6 +39,100 @@ export const ZipInspector: React.FC<ZipInspectorProps> = ({ file: initialFile, o
 
     const [groupedItems, setGroupedItems] = useState<{ media: ZipItem[], content: ZipItem[], other: ZipItem[] } | null>(null);
 
+    // Defined early for hoisting access
+    const handlePreview = useCallback(async (item: ZipItem) => {
+        if (item.isDir) return;
+
+        const name = item.path.toLowerCase();
+        const isImage = /\.(jpg|jpeg|png|gif|webp|svg|bmp|ico)$/.test(name);
+        const isVideo = /\.(mp4|webm|ogg|mov|avi|mkv)$/.test(name);
+        const isAudio = /\.(mp3|wav|aac|m4a|flac)$/.test(name);
+        const isPdf = /\.(pdf)$/.test(name);
+
+        const isBinary = /\.(exe|dll|so|dylib|bin|iso|img|dmg|zip|rar|7z|tar|gz)$/.test(name);
+
+        setPreview({ item, type: 'unsupported', content: null, loading: true });
+
+        try {
+            if (isImage || isVideo || isAudio || isPdf) {
+                let blob: Blob;
+
+                if (item.type === 'direct') {
+                    blob = item.obj as File;
+                } else {
+                    blob = await (item.obj as JSZip.JSZipObject).async('blob');
+                }
+
+                if (isPdf && blob.type !== 'application/pdf') blob = new Blob([blob], { type: 'application/pdf' });
+
+                const url = URL.createObjectURL(blob);
+
+                if (isImage) setPreview({ item, type: 'image', content: url, loading: false });
+                else if (isVideo) setPreview({ item, type: 'video', content: url, loading: false });
+                else if (isAudio) setPreview({ item, type: 'audio', content: url, loading: false });
+                else if (isPdf) setPreview({ item, type: 'pdf', content: url, loading: false });
+
+            } else if (!isBinary) {
+                // Try to read as text
+                let text = '';
+                if (item.type === 'direct') {
+                    text = await (item.obj as File).text();
+                } else {
+                    text = await (item.obj as JSZip.JSZipObject).async('string');
+                }
+
+                if (text.includes('\0') && text.length > 500) {
+                    setPreview({ item, type: 'unsupported', content: null, loading: false });
+                } else {
+                    setPreview({ item, type: 'text', content: text, loading: false });
+                }
+            } else {
+                setPreview({ item, type: 'unsupported', content: null, loading: false });
+            }
+        } catch (err) {
+            console.error("Preview error", err);
+            setPreview(prev => prev ? { ...prev, loading: false, type: 'unsupported' } : null);
+        }
+    }, []);
+
+    const closePreview = useCallback(() => {
+        if (preview?.type === 'image' && preview.content) {
+            URL.revokeObjectURL(preview.content);
+        }
+        setPreview(null);
+    }, [preview]);
+
+    const handleNavigate = useCallback((direction: 'next' | 'prev') => {
+        if (!preview) return;
+
+        const currentIndex = items.findIndex(item => item.path === preview.item.path);
+        if (currentIndex === -1) return;
+
+        let nextIndex = currentIndex;
+        let found = false;
+
+        while (!found) {
+            if (direction === 'next') {
+                nextIndex = (nextIndex + 1) % items.length;
+            } else {
+                nextIndex = (nextIndex - 1 + items.length) % items.length;
+            }
+
+            if (nextIndex === currentIndex) break;
+
+            if (!items[nextIndex].isDir) {
+                found = true;
+            }
+        }
+
+        if (found) {
+            if (preview.type === 'image' && preview.content) {
+                URL.revokeObjectURL(preview.content);
+            }
+            handlePreview(items[nextIndex]);
+        }
+    }, [items, preview, handlePreview]);
+
     useEffect(() => {
         if (!file) return;
         const loadZip = async () => {
@@ -52,44 +146,39 @@ export const ZipInspector: React.FC<ZipInspectorProps> = ({ file: initialFile, o
                 const isOffice = /\.(docx|xlsx|pptx|odt|ods|odp)$/i.test(file.name);
 
                 if (isArchive) {
-                    try {
-                        const zip = new JSZip();
-                        const loadedZip = await zip.loadAsync(file);
-                        const fileItems: ZipItem[] = [];
-                        loadedZip.forEach((relativePath, zipEntry) => {
-                            if (!zipEntry.dir) {
-                                fileItems.push({
-                                    path: relativePath,
-                                    isDir: false,
-                                    obj: zipEntry,
-                                    type: 'zip'
-                                });
+                    const zip = new JSZip();
+                    const loadedZip = await zip.loadAsync(file);
+                    const fileItems: ZipItem[] = [];
+                    loadedZip.forEach((relativePath, zipEntry) => {
+                        if (!zipEntry.dir) {
+                            fileItems.push({
+                                path: relativePath,
+                                isDir: false,
+                                obj: zipEntry,
+                                type: 'zip'
+                            });
+                        }
+                    });
+
+                    const sortedItems = fileItems.sort((a, b) => a.path.localeCompare(b.path));
+                    setItems(sortedItems);
+
+                    if (isOffice) {
+                        const media: ZipItem[] = [];
+                        const content: ZipItem[] = [];
+                        const other: ZipItem[] = [];
+
+                        sortedItems.forEach(item => {
+                            const path = item.path.toLowerCase();
+                            if (path.includes('media/') || /\.(png|jpg|jpeg|gif|emf|wmf|tiff|svg|webp|bmp|ico)$/.test(path)) {
+                                media.push(item);
+                            } else if (path.endsWith('.xml') && !path.includes('rels') && !path.includes('[content_types]')) {
+                                content.push(item);
+                            } else {
+                                other.push(item);
                             }
                         });
-
-                        const sortedItems = fileItems.sort((a, b) => a.path.localeCompare(b.path));
-                        setItems(sortedItems);
-
-                        if (isOffice) {
-                            const media: ZipItem[] = [];
-                            const content: ZipItem[] = [];
-                            const other: ZipItem[] = [];
-
-                            sortedItems.forEach(item => {
-                                const path = item.path.toLowerCase();
-                                if (path.includes('media/') || /\.(png|jpg|jpeg|gif|emf|wmf|tiff|svg|webp|bmp|ico)$/.test(path)) {
-                                    media.push(item);
-                                } else if (path.endsWith('.xml') && !path.includes('rels') && !path.includes('[content_types]')) {
-                                    content.push(item);
-                                } else {
-                                    other.push(item);
-                                }
-                            });
-                            setGroupedItems({ media, content, other });
-                        }
-
-                    } catch (zipErr) {
-                        throw zipErr;
+                        setGroupedItems({ media, content, other });
                     }
                 } else {
                     const singleItem: ZipItem = {
@@ -103,7 +192,7 @@ export const ZipInspector: React.FC<ZipInspectorProps> = ({ file: initialFile, o
                 }
 
                 setLoading(false);
-            } catch (e: any) {
+            } catch (e: unknown) {
                 console.error(e);
                 if (file) {
                     const singleItem: ZipItem = {
@@ -119,7 +208,19 @@ export const ZipInspector: React.FC<ZipInspectorProps> = ({ file: initialFile, o
             }
         };
         loadZip();
-    }, [file]);
+    }, [file, handlePreview]);
+
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (!preview) return;
+            if (e.key === 'ArrowRight') handleNavigate('next');
+            if (e.key === 'ArrowLeft') handleNavigate('prev');
+            if (e.key === 'Escape') closePreview();
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [preview, items, handleNavigate, closePreview]);
 
     const handleCopyBase64 = async () => {
         if (!preview) return;
@@ -176,7 +277,9 @@ export const ZipInspector: React.FC<ZipInspectorProps> = ({ file: initialFile, o
                 try {
                     const obj = JSON.parse(content);
                     formatted = JSON.stringify(obj, null, 2);
-                } catch (e) { }
+                } catch (e) {
+                    console.error('JSON parse error in preview:', e);
+                }
             } else if (content.trim().startsWith('<')) {
                 try {
                     const xml = new DOMParser().parseFromString(content, 'application/xml');
@@ -200,7 +303,9 @@ export const ZipInspector: React.FC<ZipInspectorProps> = ({ file: initialFile, o
                             if (indent > 0) pad += 1;
                         });
                     }
-                } catch (e) { }
+                } catch (e) {
+                    console.error('XML parse error in preview:', e);
+                }
             }
 
             setPreview({ ...preview, content: formatted });
@@ -234,111 +339,6 @@ export const ZipInspector: React.FC<ZipInspectorProps> = ({ file: initialFile, o
             alert("Dosya indirilirken hata oluştu");
         }
     };
-
-    const handlePreview = async (item: ZipItem) => {
-        if (item.isDir) return;
-
-        const name = item.path.toLowerCase();
-        const isImage = /\.(jpg|jpeg|png|gif|webp|svg|bmp|ico)$/.test(name);
-        const isVideo = /\.(mp4|webm|ogg|mov|avi|mkv)$/.test(name);
-        const isAudio = /\.(mp3|wav|aac|m4a|flac)$/.test(name);
-        const isPdf = /\.(pdf)$/.test(name);
-
-        const isBinary = /\.(exe|dll|so|dylib|bin|iso|img|dmg|zip|rar|7z|tar|gz)$/.test(name);
-
-        setPreview({ item, type: 'unsupported', content: null, loading: true });
-
-        try {
-            if (isImage || isVideo || isAudio || isPdf) {
-                let blob: Blob;
-
-                if (item.type === 'direct') {
-                    blob = item.obj as File;
-                } else {
-                    blob = await (item.obj as JSZip.JSZipObject).async('blob');
-                }
-
-                if (isPdf && blob.type !== 'application/pdf') blob = new Blob([blob], { type: 'application/pdf' });
-
-                const url = URL.createObjectURL(blob);
-
-                if (isImage) setPreview({ item, type: 'image', content: url, loading: false });
-                else if (isVideo) setPreview({ item, type: 'video', content: url, loading: false });
-                else if (isAudio) setPreview({ item, type: 'audio', content: url, loading: false });
-                else if (isPdf) setPreview({ item, type: 'pdf', content: url, loading: false });
-
-            } else if (!isBinary) {
-                // Try to read as text
-                let text = '';
-                if (item.type === 'direct') {
-                    text = await (item.obj as File).text();
-                } else {
-                    text = await (item.obj as JSZip.JSZipObject).async('string');
-                }
-
-                if (text.includes('\0') && text.length > 500) {
-                    setPreview({ item, type: 'unsupported', content: null, loading: false });
-                } else {
-                    setPreview({ item, type: 'text', content: text, loading: false });
-                }
-            } else {
-                setPreview({ item, type: 'unsupported', content: null, loading: false });
-            }
-        } catch (err) {
-            console.error("Preview error", err);
-            setPreview(prev => prev ? { ...prev, loading: false, type: 'unsupported' } : null);
-        }
-    };
-
-    const closePreview = () => {
-        if (preview?.type === 'image' && preview.content) {
-            URL.revokeObjectURL(preview.content);
-        }
-        setPreview(null);
-    };
-
-    const handleNavigate = (direction: 'next' | 'prev') => {
-        if (!preview) return;
-
-        const currentIndex = items.findIndex(item => item.path === preview.item.path);
-        if (currentIndex === -1) return;
-
-        let nextIndex = currentIndex;
-        let found = false;
-
-        while (!found) {
-            if (direction === 'next') {
-                nextIndex = (nextIndex + 1) % items.length;
-            } else {
-                nextIndex = (nextIndex - 1 + items.length) % items.length;
-            }
-
-            if (nextIndex === currentIndex) break;
-
-            if (!items[nextIndex].isDir) {
-                found = true;
-            }
-        }
-
-        if (found) {
-            if (preview.type === 'image' && preview.content) {
-                URL.revokeObjectURL(preview.content);
-            }
-            handlePreview(items[nextIndex]);
-        }
-    };
-
-    useEffect(() => {
-        const handleKeyDown = (e: KeyboardEvent) => {
-            if (!preview) return;
-            if (e.key === 'ArrowRight') handleNavigate('next');
-            if (e.key === 'ArrowLeft') handleNavigate('prev');
-            if (e.key === 'Escape') closePreview();
-        };
-
-        window.addEventListener('keydown', handleKeyDown);
-        return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [preview, items]);
 
     const renderFileList = (list: ZipItem[], title?: string) => {
         if (!list || list.length === 0) return null;
