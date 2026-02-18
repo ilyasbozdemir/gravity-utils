@@ -38,8 +38,8 @@ export const HashGenerator: React.FC<HashGeneratorProps> = ({ file: initialFile,
                 const sha256Hex = sha256Array.map(b => b.toString(16).padStart(2, '0')).join('');
 
                 setHashes({ sha1: sha1Hex, sha256: sha256Hex });
-            } catch (err) {
-                console.error(err);
+            } catch {
+                // Error handling
             } finally {
                 setLoading(false);
             }

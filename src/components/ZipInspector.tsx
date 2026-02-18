@@ -517,6 +517,7 @@ export const ZipInspector: React.FC<ZipInspectorProps> = ({ file: initialFile, o
                                     <button
                                         onClick={closePreview}
                                         className="p-1.5 bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/30 rounded-lg transition-all"
+                                        title="Kapat"
                                     >
                                         <X size={18} />
                                     </button>
