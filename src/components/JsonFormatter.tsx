@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Copy, Check, FileJson, RefreshCw, Download } from 'lucide-react';
+import { ArrowLeft, Copy, Check, RefreshCw, Download } from 'lucide-react';
 import { saveAs } from 'file-saver';
 
 interface JsonFormatterProps {
@@ -24,7 +24,7 @@ export const JsonFormatter: React.FC<JsonFormatterProps> = ({ file: initialFile,
                 const obj = JSON.parse(text);
                 setJsonContent(JSON.stringify(obj, null, 4));
                 setError(null);
-            } catch (err) {
+            } catch {
                 setError("Geçersiz JSON formatı.");
             }
         };
@@ -36,7 +36,7 @@ export const JsonFormatter: React.FC<JsonFormatterProps> = ({ file: initialFile,
             const obj = JSON.parse(jsonContent);
             setJsonContent(JSON.stringify(obj, null, 4));
             setError(null);
-        } catch (err) {
+        } catch {
             setError("Formatlanamadı: Geçersiz JSON.");
         }
     };
@@ -46,7 +46,7 @@ export const JsonFormatter: React.FC<JsonFormatterProps> = ({ file: initialFile,
             const obj = JSON.parse(jsonContent);
             setJsonContent(JSON.stringify(obj));
             setError(null);
-        } catch (err) {
+        } catch {
             setError("Küçültülemedi: Geçersiz JSON.");
         }
     };
@@ -111,7 +111,7 @@ export const JsonFormatter: React.FC<JsonFormatterProps> = ({ file: initialFile,
                             try {
                                 if (e.target.value) JSON.parse(e.target.value);
                                 setError(null);
-                            } catch (err) {
+                            } catch {
                                 setError("Geçersiz JSON");
                             }
                         }}
@@ -145,8 +145,8 @@ export const JsonFormatter: React.FC<JsonFormatterProps> = ({ file: initialFile,
                             disabled={!jsonContent}
                             title="Kopyala"
                             className={`p-2.5 rounded-xl border transition-all ${copied
-                                    ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-400'
-                                    : 'bg-white/5 border-white/5 text-slate-400 hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed'
+                                ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-400'
+                                : 'bg-white/5 border-white/5 text-slate-400 hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed'
                                 }`}
                         >
                             {copied ? <Check size={18} /> : <Copy size={18} />}

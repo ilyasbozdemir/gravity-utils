@@ -34,7 +34,7 @@ export const FileEncryptor: React.FC<FileEncryptorProps> = ({ file: initialFile,
         return window.crypto.subtle.deriveKey(
             {
                 name: "PBKDF2",
-                salt: salt,
+                salt: salt.buffer as ArrayBuffer,
                 iterations: 100000,
                 hash: "SHA-256"
             },
@@ -81,7 +81,7 @@ export const FileEncryptor: React.FC<FileEncryptorProps> = ({ file: initialFile,
                 // Decrypt
                 const salt = new Uint8Array(fileData.slice(0, 16));
                 const iv = new Uint8Array(fileData.slice(16, 28));
-                const data = fileData.slice(28);
+                const data = fileData.slice(28) as ArrayBuffer;
 
                 const key = await deriveKey(password, salt);
 
@@ -98,7 +98,7 @@ export const FileEncryptor: React.FC<FileEncryptorProps> = ({ file: initialFile,
                     // Remove .enc extension if present
                     const originalName = file.name.replace(/\.enc$/, '');
                     downloadFile(new Uint8Array(decryptedContent), originalName);
-                } catch (_) {
+                } catch {
                     throw new Error('Şifre yanlış veya dosya bozuk.');
                 }
             }
@@ -112,7 +112,7 @@ export const FileEncryptor: React.FC<FileEncryptorProps> = ({ file: initialFile,
     };
 
     const downloadFile = (data: Uint8Array, filename: string) => {
-        const blob = new Blob([data]);
+        const blob = new Blob([data.buffer as ArrayBuffer]);
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
