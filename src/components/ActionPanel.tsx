@@ -51,7 +51,6 @@ export const ActionPanel: React.FC<ActionPanelProps> = ({ file, onClear, onActio
         icon: React.ReactNode,
         title: string,
         desc: string,
-        colorClass: string,
         highlight: boolean = false
     ) => (
         <button
@@ -67,9 +66,9 @@ export const ActionPanel: React.FC<ActionPanelProps> = ({ file, onClear, onActio
                     ÖNERİLEN
                 </div>
             )}
-            <div style={{ color: colorClass }} className="mb-1 transform group-hover:scale-110 transition-transform duration-200">{icon}</div>
-            <div className="text-base font-semibold">{title}</div>
-            <div className={`text-xs ${highlight ? 'text-violet-200' : 'opacity-80'}`}>{desc}</div>
+            <div className="mb-2 transform group-hover:scale-110 transition-transform duration-200 opacity-90">{icon}</div>
+            <div className="text-base font-semibold text-white">{title}</div>
+            <div className={`text-xs ${highlight ? 'text-violet-200' : 'text-slate-300'}`}>{desc}</div>
         </button>
     );
 
@@ -105,17 +104,17 @@ export const ActionPanel: React.FC<ActionPanelProps> = ({ file, onClear, onActio
                             ✨ Sizin İçin Önerilenler
                         </h3>
                         <div className="grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))] gap-4">
-                            {recommended.includes('convert') && renderButton('convert', <FileType size={28} />, 'Dönüştür', 'WebP -> PNG / JPG', '#fbbf24', true)}
-                            {recommended.includes('json') && renderButton('json', <FileJson size={28} />, 'JSON Formatla', 'Okunabilir Yap', '#22d3ee', true)}
-                            {recommended.includes('inspect') && renderButton('inspect', <Archive size={28} />, 'İçeriği İncele', isOffice ? 'Belge Detayları' : 'Arşiv Dosyaları', '#f472b6', true)}
-                            {recommended.includes('optimize') && renderButton('optimize', <ImageIcon size={28} />, 'Sıkıştır', 'Dosya Boyutunu Düşür', '#34d399', true)}
-                            {recommended.includes('text') && renderButton('text', <FileText size={28} />, 'Metni Analiz Et', 'İstatistikler', '#a78bfa', true)}
-                            {recommended.includes('pdf') && renderButton('pdf', <FileDiff size={28} />, 'PDF İşlemleri', 'Ayır / Birleştir', '#ef4444', true)}
-                            {recommended.includes('social') && renderButton('social', <Crop size={28} />, 'Sosyal Medya', 'Boyutlandır', '#e879f9', true)}
-                            {recommended.includes('exif') && renderButton('exif', <Shield size={28} />, 'Güvenli Paylaş', 'Exif Sil', '#10b981', true)}
-                            {recommended.includes('imagetopdf') && renderButton('imagetopdf', <FileText size={28} />, 'PDF Oluştur', 'Resimleri Birleştir', '#f43f5e', true)}
-                            {recommended.includes('units') && renderButton('units', <Calculator size={28} />, 'Birim Çevirici', 'Alan / Uzunluk', '#f97316', true)}
-                            {recommended.includes('encrypt') && renderButton('encrypt', <Shield size={28} />, 'Dosyayı Şifrele', 'AES-256 İle Koru', '#10b981', true)}
+                            {recommended.includes('convert') && renderButton('convert', <FileType size={28} className="text-amber-400" />, 'Dönüştür', 'WebP -> PNG / JPG', true)}
+                            {recommended.includes('json') && renderButton('json', <FileJson size={28} className="text-cyan-400" />, 'JSON Formatla', 'Okunabilir Yap', true)}
+                            {recommended.includes('inspect') && renderButton('inspect', <Archive size={28} className="text-pink-400" />, 'İçeriği İncele', isOffice ? 'Belge Detayları' : 'Arşiv Dosyaları', true)}
+                            {recommended.includes('optimize') && renderButton('optimize', <ImageIcon size={28} className="text-emerald-400" />, 'Sıkıştır', 'Dosya Boyutunu Düşür', true)}
+                            {recommended.includes('text') && renderButton('text', <FileText size={28} className="text-violet-400" />, 'Metni Analiz Et', 'İstatistikler', true)}
+                            {recommended.includes('pdf') && renderButton('pdf', <FileDiff size={28} className="text-red-400" />, 'PDF İşlemleri', 'Ayır / Birleştir', true)}
+                            {recommended.includes('social') && renderButton('social', <Crop size={28} className="text-fuchsia-400" />, 'Sosyal Medya', 'Boyutlandır', true)}
+                            {recommended.includes('exif') && renderButton('exif', <Shield size={28} className="text-emerald-500" />, 'Güvenli Paylaş', 'Exif Sil', true)}
+                            {recommended.includes('imagetopdf') && renderButton('imagetopdf', <FileText size={28} className="text-rose-500" />, 'PDF Oluştur', 'Resimleri Birleştir', true)}
+                            {recommended.includes('units') && renderButton('units', <Calculator size={28} className="text-orange-500" />, 'Birim Çevirici', 'Alan / Uzunluk', true)}
+                            {recommended.includes('encrypt') && renderButton('encrypt', <Shield size={28} className="text-emerald-500" />, 'Dosyayı Şifrele', 'AES-256 İle Koru', true)}
                         </div>
                     </div>
                 )}
@@ -125,12 +124,12 @@ export const ActionPanel: React.FC<ActionPanelProps> = ({ file, onClear, onActio
                     <div className="text-left">
                         <h3 className="mb-4 opacity-70 text-sm uppercase tracking-wider font-medium">Görsel İşlemleri</h3>
                         <div className="grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))] gap-4">
-                            {renderButton('social', <Smartphone size={28} />, 'Boyutlandır', 'Story / Post', '#e879f9')}
-                            {renderButton('exif', <Shield size={28} />, 'Exif Temizle', 'Gizlilik Koruması', '#10b981')}
-                            {renderButton('optimize', <ImageIcon size={28} />, 'Optimize Et', 'Resim Sıkıştırma', '#34d399')}
-                            {renderButton('qr', <QrCode size={28} />, 'QR Oku', 'Barkod Tara', '#3b82f6')}
-                            {renderButton('favicon', <ImageIcon size={28} />, 'Favicon Yap', 'İkon Seti', '#8b5cf6')}
-                            {renderButton('imagetopdf', <FileText size={28} />, 'PDF Yap', 'Görselleri Birleştir', '#f43f5e')}
+                            {renderButton('social', <Smartphone size={28} className="text-fuchsia-400" />, 'Boyutlandır', 'Story / Post')}
+                            {renderButton('exif', <Shield size={28} className="text-emerald-500" />, 'Exif Temizle', 'Gizlilik Koruması')}
+                            {renderButton('optimize', <ImageIcon size={28} className="text-emerald-400" />, 'Optimize Et', 'Resim Sıkıştırma')}
+                            {renderButton('qr', <QrCode size={28} className="text-blue-500" />, 'QR Oku', 'Barkod Tara')}
+                            {renderButton('favicon', <ImageIcon size={28} className="text-violet-500" />, 'Favicon Yap', 'İkon Seti')}
+                            {renderButton('imagetopdf', <FileText size={28} className="text-rose-500" />, 'PDF Yap', 'Görselleri Birleştir')}
                         </div>
                     </div>
                 )}
@@ -139,16 +138,15 @@ export const ActionPanel: React.FC<ActionPanelProps> = ({ file, onClear, onActio
                 <div className="text-left">
                     <h3 className="mb-4 opacity-70 text-sm uppercase tracking-wider font-medium">Genel İşlemler</h3>
                     <div className="grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))] gap-4">
-                        {renderButton('convert', <FileType size={28} />, 'Çevir / Adlandır', 'Format ve Uzantı', '#60a5fa')}
+                        {renderButton('convert', <FileType size={28} className="text-blue-400" />, 'Çevir / Adlandır', 'Format ve Uzantı')}
                         {renderButton(
                             'inspect',
-                            <Archive size={28} />,
+                            <Archive size={28} className="text-pink-400" />,
                             isOffice ? 'Belgeyi İncele' : 'İçini İncele',
-                            isOffice ? 'Word/Excel İçeriği' : (isArchive ? 'Arşiv/Paket Analizi' : 'Dosya Yapısı'),
-                            '#f472b6'
+                            isOffice ? 'Word/Excel İçeriği' : (isArchive ? 'Arşiv/Paket Analizi' : 'Dosya Yapısı')
                         )}
-                        {isPdf && renderButton('pdf', <FileDiff size={28} />, 'PDF Araçları', 'Böl / Düzenle', '#ef4444')}
-                        {renderButton('encrypt', <Shield size={28} />, 'Şifrele / Çöz', 'AES-256 Güvenlik', '#10b981')}
+                        {isPdf && renderButton('pdf', <FileDiff size={28} className="text-red-400" />, 'PDF Araçları', 'Böl / Düzenle')}
+                        {renderButton('encrypt', <Shield size={28} className="text-emerald-500" />, 'Şifrele / Çöz', 'AES-256 Güvenlik')}
                     </div>
                 </div>
 
@@ -156,7 +154,7 @@ export const ActionPanel: React.FC<ActionPanelProps> = ({ file, onClear, onActio
                 <div className="text-left">
                     <h3 className="mb-4 opacity-70 text-sm uppercase tracking-wider font-medium">Mühendislik Araçları</h3>
                     <div className="grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))] gap-4">
-                        {renderButton('units', <Calculator size={28} />, 'Hesaplama Seti', 'Ölçek, Tarih, Alan', '#f97316')}
+                        {renderButton('units', <Calculator size={28} className="text-orange-500" />, 'Hesaplama Seti', 'Ölçek, Tarih, Alan')}
                     </div>
                 </div>
 
@@ -164,9 +162,9 @@ export const ActionPanel: React.FC<ActionPanelProps> = ({ file, onClear, onActio
                 <div className="text-left">
                     <h3 className="mb-4 opacity-70 text-sm uppercase tracking-wider font-medium">Analiz ve Veri</h3>
                     <div className="grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))] gap-4">
-                        {renderButton('hash', <Hash size={28} />, 'Hash (İmza)', 'MD5, SHA1, SHA256', '#fbbf24')}
-                        {isText && renderButton('text', <FileText size={28} />, 'Metin Analizi', 'Kelime/Satır Sayacı', '#a78bfa')}
-                        {isJson && renderButton('json', <FileJson size={28} />, 'JSON Format', 'Pretty Print', '#22d3ee')}
+                        {renderButton('hash', <Hash size={28} className="text-amber-400" />, 'Hash (İmza)', 'MD5, SHA1, SHA256')}
+                        {isText && renderButton('text', <FileText size={28} className="text-violet-400" />, 'Metin Analizi', 'Kelime/Satır Sayacı')}
+                        {isJson && renderButton('json', <FileJson size={28} className="text-cyan-400" />, 'JSON Format', 'Pretty Print')}
                     </div>
                 </div>
 
@@ -174,7 +172,7 @@ export const ActionPanel: React.FC<ActionPanelProps> = ({ file, onClear, onActio
                 <div className="text-left">
                     <h3 className="mb-4 opacity-70 text-sm uppercase tracking-wider font-medium">Geliştirici</h3>
                     <div className="grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))] gap-4">
-                        {renderButton('base64', <Binary size={28} />, 'Base64 Çevirici', 'Veriyi Kodla', '#e879f9')}
+                        {renderButton('base64', <Binary size={28} className="text-fuchsia-400" />, 'Base64 Çevirici', 'Veriyi Kodla')}
                     </div>
                 </div>
 

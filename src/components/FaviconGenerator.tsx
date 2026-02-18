@@ -140,11 +140,7 @@ export const FaviconGenerator: React.FC<FaviconGeneratorProps> = ({ file: initia
                                         <img
                                             src={item.url}
                                             alt={`${item.size}px icon`}
-                                            className="image-pixelated shadow-2xl transition-transform group-hover:scale-110"
-                                            style={{
-                                                width: Math.min(item.size, 64),
-                                                height: Math.min(item.size, 64)
-                                            }}
+                                            className="image-pixelated shadow-2xl transition-transform group-hover:scale-110 w-full h-full max-w-[64px] max-h-[64px]"
                                         />
                                     </div>
                                     <div className="text-center">

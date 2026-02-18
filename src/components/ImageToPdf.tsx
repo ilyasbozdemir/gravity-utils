@@ -7,7 +7,6 @@ import {
     Trash2,
     ArrowUp,
     ArrowDown,
-    Image as ImageIcon,
     Settings,
     Layout,
     Maximize,
@@ -38,7 +37,6 @@ export const ImageToPdf: React.FC<ImageToPdfProps> = ({ file: initialFile, onBac
     const [orientation, setOrientation] = useState<'p' | 'l' | 'auto'>('auto');
     const [margin, setMargin] = useState<number>(10);
     const [previewImage, setPreviewImage] = useState<string | null>(null);
-    const [activeDragId, setActiveDragId] = useState<string | null>(null);
 
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -93,9 +91,9 @@ export const ImageToPdf: React.FC<ImageToPdfProps> = ({ file: initialFile, onBac
 
         try {
             const doc = new jsPDF({
-                orientation: orientation === 'auto' ? 'p' : (orientation as any),
+                orientation: orientation === 'auto' ? 'p' : (orientation as 'p' | 'l'),
                 unit: 'mm',
-                format: pageSize === 'a4' ? 'a4' : [210, 297] // Placeholder, will set per page if fit
+                format: pageSize === 'a4' ? 'a4' : [210, 297]
             });
 
             for (let i = 0; i < images.length; i++) {
@@ -106,7 +104,7 @@ export const ImageToPdf: React.FC<ImageToPdfProps> = ({ file: initialFile, onBac
                 const props = doc.getImageProperties(imgData);
 
                 let finalOrientation: 'p' | 'l' = props.width > props.height ? 'l' : 'p';
-                if (orientation !== 'auto') finalOrientation = orientation as any;
+                if (orientation !== 'auto') finalOrientation = orientation as 'p' | 'l';
 
                 const pageWidth = pageSize === 'fit' ? (props.width * 0.264583) + (margin * 2) : (finalOrientation === 'p' ? 210 : 297);
                 const pageHeight = pageSize === 'fit' ? (props.height * 0.264583) + (margin * 2) : (finalOrientation === 'p' ? 297 : 210);
@@ -115,8 +113,9 @@ export const ImageToPdf: React.FC<ImageToPdfProps> = ({ file: initialFile, onBac
                     doc.addPage([pageWidth, pageHeight], finalOrientation);
                 } else {
                     // Adjust first page
-                    (doc as any).internal.pageSize.width = pageWidth;
-                    (doc as any).internal.pageSize.height = pageHeight;
+                    const internalDoc = doc as jsPDF & { internal: { pageSize: { width: number; height: number; }; }; };
+                    internalDoc.internal.pageSize.width = pageWidth;
+                    internalDoc.internal.pageSize.height = pageHeight;
                 }
 
                 const printableWidth = pageWidth - (margin * 2);
@@ -137,7 +136,7 @@ export const ImageToPdf: React.FC<ImageToPdfProps> = ({ file: initialFile, onBac
                 doc.addImage(imgData, 'JPEG', x, y, drawWidth, drawHeight);
             }
 
-            doc.save(`images-to-pdf-${Date.now()}.pdf`);
+            doc.save(`images - to - pdf - ${Date.now()}.pdf`);
         } catch (err) {
             console.error(err);
             alert("PDF oluşturulurken bir hata oluştu.");
@@ -320,7 +319,7 @@ export const ImageToPdf: React.FC<ImageToPdfProps> = ({ file: initialFile, onBac
                                             ].map(opt => (
                                                 <button
                                                     key={opt.id}
-                                                    onClick={() => setOrientation(opt.id as any)}
+                                                    onClick={() => setOrientation(opt.id as 'p' | 'l' | 'auto')}
                                                     className={`py-3 rounded-2xl text-[10px] font-black transition-all border flex flex-col items-center gap-1.5 ${orientation === opt.id ? 'bg-blue-600 border-blue-400 text-white shadow-xl shadow-blue-500/20' : 'bg-white/5 border-white/5 text-slate-500 hover:bg-white/10 hover:text-slate-300'}`}
                                                 >
                                                     <opt.icon size={12} className={opt.id === 'l' ? 'rotate-90' : ''} />
@@ -379,7 +378,10 @@ export const ImageToPdf: React.FC<ImageToPdfProps> = ({ file: initialFile, onBac
                 >
                     <button
                         className="absolute top-8 right-8 p-3 bg-white/10 rounded-full text-white hover:bg-white/20 transition-colors"
-                        onClick={() => setPreviewImage(null)}
+                        onClick={(e: React.MouseEvent) => {
+                            e.stopPropagation();
+                            setPreviewImage(null);
+                        }}
                         title="Kapat"
                     >
                         <X size={24} />
