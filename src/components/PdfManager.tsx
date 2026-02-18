@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { ArrowLeft, FileText, Scissors, Download, Layers, Minimize2, Stamp, RefreshCw, Plus, Trash2, ArrowUp, ArrowDown, LayoutGrid, GripVertical, Image as ImageIcon } from 'lucide-react';
-import { PDFDocument, StandardFonts, degrees, rgb } from 'pdf-lib';
+import { PDFDocument, degrees, rgb } from 'pdf-lib';
 import * as pdfjsLib from 'pdfjs-dist';
+import fontkit from '@pdf-lib/fontkit';
+import { loadTurkishFont } from '../utils/fontLoader';
 
 // Configure PDF.js worker
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.js`;
@@ -41,15 +43,17 @@ export const PdfManager: React.FC<PdfManagerProps> = ({ file, onBack }) => {
     const [mainPdfPageCount, setMainPdfPageCount] = useState<number>(0);
 
     const [watermarkText, setWatermarkText] = useState('GİZLİ');
-    const [watermarkColor, setWatermarkColor] = useState('#ff0000');
     const [watermarkOpacity, setWatermarkOpacity] = useState(0.3);
+    const [watermarkColor, setWatermarkColor] = useState('#ff0000');
+    const [watermarkType, setWatermarkType] = useState<'text' | 'image'>('text');
+    const [watermarkImage, setWatermarkImage] = useState<string | null>(null);
 
     const [compressionQuality, setCompressionQuality] = useState(0.7);
 
     const mergeInputRef = useRef<HTMLInputElement>(null);
 
     const downloadPdf = useCallback((data: Uint8Array, filename: string) => {
-        const blob = new Blob([data as any], { type: 'application/pdf' });
+        const blob = new Blob([data as unknown as BlobPart], { type: 'application/pdf' });
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
@@ -74,7 +78,10 @@ export const PdfManager: React.FC<PdfManagerProps> = ({ file, onBack }) => {
                 canvas.height = viewport.height;
                 canvas.width = viewport.width;
 
-                await page.render({ canvasContext: context!, viewport: viewport } as any).promise;
+                await page.render({
+                    canvasContext: (context as unknown as CanvasRenderingContext2D),
+                    viewport: viewport
+                } as unknown as Parameters<typeof page.render>[0]).promise;
                 const thumbnail = canvas.toDataURL();
 
                 newPages.push({
@@ -112,7 +119,7 @@ export const PdfManager: React.FC<PdfManagerProps> = ({ file, onBack }) => {
 
                 const newFileInfo: PdfFileInfo = {
                     id,
-                    file: new File([pdfBytes as any], f.name, { type: 'application/pdf' }),
+                    file: new File([pdfBytes as unknown as BlobPart], f.name, { type: 'application/pdf' }),
                     name: f.name,
                     pageCount: 1
                 };
@@ -242,8 +249,17 @@ export const PdfManager: React.FC<PdfManagerProps> = ({ file, onBack }) => {
             const mainFile = pdfFiles[0].file;
             const arrayBuffer = await mainFile.arrayBuffer();
             const pdfDoc = await PDFDocument.load(arrayBuffer);
+            pdfDoc.registerFontkit(fontkit);
+            const fontBytes = await loadTurkishFont();
+            const font = await pdfDoc.embedFont(fontBytes);
             const pages = pdfDoc.getPages();
-            const font = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+
+            let embeddedImage: any = null;
+            if (watermarkType === 'image' && watermarkImage) {
+                embeddedImage = watermarkImage.startsWith('data:image/jpeg') || watermarkImage.startsWith('data:image/jpg')
+                    ? await pdfDoc.embedJpg(watermarkImage)
+                    : await pdfDoc.embedPng(watermarkImage);
+            }
 
             const r = parseInt(watermarkColor.slice(1, 3), 16) / 255;
             const g = parseInt(watermarkColor.slice(3, 5), 16) / 255;
@@ -251,19 +267,36 @@ export const PdfManager: React.FC<PdfManagerProps> = ({ file, onBack }) => {
 
             pages.forEach((page) => {
                 const { width, height } = page.getSize();
-                const fontSize = 50;
-                const textWidth = font.widthOfTextAtSize(watermarkText, fontSize);
-                const textHeight = font.heightAtSize(fontSize);
 
-                page.drawText(watermarkText, {
-                    x: width / 2 - textWidth / 2,
-                    y: height / 2 - textHeight / 2,
-                    size: fontSize,
-                    font: font,
-                    color: rgb(r, g, b),
-                    opacity: watermarkOpacity,
-                    rotate: degrees(45),
-                });
+                if (watermarkType === 'text') {
+                    const fontSize = 50;
+                    const textWidth = font.widthOfTextAtSize(watermarkText, fontSize);
+                    const textHeight = font.heightAtSize(fontSize);
+
+                    page.drawText(watermarkText, {
+                        x: width / 2 - textWidth / 2,
+                        y: height / 2 - textHeight / 2,
+                        size: fontSize,
+                        font: font,
+                        color: rgb(r, g, b),
+                        opacity: watermarkOpacity,
+                        rotate: degrees(45),
+                    });
+                } else if (embeddedImage) {
+                    const imgDims = embeddedImage.scale(0.5); // Default scale
+                    // Fit image to page if too large
+                    const scale = Math.min(1, (width * 0.4) / imgDims.width, (height * 0.4) / imgDims.height);
+                    const finalWidth = imgDims.width * scale;
+                    const finalHeight = imgDims.height * scale;
+
+                    page.drawImage(embeddedImage, {
+                        x: width / 2 - finalWidth / 2,
+                        y: height / 2 - finalHeight / 2,
+                        width: finalWidth,
+                        height: finalHeight,
+                        opacity: watermarkOpacity,
+                    });
+                }
             });
 
             const pdfBytes = await pdfDoc.save();
@@ -296,7 +329,10 @@ export const PdfManager: React.FC<PdfManagerProps> = ({ file, onBack }) => {
                 canvas.height = viewport.height;
                 canvas.width = viewport.width;
 
-                await page.render({ canvasContext: context!, viewport: viewport } as any).promise;
+                await page.render({
+                    canvasContext: (context as unknown as CanvasRenderingContext2D),
+                    viewport: viewport
+                } as unknown as Parameters<typeof page.render>[0]).promise;
                 const imgDataUrl = canvas.toDataURL('image/jpeg', compressionQuality);
                 const imgImage = await newPdfDoc.embedJpg(imgDataUrl);
                 const newPage = newPdfDoc.addPage([viewport.width, viewport.height]);
@@ -307,9 +343,9 @@ export const PdfManager: React.FC<PdfManagerProps> = ({ file, onBack }) => {
 
             const pdfBytes = await newPdfDoc.save();
             downloadPdf(pdfBytes, `sikistirilmis-${mainFile.name}`);
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error(err);
-            alert(`Sıkıştırma hatası: ${err.message || err}`);
+            alert(`Sıkıştırma hatası: ${err instanceof Error ? err.message : String(err)}`);
         }
         setProcessing(false);
         setStatusText('');
@@ -609,50 +645,118 @@ export const PdfManager: React.FC<PdfManagerProps> = ({ file, onBack }) => {
                                     </div>
                                     <h3 className="text-lg font-semibold text-center">Filigran Ekle</h3>
 
+                                    <div className="flex bg-white/5 p-1 rounded-xl border border-white/10 mb-6">
+                                        <button
+                                            onClick={() => setWatermarkType('text')}
+                                            className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${watermarkType === 'text' ? 'bg-purple-500 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
+                                        >
+                                            Metin
+                                        </button>
+                                        <button
+                                            onClick={() => setWatermarkType('image')}
+                                            className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${watermarkType === 'image' ? 'bg-purple-500 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
+                                        >
+                                            Resim (Logo)
+                                        </button>
+                                    </div>
+
                                     <div className="space-y-4">
-                                        <div>
-                                            <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Filigran Metni</label>
-                                            <input
-                                                type="text"
-                                                value={watermarkText}
-                                                onChange={(e) => setWatermarkText(e.target.value)}
-                                                className="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-white focus:border-purple-400/50 outline-none transition-all placeholder:text-slate-700"
-                                                title="Filigran Metni"
-                                                placeholder="Örn: GİZLİ"
-                                            />
-                                        </div>
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div>
-                                                <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Renk</label>
-                                                <div className="relative">
+                                        {watermarkType === 'text' ? (
+                                            <>
+                                                <div>
+                                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Filigran Metni</label>
                                                     <input
-                                                        type="color"
-                                                        value={watermarkColor}
-                                                        onChange={(e) => setWatermarkColor(e.target.value)}
-                                                        className="w-full h-11 bg-transparent border-none cursor-pointer rounded-xl"
-                                                        title="Filigran Rengi"
-                                                        aria-label="Filigran Rengi"
+                                                        type="text"
+                                                        value={watermarkText}
+                                                        onChange={(e) => setWatermarkText(e.target.value)}
+                                                        className="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-white focus:border-purple-400/50 outline-none transition-all placeholder:text-slate-700"
+                                                        title="Filigran Metni"
+                                                        placeholder="Örn: GİZLİ"
                                                     />
                                                 </div>
-                                            </div>
-                                            <div>
-                                                <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Opaklık</label>
-                                                <div className="flex items-center gap-3 bg-black/40 border border-white/10 rounded-xl px-3 h-11">
-                                                    <input
-                                                        type="range"
-                                                        min="0.1"
-                                                        max="1"
-                                                        step="0.1"
-                                                        value={watermarkOpacity}
-                                                        onChange={(e) => setWatermarkOpacity(parseFloat(e.target.value))}
-                                                        className="flex-1 h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-purple-500"
-                                                        title="Filigran Opaklığı"
-                                                        aria-label="Filigran Opaklığı"
-                                                    />
-                                                    <span className="text-[10px] font-bold text-slate-400 w-6 text-right">{Math.round(watermarkOpacity * 100)}%</span>
+                                                <div className="grid grid-cols-2 gap-4">
+                                                    <div>
+                                                        <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Renk</label>
+                                                        <div className="relative">
+                                                            <input
+                                                                type="color"
+                                                                value={watermarkColor}
+                                                                onChange={(e) => setWatermarkColor(e.target.value)}
+                                                                className="w-full h-11 bg-transparent border-none cursor-pointer rounded-xl"
+                                                                title="Filigran Rengi"
+                                                                aria-label="Filigran Rengi"
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Opaklık</label>
+                                                        <div className="flex items-center gap-3 bg-black/40 border border-white/10 rounded-xl px-3 h-11">
+                                                            <input
+                                                                type="range"
+                                                                min="0.1"
+                                                                max="1"
+                                                                step="0.1"
+                                                                value={watermarkOpacity}
+                                                                onChange={(e) => setWatermarkOpacity(parseFloat(e.target.value))}
+                                                                className="flex-1 h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-purple-500"
+                                                                title="Filigran Opaklığı"
+                                                                aria-label="Filigran Opaklığı"
+                                                            />
+                                                            <span className="text-[10px] font-bold text-slate-400 w-6 text-right">{Math.round(watermarkOpacity * 100)}%</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </>
+                                        ) : (
+                                            <div className="space-y-4">
+                                                <div>
+                                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Resim Seç (PNG/JPG)</label>
+                                                    <div
+                                                        onClick={() => {
+                                                            const input = document.createElement('input');
+                                                            input.type = 'file';
+                                                            input.accept = 'image/*';
+                                                            input.onchange = (e: any) => {
+                                                                const file = e.target.files[0];
+                                                                if (file) {
+                                                                    const reader = new FileReader();
+                                                                    reader.onload = () => setWatermarkImage(reader.result as string);
+                                                                    reader.readAsDataURL(file);
+                                                                }
+                                                            };
+                                                            input.click();
+                                                        }}
+                                                        className="w-full aspect-video bg-black/40 border-2 border-dashed border-white/10 rounded-2xl flex flex-col items-center justify-center cursor-pointer hover:border-purple-500/50 hover:bg-purple-500/5 transition-all group overflow-hidden"
+                                                    >
+                                                        {watermarkImage ? (
+                                                            <img src={watermarkImage} className="w-full h-full object-contain p-2" alt="Filigran" />
+                                                        ) : (
+                                                            <>
+                                                                <ImageIcon className="text-slate-600 group-hover:text-purple-400 mb-2" size={32} />
+                                                                <span className="text-xs text-slate-500">Logo veya Resim Yükle</span>
+                                                            </>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Opaklık</label>
+                                                    <div className="flex items-center gap-3 bg-black/40 border border-white/10 rounded-xl px-3 h-11">
+                                                        <input
+                                                            type="range"
+                                                            min="0.1"
+                                                            max="1"
+                                                            step="0.1"
+                                                            value={watermarkOpacity}
+                                                            onChange={(e) => setWatermarkOpacity(parseFloat(e.target.value))}
+                                                            className="flex-1 h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-purple-500"
+                                                            title="Filigran Opaklığı"
+                                                            aria-label="Filigran Opaklığı"
+                                                        />
+                                                        <span className="text-[10px] font-bold text-slate-400 w-6 text-right">{Math.round(watermarkOpacity * 100)}%</span>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
+                                        )}
                                     </div>
 
                                     <button

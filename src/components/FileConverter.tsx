@@ -3,9 +3,13 @@ import { ArrowLeft, RefreshCw, AlertCircle } from 'lucide-react';
 import jsPDF from 'jspdf';
 import { getAvailableFormats, type Format } from '../utils/formats';
 import { saveAs } from 'file-saver';
-import * as mammoth from 'mammoth';
-import { Document, Packer, Paragraph, TextRun } from 'docx';
+import { Document, Packer, Paragraph, TextRun, ImageRun } from 'docx';
 import * as pdfjsLib from 'pdfjs-dist';
+import { PDFDocument } from 'pdf-lib';
+import fontkit from '@pdf-lib/fontkit';
+import { renderAsync } from 'docx-preview';
+import html2canvas from 'html2canvas';
+import { loadTurkishFont } from '../utils/fontLoader';
 
 // Configure PDF.js worker
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.js`;
@@ -24,6 +28,7 @@ export const FileConverter: React.FC<FileConverterProps> = ({ file: initialFile,
     const [progress, setProgress] = useState<string>('');
 
     const fileInputRef = React.useRef<HTMLInputElement>(null);
+    const renderContainerRef = React.useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         if (file) {
@@ -43,11 +48,11 @@ export const FileConverter: React.FC<FileConverterProps> = ({ file: initialFile,
         setIsProcessing(true);
         setProgress('Başlatılıyor...');
         try {
-            let targetExt = customExt;
+            let targetExt = customExt.toLowerCase();
             let isRenameOnly = false;
 
             if (selectedFormat) {
-                targetExt = selectedFormat.ext;
+                targetExt = selectedFormat.ext.toLowerCase();
                 isRenameOnly = selectedFormat.isRenameOnly === true;
             } else if (customExt) {
                 isRenameOnly = true;
@@ -64,11 +69,10 @@ export const FileConverter: React.FC<FileConverterProps> = ({ file: initialFile,
             const finalName = `${baseName}.${targetExt}`;
 
             // 1. PDF Conversion Logic
-            if (targetExt.toLowerCase() === 'pdf' && !isRenameOnly) {
-                setProgress('PDF oluşturuluyor...');
-                const doc = new jsPDF();
-
+            if (targetExt === 'pdf' && !isRenameOnly) {
                 if (file.type.startsWith('image/')) {
+                    setProgress('PDF oluşturuluyor...');
+                    const doc = new jsPDF();
                     const imgData = await new Promise<string>((resolve, reject) => {
                         const reader = new FileReader();
                         reader.onload = () => resolve(reader.result as string);
@@ -94,35 +98,92 @@ export const FileConverter: React.FC<FileConverterProps> = ({ file: initialFile,
                     doc.addImage(imgData, 'JPEG', x, y, finalWidth, finalHeight);
                     doc.save(finalName);
                 } else if (file.name.toLowerCase().endsWith('.docx')) {
-                    setProgress('Word belgesi çözümleniyor...');
-                    const arrayBuffer = await file.arrayBuffer();
-                    const result = await mammoth.extractRawText({ arrayBuffer });
-                    const text = result.value;
-                    setProgress('Metin PDFye aktarılıyor...');
-                    const splitText = doc.splitTextToSize(text, 180);
-                    let y = 10;
-                    for (let i = 0; i < splitText.length; i++) {
-                        if (y > 280) {
-                            doc.addPage();
-                            y = 10;
+                    setProgress('Word belgesi birer bir görselleştiriliyor (Bu işlem biraz vakit alabilir)...');
+
+                    if (renderContainerRef.current) {
+                        const container = renderContainerRef.current;
+                        container.innerHTML = '';
+                        const arrayBuffer = await file.arrayBuffer();
+
+                        await renderAsync(arrayBuffer, container, undefined, {
+                            className: "docx",
+                            inWrapper: true,
+                            ignoreLastRenderedPageBreak: false,
+                        });
+
+                        // Wait for images to load if any
+                        await new Promise(r => setTimeout(r, 1000));
+
+                        setProgress('Döküman tarayıcıda render ediliyor...');
+                        const canvas = await html2canvas(container, {
+                            scale: 2,
+                            useCORS: true,
+                            logging: false
+                        });
+
+                        setProgress('PDF sayfaları oluşturuluyor...');
+                        const imgData = canvas.toDataURL('image/jpeg', 0.95);
+                        const pdf = new jsPDF('p', 'mm', 'a4'); // This is the jsPDF instance
+
+                        const imgProps = pdf.getImageProperties(imgData);
+                        const pdfWidth = pdf.internal.pageSize.getWidth();
+                        const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+
+                        // If it's a long scrollable doc, we might need multiple pages
+                        // Simple version: fit it into pages
+                        let heightLeft = pdfHeight;
+                        let position = 0;
+                        const pageHeight = pdf.internal.pageSize.getHeight();
+
+                        pdf.addImage(imgData, 'JPEG', 0, position, pdfWidth, pdfHeight);
+                        heightLeft -= pageHeight;
+
+                        while (heightLeft >= 0) {
+                            position = heightLeft - pdfHeight;
+                            pdf.addPage();
+                            pdf.addImage(imgData, 'JPEG', 0, position, pdfWidth, pdfHeight);
+                            heightLeft -= pageHeight;
                         }
-                        doc.text(splitText[i], 10, y);
-                        y += 7;
+
+                        pdf.save(finalName);
+                        container.innerHTML = '';
                     }
-                    doc.save(finalName);
                 } else if (file.type.startsWith('text/') || /\.(txt|md|js|ts|json|xml)$/i.test(file.name)) {
+                    setProgress('Metin işleniyor ve Türkçe font yükleniyor...');
                     const text = await file.text();
-                    const splitText = doc.splitTextToSize(text, 180);
-                    let y = 10;
-                    for (let i = 0; i < splitText.length; i++) {
-                        if (y > 280) {
-                            doc.addPage();
-                            y = 10;
+
+                    const pdfDoc = await PDFDocument.create();
+                    pdfDoc.registerFontkit(fontkit);
+                    const fontBytes = await loadTurkishFont();
+                    const customFont = await pdfDoc.embedFont(fontBytes);
+
+                    const page = pdfDoc.addPage();
+                    const { width, height } = page.getSize();
+                    const fontSize = 10;
+
+                    // Simple word wrapping for pdf-lib
+                    const words = text.split(/\s+/);
+                    let line = '';
+                    let y = height - 50;
+                    const margin = 50;
+
+                    for (const word of words) {
+                        const testLine = line + word + ' ';
+                        const testWidth = customFont.widthOfTextAtSize(testLine, fontSize);
+                        if (testWidth > width - (margin * 2)) {
+                            page.drawText(line, { x: margin, y, size: fontSize, font: customFont });
+                            line = word + ' ';
+                            y -= 15;
+                            if (y < 50) break;
+                        } else {
+                            line = testLine;
                         }
-                        doc.text(splitText[i], 10, y);
-                        y += 7;
                     }
-                    doc.save(finalName);
+                    page.drawText(line, { x: margin, y, size: fontSize, font: customFont });
+
+                    const pdfBytes = await pdfDoc.save();
+                    const blob = new Blob([pdfBytes as unknown as BlobPart], { type: "application/pdf" });
+                    saveAs(blob, finalName);
                 } else {
                     saveAs(file, finalName);
                 }
@@ -130,32 +191,83 @@ export const FileConverter: React.FC<FileConverterProps> = ({ file: initialFile,
                 return;
             }
 
-            // 2. Word (.docx) Conversion Logic
-            if (targetExt.toLowerCase() === 'docx' && !isRenameOnly) {
+            // 2. Word (.docx) Conversion Logic (PDF to Word)
+            if (targetExt === 'docx' && !isRenameOnly) {
                 if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
-                    setProgress('PDF metni çıkarılıyor...');
+                    setProgress('PDF analizi yapılıyor...');
                     const arrayBuffer = await file.arrayBuffer();
                     const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
                     const pdf = await loadingTask.promise;
                     let fullText = '';
+                    const pageImages: string[] = [];
+
                     for (let i = 1; i <= pdf.numPages; i++) {
                         setProgress(`Sayfa işleniyor: ${i}/${pdf.numPages}`);
                         const page = await pdf.getPage(i);
+
+                        // Text Extraction
                         const textContent = await page.getTextContent();
-                        fullText += textContent.items.map((item: any) => {
-                            if ('str' in item) return item.str;
+                        const pageText = textContent.items.map((item: unknown) => {
+                            if (typeof item === 'object' && item !== null && 'str' in item) {
+                                return (item as { str: string }).str;
+                            }
                             return '';
-                        }).join(' ') + '\n\n';
+                        }).join(' ');
+                        fullText += pageText + '\n\n';
+
+                        // Always capture images as fallback
+                        const viewport = page.getViewport({ scale: 1.5 });
+                        const canvas = document.createElement('canvas');
+                        const context = canvas.getContext('2d');
+                        if (context) {
+                            canvas.height = viewport.height;
+                            canvas.width = viewport.width;
+                            await page.render({
+                                canvasContext: context as unknown as CanvasRenderingContext2D,
+                                viewport: viewport,
+                                canvas: canvas
+                            } as unknown as Parameters<typeof page.render>[0]).promise;
+                            pageImages.push(canvas.toDataURL('image/jpeg', 0.8));
+                        }
                     }
-                    setProgress('Word belgesi hazırlanıyor...');
-                    const wordDoc = new Document({
-                        sections: [{
+
+                    setProgress('Word belgesi oluşturuluyor...');
+
+                    // If text is too sparse (less than 50 chars per page on average), use visual mode
+                    const isVisualMode = fullText.trim().length < (pdf.numPages * 50);
+
+                    const sections: { properties: unknown, children: unknown[] }[] = [];
+
+                    if (isVisualMode) {
+                        setProgress('Görsel Fidelity Modu devrede...');
+                        for (const imgData of pageImages) {
+                            const res = await fetch(imgData);
+                            const imgArrayBuffer = await res.arrayBuffer();
+                            sections.push({
+                                properties: { page: { margin: { top: 0, bottom: 0, left: 0, right: 0 } } },
+                                children: [
+                                    new Paragraph({
+                                        children: [
+                                            new ImageRun({
+                                                data: imgArrayBuffer,
+                                                transformation: { width: 595, height: 841 },
+                                                type: 'jpg'
+                                            }),
+                                        ],
+                                    }),
+                                ],
+                            });
+                        }
+                    } else {
+                        sections.push({
                             properties: {},
                             children: fullText.split('\n').map(line => new Paragraph({
                                 children: [line.trim() ? new TextRun(line) : new TextRun("")],
                             })),
-                        }],
-                    });
+                        });
+                    }
+
+                    const wordDoc = new Document({ sections });
                     const buffer = await Packer.toBlob(wordDoc);
                     saveAs(buffer, finalName);
                 } else {
@@ -166,7 +278,7 @@ export const FileConverter: React.FC<FileConverterProps> = ({ file: initialFile,
             }
 
             // 3. Image Conversion Logic
-            if (['jpg', 'jpeg', 'png', 'webp'].includes(targetExt.toLowerCase()) && !isRenameOnly) {
+            if (['jpg', 'jpeg', 'png', 'webp'].includes(targetExt) && !isRenameOnly) {
                 if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
                     setProgress('PDF resme dönüştürülüyor...');
                     const arrayBuffer = await file.arrayBuffer();
@@ -182,10 +294,10 @@ export const FileConverter: React.FC<FileConverterProps> = ({ file: initialFile,
                             canvas.height = viewport.height;
                             canvas.width = viewport.width;
                             await page.render({
-                                canvasContext: context,
+                                canvasContext: (context as unknown as CanvasRenderingContext2D),
                                 viewport: viewport,
                                 canvas: canvas
-                            } as any).promise;
+                            } as unknown as Parameters<typeof page.render>[0]).promise;
                             saveAs(canvas.toDataURL(targetExt === 'png' ? 'image/png' : 'image/jpeg', 0.9), finalName);
                         }
                     } else {
@@ -202,10 +314,10 @@ export const FileConverter: React.FC<FileConverterProps> = ({ file: initialFile,
                                 canvas.height = viewport.height;
                                 canvas.width = viewport.width;
                                 await page.render({
-                                    canvasContext: context,
+                                    canvasContext: context as unknown as CanvasRenderingContext2D,
                                     viewport: viewport,
                                     canvas: canvas
-                                } as any).promise;
+                                } as unknown as Parameters<typeof page.render>[0]).promise;
                                 zip.file(`sayfa-${i}.${targetExt}`, canvas.toDataURL(mime, 0.9).split(',')[1], { base64: true });
                             }
                         }
@@ -220,15 +332,14 @@ export const FileConverter: React.FC<FileConverterProps> = ({ file: initialFile,
                     setProgress('SVG dönüştürülüyor...');
                     const text = await file.text();
                     const img = new Image();
-                    const blob = new Blob([text], { type: 'image/svg+xml' });
-                    const url = URL.createObjectURL(blob);
+                    const svgBlob = new Blob([text], { type: 'image/svg+xml' });
+                    const url = URL.createObjectURL(svgBlob);
                     img.src = url;
                     await new Promise((resolve, reject) => {
                         img.onload = resolve;
                         img.onerror = () => reject(new Error("SVG yüklenemedi."));
                     });
 
-                    // Try to get dimensions from viewBox or width/height
                     const parser = new DOMParser();
                     const svgDoc = parser.parseFromString(text, 'image/svg+xml');
                     const svgEl = svgDoc.documentElement;
@@ -254,7 +365,7 @@ export const FileConverter: React.FC<FileConverterProps> = ({ file: initialFile,
                         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
                         canvas.toBlob((b) => {
                             if (b) saveAs(b, finalName);
-                            URL.revokeObjectURL(url); // Clean up URL object
+                            URL.revokeObjectURL(url);
                         }, targetExt === 'png' ? 'image/png' : 'image/jpeg', 0.9);
                     }
                     setIsProcessing(false);
@@ -435,6 +546,12 @@ export const FileConverter: React.FC<FileConverterProps> = ({ file: initialFile,
                     <p className="text-[10px] text-slate-600 font-bold uppercase tracking-[0.2em]">Dosya-Dosya Akıllı Sistem v2.0</p>
                 </div>
             </div>
+
+            {/* Hidden container for DOCX rendering */}
+            <div
+                ref={renderContainerRef}
+                className="fixed -left-[9999px] top-0 w-[800px] bg-white text-black pointer-events-none overflow-hidden font-sans"
+            ></div>
         </div>
     );
 };

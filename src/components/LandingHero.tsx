@@ -2,11 +2,11 @@ import React from 'react';
 import {
     Archive, Image as ImageIcon, ShieldCheck, Zap, Star, Calculator,
     FileText, Minimize2, Hash, Code, Search, QrCode,
-    Lock, Share2, MousePointer2, Settings, Smartphone, RefreshCw, Layers
+    Lock, Share2, MousePointer2, Settings, Smartphone, RefreshCw, Layers, Globe
 } from 'lucide-react';
 import { FileDropper } from './FileDropper';
 
-type ToolView = 'convert' | 'inspect' | 'base64' | 'optimize' | 'hash' | 'json' | 'text' | 'pdf' | 'exif' | 'qr' | 'social' | 'favicon' | 'units' | 'encrypt';
+type ToolView = 'convert' | 'inspect' | 'base64' | 'optimize' | 'hash' | 'json' | 'text' | 'pdf' | 'exif' | 'qr' | 'social' | 'favicon' | 'units' | 'encrypt' | 'uuid' | 'yaml' | 'jwt' | 'url';
 
 interface LandingHeroProps {
     onFileSelect: (file: File) => void;
@@ -214,6 +214,34 @@ export const LandingHero: React.FC<LandingHeroProps> = ({ onFileSelect, onToolSe
                                 desc="Koordinat, alan ve finansal hesaplar."
                                 color="emerald"
                                 onClick={() => onToolSelect('units')}
+                            />
+                            <ToolItem
+                                icon={<Zap size={20} />}
+                                title="UUID Oluşturucu"
+                                desc="Benzersiz kimlikler (v4) üretin."
+                                color="indigo"
+                                onClick={() => onToolSelect('uuid')}
+                            />
+                            <ToolItem
+                                icon={<Code size={20} />}
+                                title="YAML / JSON Çevirici"
+                                desc="Formatlar arası güvenli dönüşüm."
+                                color="amber"
+                                onClick={() => onToolSelect('yaml')}
+                            />
+                            <ToolItem
+                                icon={<ShieldCheck size={20} />}
+                                title="JWT Debugger"
+                                desc="Token çözümleme ve analiz."
+                                color="emerald"
+                                onClick={() => onToolSelect('jwt')}
+                            />
+                            <ToolItem
+                                icon={<Globe size={20} />}
+                                title="URL Encoder"
+                                desc="Web adreslerini kodla ve çöz."
+                                color="sky"
+                                onClick={() => onToolSelect('url')}
                             />
                         </div>
                     </section>
