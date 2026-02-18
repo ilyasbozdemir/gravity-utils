@@ -3,27 +3,46 @@ import { ArrowLeft, RefreshCw, AlertCircle } from 'lucide-react';
 import jsPDF from 'jspdf';
 import { getAvailableFormats, type Format } from '../utils/formats';
 import { saveAs } from 'file-saver';
+import * as mammoth from 'mammoth';
+import { Document, Packer, Paragraph, TextRun } from 'docx';
+import * as pdfjsLib from 'pdfjs-dist';
+
+// Configure PDF.js worker
+pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.js`;
 
 interface FileConverterProps {
-    file: File;
+    file: File | null;
     onBack: () => void;
 }
 
-export const FileConverter: React.FC<FileConverterProps> = ({ file, onBack }) => {
+export const FileConverter: React.FC<FileConverterProps> = ({ file: initialFile, onBack }) => {
+    const [file, setFile] = useState<File | null>(initialFile);
     const [formats, setFormats] = useState<Format[]>([]);
     const [selectedFormat, setSelectedFormat] = useState<Format | null>(null);
     const [customExt, setCustomExt] = useState('');
     const [isProcessing, setIsProcessing] = useState(false);
+    const [progress, setProgress] = useState<string>('');
+
+    const fileInputRef = React.useRef<HTMLInputElement>(null);
 
     useEffect(() => {
-        const available = getAvailableFormats(file);
-        setFormats(available);
+        if (file) {
+            const available = getAvailableFormats(file);
+            setFormats(available);
+        }
     }, [file]);
 
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files[0]) {
+            setFile(e.target.files[0]);
+        }
+    };
+
     const handleConvert = async () => {
+        if (!file) return;
         setIsProcessing(true);
+        setProgress('Başlatılıyor...');
         try {
-            // Determine target extension and mime
             let targetExt = customExt;
             let isRenameOnly = false;
 
@@ -31,7 +50,6 @@ export const FileConverter: React.FC<FileConverterProps> = ({ file, onBack }) =>
                 targetExt = selectedFormat.ext;
                 isRenameOnly = selectedFormat.isRenameOnly === true;
             } else if (customExt) {
-                // Manual entry is usually treated as a rename
                 isRenameOnly = true;
             }
 
@@ -45,12 +63,12 @@ export const FileConverter: React.FC<FileConverterProps> = ({ file, onBack }) =>
             const baseName = originalName.substring(0, originalName.lastIndexOf('.')) || originalName;
             const finalName = `${baseName}.${targetExt}`;
 
-            // PDF Conversion Logic
-            if (targetExt.toLowerCase() === 'pdf') {
+            // 1. PDF Conversion Logic
+            if (targetExt.toLowerCase() === 'pdf' && !isRenameOnly) {
+                setProgress('PDF oluşturuluyor...');
                 const doc = new jsPDF();
 
                 if (file.type.startsWith('image/')) {
-                    // Image to PDF
                     const imgData = await new Promise<string>((resolve, reject) => {
                         const reader = new FileReader();
                         reader.onload = () => resolve(reader.result as string);
@@ -65,8 +83,27 @@ export const FileConverter: React.FC<FileConverterProps> = ({ file, onBack }) =>
                     doc.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
                     doc.save(finalName);
 
+                } else if (file.name.toLowerCase().endsWith('.docx')) {
+                    // Word to PDF
+                    setProgress('Word belgesi çözümleniyor...');
+                    const arrayBuffer = await file.arrayBuffer();
+                    const result = await mammoth.extractRawText({ arrayBuffer });
+                    const text = result.value;
+
+                    setProgress('Metin PDFye aktarılıyor...');
+                    const splitText = doc.splitTextToSize(text, 180);
+                    let y = 10;
+                    for (let i = 0; i < splitText.length; i++) {
+                        if (y > 280) {
+                            doc.addPage();
+                            y = 10;
+                        }
+                        doc.text(splitText[i], 10, y);
+                        y += 7;
+                    }
+                    doc.save(finalName);
+
                 } else if (file.type.startsWith('text/') || /\.(txt|md|js|ts|json|xml)$/i.test(file.name)) {
-                    // Text to PDF
                     const text = await file.text();
                     const splitText = doc.splitTextToSize(text, 180);
                     let y = 10;
@@ -80,9 +117,6 @@ export const FileConverter: React.FC<FileConverterProps> = ({ file, onBack }) =>
                     }
                     doc.save(finalName);
                 } else {
-                    // Fallback for types we can't truly convert to PDF client-side yet
-                    // Just forcing the extension (Rename) as per user request "support as much as you can"
-                    // But warning is better.
                     const newBlob = new Blob([file], { type: 'application/pdf' });
                     saveAs(newBlob, finalName);
                 }
@@ -91,21 +125,54 @@ export const FileConverter: React.FC<FileConverterProps> = ({ file, onBack }) =>
                 return;
             }
 
+            // 2. Word (.docx) Conversion Logic
+            if (targetExt.toLowerCase() === 'docx' && !isRenameOnly) {
+                if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
+                    setProgress('PDF metni çıkarılıyor...');
+                    const arrayBuffer = await file.arrayBuffer();
+                    const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
+                    const pdf = await loadingTask.promise;
+
+                    let fullText = '';
+                    for (let i = 1; i <= pdf.numPages; i++) {
+                        setProgress(`Sayfa işleniyor: ${i}/${pdf.numPages}`);
+                        const page = await pdf.getPage(i);
+                        const textContent = await page.getTextContent();
+                        const pageText = textContent.items.map((item: any) => item.str).join(' ');
+                        fullText += pageText + '\n\n';
+                    }
+
+                    setProgress('Word belgesi hazırlanıyor...');
+                    const wordDoc = new Document({
+                        sections: [{
+                            properties: {},
+                            children: fullText.split('\n').map(line => new Paragraph({
+                                children: [new TextRun(line)],
+                            })),
+                        }],
+                    });
+
+                    const buffer = await Packer.toBlob(wordDoc);
+                    saveAs(buffer, finalName);
+                } else {
+                    // Fallback rename
+                    const newBlob = new Blob([file], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+                    saveAs(newBlob, finalName);
+                }
+
+                setIsProcessing(false);
+                return;
+            }
+
+            // 3. Fallback / Rename Logic
             let targetMime = 'application/octet-stream';
             if (targetExt === 'zip') targetMime = 'application/zip';
             else if (targetExt === 'txt') targetMime = 'text/plain';
             else if (selectedFormat) targetMime = selectedFormat.mime;
 
-            if (isRenameOnly) {
-                // BYTES PRESERVATION MODE
-                // Using new Blob([file]) preserves the data exactly but allows us to override the type
-                const newBlob = new Blob([file], { type: targetMime });
-                saveAs(newBlob, finalName);
-            } else {
-                // Fallback for now
-                const newBlob = new Blob([file], { type: targetMime });
-                saveAs(newBlob, finalName);
-            }
+            const newBlob = new Blob([file], { type: targetMime });
+            saveAs(newBlob, finalName);
+
 
         } catch (error) {
             console.error(error);
@@ -118,48 +185,98 @@ export const FileConverter: React.FC<FileConverterProps> = ({ file, onBack }) =>
     return (
         <div className="max-w-[600px] mx-auto p-8 animate-[fadeIn_0.5s_ease] rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 shadow-lg">
             <div className="flex items-center justify-start gap-4 mb-8">
-                <button onClick={onBack} className="p-2 bg-blue-500/20 border border-blue-500/40 text-white rounded-lg hover:bg-blue-500/40 transition-all">
+                <button
+                    onClick={onBack}
+                    className="p-2 bg-blue-500/20 border border-blue-500/40 text-white rounded-lg hover:bg-blue-500/40 transition-all"
+                    title="Geri Dön"
+                >
                     <ArrowLeft size={18} />
                 </button>
                 <h2 className="m-0 text-2xl font-semibold">Dönüştür / Yeniden Adlandır</h2>
             </div>
 
             <div className="flex flex-col gap-6 items-start">
-                <div className="p-4 bg-white/5 w-full rounded-xl text-left border border-white/5">
-                    <span className="text-sm block mb-1 opacity-70">Seçilen Dosya:</span>
-                    <strong className="text-lg">{file.name}</strong>
-                </div>
-
-                {/* Suggested Formats */}
-                <div className="w-full text-left">
-                    <label className="text-sm opacity-70 block mb-2">Önerilen Dönüşümler:</label>
-                    <div className="flex gap-3 flex-wrap">
-                        {formats.map((fmt) => (
-                            <button
-                                key={fmt.ext}
-                                onClick={() => { setSelectedFormat(fmt); setCustomExt(''); }}
-                                className={`px-4 py-2 rounded-lg border transition-all ${selectedFormat === fmt
-                                        ? 'bg-blue-500/60 border-blue-400 text-white shadow-[0_0_15px_rgba(96,165,250,0.3)] transform -translate-y-0.5'
-                                        : 'bg-blue-500/20 border-blue-500/40 hover:bg-blue-500/40'
-                                    }`}
-                            >
-                                {fmt.label} (.{fmt.ext})
-                            </button>
-                        ))}
+                {!file ? (
+                    <div
+                        onClick={() => fileInputRef.current?.click()}
+                        className="w-full py-20 border-2 border-dashed border-white/10 rounded-2xl flex flex-col items-center justify-center gap-4 hover:border-blue-500/50 hover:bg-white/5 transition-all cursor-pointer group"
+                    >
+                        <div className="p-4 bg-blue-500/10 rounded-full text-blue-400 group-hover:scale-110 transition-transform">
+                            <RefreshCw size={32} />
+                        </div>
+                        <div className="text-center">
+                            <p className="font-semibold text-lg">Dönüştürmek için Dosya Seçin</p>
+                            <p className="text-sm text-slate-500 mt-1">Veya dosyayı buraya sürükleyip bırakın</p>
+                        </div>
+                        <input
+                            type="file"
+                            ref={fileInputRef}
+                            onChange={handleFileChange}
+                            className="hidden"
+                            title="Dosya Seç"
+                        />
                     </div>
-                </div>
+                ) : (
+                    <>
+                        <div className="p-4 bg-white/5 w-full rounded-xl text-left border border-white/5 flex items-center justify-between">
+                            <div>
+                                <span className="text-sm block mb-1 opacity-70">Seçilen Dosya:</span>
+                                <strong className="text-lg">{file.name}</strong>
+                            </div>
+                            <button
+                                onClick={() => { setFile(null); setFormats([]); setSelectedFormat(null); }}
+                                className="text-xs text-red-400 hover:text-red-300 font-medium"
+                            >
+                                Dosyayı Değiştir
+                            </button>
+                        </div>
 
-                {/* Manual Override */}
-                <div className="w-full text-left">
-                    <label className="text-sm opacity-70 block mb-2">Veya Manuel Uzantı Yazın:</label>
-                    <input
-                        type="text"
-                        value={customExt}
-                        onChange={(e) => { setCustomExt(e.target.value); setSelectedFormat(null); }}
-                        placeholder="zip, rar, txt..."
-                        className="bg-black/30 border border-white/10 text-white p-3 rounded-lg w-full focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400 transition-all font-mono"
-                    />
-                </div>
+                        {/* Processing Overlay */}
+                        {isProcessing && (
+                            <div className="w-full p-6 bg-blue-500/10 border border-blue-500/20 rounded-xl flex flex-col items-center justify-center gap-4 animate-pulse">
+                                <RefreshCw size={32} className="animate-spin text-blue-400" />
+                                <div className="text-center">
+                                    <p className="font-semibold text-blue-100">{progress}</p>
+                                    <p className="text-xs text-blue-300/60 mt-1">Lütfen tarayıcıyı kapatmayın...</p>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Suggested Formats */}
+                        <div className="w-full text-left">
+                            <label className="text-sm opacity-70 block mb-2">Önerilen Dönüşümler:</label>
+                            <div className="flex gap-3 flex-wrap">
+                                {formats.map((fmt) => (
+                                    <button
+                                        key={fmt.ext}
+                                        onClick={() => { setSelectedFormat(fmt); setCustomExt(''); }}
+                                        className={`px-4 py-2 rounded-lg border transition-all ${selectedFormat === fmt
+                                            ? 'bg-blue-500/60 border-blue-400 text-white shadow-[0_0_15px_rgba(96,165,250,0.3)] transform -translate-y-0.5'
+                                            : 'bg-blue-500/20 border-blue-500/40 hover:bg-blue-500/40'
+                                            }`}
+                                    >
+                                        {fmt.label} (.{fmt.ext})
+                                    </button>
+                                ))}
+                                {formats.length === 0 && (
+                                    <p className="text-xs text-slate-500 italic">Bu dosya tipi için otomatik öneri bulunamadı.</p>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Manual Override */}
+                        <div className="w-full text-left">
+                            <label className="text-sm opacity-70 block mb-2">Veya Manuel Uzantı Yazın:</label>
+                            <input
+                                type="text"
+                                value={customExt}
+                                onChange={(e) => { setCustomExt(e.target.value); setSelectedFormat(null); }}
+                                placeholder="zip, rar, txt..."
+                                className="bg-black/30 border border-white/10 text-white p-3 rounded-lg w-full focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400 transition-all font-mono"
+                            />
+                        </div>
+                    </>
+                )}
 
                 <div className="bg-yellow-500/10 border border-yellow-500/20 p-4 rounded-xl flex items-start gap-3 text-sm text-left">
                     <AlertCircle size={24} className="text-yellow-500 shrink-0" />
@@ -170,8 +287,8 @@ export const FileConverter: React.FC<FileConverterProps> = ({ file, onBack }) =>
 
                 <button
                     className={`w-full mt-4 flex items-center justify-center gap-3 p-4 rounded-xl font-medium transition-all ${(selectedFormat || customExt) && !isProcessing
-                            ? 'bg-emerald-500/20 border border-emerald-500/40 hover:bg-emerald-500/30 cursor-pointer shadow-[0_0_20px_rgba(16,185,129,0.2)] hover:-translate-y-0.5 text-emerald-100'
-                            : 'bg-white/5 border border-white/5 text-slate-500 cursor-not-allowed'
+                        ? 'bg-emerald-500/20 border border-emerald-500/40 hover:bg-emerald-500/30 cursor-pointer shadow-[0_0_20px_rgba(16,185,129,0.2)] hover:-translate-y-0.5 text-emerald-100'
+                        : 'bg-white/5 border border-white/5 text-slate-500 cursor-not-allowed'
                         }`}
                     disabled={(!selectedFormat && !customExt) || isProcessing}
                     onClick={handleConvert}

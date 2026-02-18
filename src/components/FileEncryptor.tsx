@@ -2,16 +2,25 @@ import React, { useState } from 'react';
 import { ArrowLeft, Lock, Unlock, Key, Download, RefreshCw, Eye, EyeOff, ShieldCheck } from 'lucide-react';
 
 interface FileEncryptorProps {
-    file: File;
+    file: File | null;
     onBack: () => void;
 }
 
-export const FileEncryptor: React.FC<FileEncryptorProps> = ({ file, onBack }) => {
+export const FileEncryptor: React.FC<FileEncryptorProps> = ({ file: initialFile, onBack }) => {
+    const [file, setFile] = useState<File | null>(initialFile);
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [mode, setMode] = useState<'encrypt' | 'decrypt'>('encrypt');
     const [processing, setProcessing] = useState(false);
     const [error, setError] = useState<string | null>(null);
+
+    const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files[0]) {
+            setFile(e.target.files[0]);
+        }
+    };
 
     const deriveKey = async (password: string, salt: Uint8Array) => {
         const enc = new TextEncoder();
@@ -37,8 +46,8 @@ export const FileEncryptor: React.FC<FileEncryptorProps> = ({ file, onBack }) =>
     };
 
     const handleProcess = async () => {
-        if (!password) {
-            setError('Lütfen bir şifre girin.');
+        if (!file || !password) {
+            setError(!password ? 'Lütfen bir şifre girin.' : 'Lütfen bir dosya seçin.');
             return;
         }
         setProcessing(true);
@@ -123,68 +132,101 @@ export const FileEncryptor: React.FC<FileEncryptorProps> = ({ file, onBack }) =>
                 </h2>
             </div>
 
-            <div className="mb-8 p-4 bg-white/5 rounded-xl border border-white/10">
-                <p className="text-lg font-medium truncate">{file.name}</p>
-                <p className="text-slate-400 text-sm">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
-            </div>
-
-            <div className="flex justify-center gap-4 mb-8">
-                <button
-                    onClick={() => setMode('encrypt')}
-                    className={`px-6 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 ${mode === 'encrypt' ? 'bg-emerald-500/80 text-white' : 'bg-white/5 hover:bg-white/10 text-slate-300'
-                        }`}
+            {!file ? (
+                <div
+                    onClick={() => fileInputRef.current?.click()}
+                    className="w-full py-20 border-2 border-dashed border-white/10 rounded-2xl flex flex-col items-center justify-center gap-4 hover:border-emerald-500/50 hover:bg-white/5 transition-all cursor-pointer group"
                 >
-                    <Lock size={18} /> Şifrele
-                </button>
-                <button
-                    onClick={() => setMode('decrypt')}
-                    className={`px-6 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 ${mode === 'decrypt' ? 'bg-indigo-500/80 text-white' : 'bg-white/5 hover:bg-white/10 text-slate-300'
-                        }`}
-                >
-                    <Unlock size={18} /> Şifre Çöz
-                </button>
-            </div>
-
-            <div className="max-w-xs mx-auto space-y-4">
-                <div className="relative">
-                    <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-slate-400">
-                        <Key size={18} />
+                    <div className="p-4 bg-emerald-500/10 rounded-full text-emerald-400 group-hover:scale-110 transition-transform">
+                        <Lock size={32} />
+                    </div>
+                    <div className="text-center">
+                        <p className="font-semibold text-lg">Şifrelemek İçin Dosya Seçin</p>
+                        <p className="text-sm text-slate-500 mt-1">Dosyalarınızı askeri düzeyde AES-256 ile koruyun</p>
                     </div>
                     <input
-                        type={showPassword ? "text" : "password"}
-                        placeholder={mode === 'encrypt' ? "Şifre Belirle" : "Dosya Şifresi"}
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        className="w-full bg-black/20 border border-white/10 rounded-lg py-3 pl-10 pr-10 focus:outline-none focus:border-emerald-500/50 transition-colors text-center"
+                        type="file"
+                        ref={fileInputRef}
+                        onChange={handleFileChange}
+                        className="hidden"
+                        title="Dosya Seç"
                     />
-                    <button
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute inset-y-0 right-3 flex items-center text-slate-400 hover:text-white cursor-pointer border-none bg-transparent"
-                    >
-                        {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                    </button>
                 </div>
-
-                {error && (
-                    <div className="text-red-400 text-sm bg-red-400/10 p-2 rounded border border-red-400/20">
-                        {error}
+            ) : (
+                <>
+                    <div className="mb-8 p-4 bg-white/5 rounded-xl border border-white/10 relative group">
+                        <button
+                            onClick={() => setFile(null)}
+                            className="absolute -top-2 -right-2 p-1.5 bg-slate-800 text-slate-400 hover:text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity border border-white/10"
+                            title="Dosyayı Değiştir"
+                        >
+                            <RefreshCw size={14} />
+                        </button>
+                        <p className="text-lg font-medium truncate">{file.name}</p>
+                        <p className="text-slate-400 text-sm">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
                     </div>
-                )}
 
-                <button
-                    onClick={handleProcess}
-                    disabled={processing || !password}
-                    className={`w-full py-3 rounded-lg font-bold text-white transition-all flex items-center justify-center gap-2 ${processing ? 'opacity-70 cursor-wait' : 'hover:scale-[1.02] active:scale-[0.98]'
-                        } ${mode === 'encrypt' ? 'bg-gradient-to-r from-emerald-500 to-teal-600' : 'bg-gradient-to-r from-indigo-500 to-purple-600'}`}
-                >
-                    {processing ? (
-                        <RefreshCw className="animate-spin" size={20} />
-                    ) : (
-                        <Download size={20} />
-                    )}
-                    {processing ? 'İşleniyor...' : (mode === 'encrypt' ? 'Şifrele ve İndir' : 'Çöz ve İndir')}
-                </button>
-            </div>
+                    <div className="flex justify-center gap-4 mb-8">
+                        <button
+                            onClick={() => setMode('encrypt')}
+                            className={`px-6 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 ${mode === 'encrypt' ? 'bg-emerald-500/80 text-white' : 'bg-white/5 hover:bg-white/10 text-slate-300'
+                                }`}
+                        >
+                            <Lock size={18} /> Şifrele
+                        </button>
+                        <button
+                            onClick={() => setMode('decrypt')}
+                            className={`px-6 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 ${mode === 'decrypt' ? 'bg-indigo-500/80 text-white' : 'bg-white/5 hover:bg-white/10 text-slate-300'
+                                }`}
+                        >
+                            <Unlock size={18} /> Şifre Çöz
+                        </button>
+                    </div>
+
+                    <div className="max-w-xs mx-auto space-y-4">
+                        <div className="relative">
+                            <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-slate-400">
+                                <Key size={18} />
+                            </div>
+                            <input
+                                type={showPassword ? "text" : "password"}
+                                placeholder={mode === 'encrypt' ? "Şifre Belirle" : "Dosya Şifresi"}
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                title="Şifre"
+                                className="w-full bg-black/20 border border-white/10 rounded-lg py-3 pl-10 pr-10 focus:outline-none focus:border-emerald-500/50 transition-colors text-center"
+                            />
+                            <button
+                                onClick={() => setShowPassword(!showPassword)}
+                                title={showPassword ? "Gizle" : "Göster"}
+                                className="absolute inset-y-0 right-3 flex items-center text-slate-400 hover:text-white cursor-pointer border-none bg-transparent"
+                            >
+                                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                            </button>
+                        </div>
+
+                        {error && (
+                            <div className="text-red-400 text-sm bg-red-400/10 p-2 rounded border border-red-400/20">
+                                {error}
+                            </div>
+                        )}
+
+                        <button
+                            onClick={handleProcess}
+                            disabled={processing || !password}
+                            className={`w-full py-3 rounded-lg font-bold text-white transition-all flex items-center justify-center gap-2 ${processing ? 'opacity-70 cursor-wait' : 'hover:scale-[1.02] active:scale-[0.98]'
+                                } ${mode === 'encrypt' ? 'bg-gradient-to-r from-emerald-500 to-teal-600' : 'bg-gradient-to-r from-indigo-500 to-purple-600'}`}
+                        >
+                            {processing ? (
+                                <RefreshCw className="animate-spin" size={20} />
+                            ) : (
+                                <Download size={20} />
+                            )}
+                            {processing ? 'İşleniyor...' : (mode === 'encrypt' ? 'Şifrele ve İndir' : 'Çöz ve İndir')}
+                        </button>
+                    </div>
+                </>
+            )}
 
             <p className="mt-6 text-xs text-slate-400/60 max-w-sm mx-auto">
                 <Lock size={12} className="inline mr-1" />

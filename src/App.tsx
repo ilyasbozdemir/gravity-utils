@@ -95,31 +95,31 @@ function App() {
               <ActionPanel file={file} onClear={clearFile} onAction={handleAction} />
             )}
 
-            {view === 'convert' && file && (
+            {view === 'convert' && (
               <FileConverter file={file} onBack={() => setView('home')} />
             )}
 
-            {view === 'inspect' && file && (
+            {view === 'inspect' && (
               <ZipInspector file={file} onBack={() => setView('home')} />
             )}
 
-            {view === 'base64' && file && (
+            {view === 'base64' && (
               <Base64Viewer file={file} onBack={() => setView('home')} />
             )}
 
-            {view === 'optimize' && file && (
+            {view === 'optimize' && (
               <ImageOptimizer file={file} onBack={() => setView('home')} />
             )}
 
-            {view === 'hash' && file && (
+            {view === 'hash' && (
               <HashGenerator file={file} onBack={() => setView('home')} />
             )}
 
-            {view === 'json' && file && (
+            {view === 'json' && (
               <JsonFormatter file={file} onBack={() => setView('home')} />
             )}
 
-            {view === 'text' && file && (
+            {view === 'text' && (
               <TextAnalyzer file={file} onBack={() => setView('home')} />
             )}
 
@@ -127,23 +127,23 @@ function App() {
               <PdfManager file={file} onBack={() => setView('home')} />
             )}
 
-            {view === 'encrypt' && file && (
+            {view === 'encrypt' && (
               <FileEncryptor file={file} onBack={() => setView('home')} />
             )}
 
-            {view === 'exif' && file && (
+            {view === 'exif' && (
               <ExifCleaner file={file} onBack={() => setView('home')} />
             )}
 
-            {view === 'qr' && file && (
+            {view === 'qr' && (
               <QrManager file={file} onBack={() => setView('home')} />
             )}
 
-            {view === 'social' && file && (
+            {view === 'social' && (
               <SocialResizer file={file} onBack={() => setView('home')} />
             )}
 
-            {view === 'favicon' && file && (
+            {view === 'favicon' && (
               <FaviconGenerator file={file} onBack={() => setView('home')} />
             )}
 
@@ -154,17 +154,15 @@ function App() {
         )}
       </main>
 
-      {!file && (
-        <footer className="text-sm p-8 text-center opacity-50 border-t border-white/5 flex flex-col gap-2">
-          <p>© 2026 Gravity Utils. Tarayıcı tabanlı güvenli araçlar.</p>
-          <div className="text-xs flex items-center justify-center gap-1">
-            <span className="opacity-50">Powered by</span>
-            <a href="https://ilyasbozdemir.dev" target="_blank" rel="noopener noreferrer" className="text-violet-400 hover:text-white font-medium no-underline transition-colors">
-              ilyasbozdemir.dev
-            </a>
-          </div>
-        </footer>
-      )}
+      <footer className="text-sm p-8 text-center opacity-60 border-t border-white/5 flex flex-col gap-2 mt-auto">
+        <p>© 2026 Gravity Utils. Tüm işlemler tarayıcı tarafında güvenle gerçekleşir.</p>
+        <div className="text-xs flex items-center justify-center gap-1">
+          <span className="opacity-50">Developed by</span>
+          <a href="https://ilyasbozdemir.dev" target="_blank" rel="noopener noreferrer" className="text-violet-400 hover:text-white font-medium no-underline transition-colors flex items-center gap-1">
+            ilyasbozdemir.dev
+          </a>
+        </div>
+      </footer>
     </div>
   );
 }

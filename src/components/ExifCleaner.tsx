@@ -1,22 +1,42 @@
 
 import React, { useEffect, useState } from 'react';
-import { ArrowLeft, Shield, Download, Camera, MapPin, Calendar, Info, AlertTriangle, Eye, Lock } from 'lucide-react';
+import { ArrowLeft, Shield, Download, Camera, MapPin, Calendar, Info, AlertTriangle, Eye, Lock, RefreshCw } from 'lucide-react';
 import exifr from 'exifr';
 
 interface ExifCleanerProps {
-    file: File;
+    file: File | null;
     onBack: () => void;
 }
 
-export const ExifCleaner: React.FC<ExifCleanerProps> = ({ file, onBack }) => {
+export const ExifCleaner: React.FC<ExifCleanerProps> = ({ file: initialFile, onBack }) => {
+    const [file, setFile] = useState<File | null>(initialFile);
     const [processedUrl, setProcessedUrl] = useState<string | null>(null);
     const [metadata, setMetadata] = useState<Record<string, any> | null>(null);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
     const [cleaned, setCleaned] = useState(false);
     const [riskLevel, setRiskLevel] = useState<'high' | 'medium' | 'low' | 'safe'>('safe');
 
+    const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files[0]) {
+            setFile(e.target.files[0]);
+            setCleaned(false);
+            setProcessedUrl(null);
+            setMetadata(null);
+        }
+    };
+
     useEffect(() => {
+        if (!file) {
+            setMetadata(null);
+            setRiskLevel('safe');
+            setLoading(false);
+            return;
+        }
+
         const analyze = async () => {
+            setLoading(true);
             try {
                 // Parse comprehensive metadata
                 const data = await exifr.parse(file, { gps: true, xmp: true, icc: false, tiff: true, exif: true });
@@ -79,178 +99,209 @@ export const ExifCleaner: React.FC<ExifCleanerProps> = ({ file, onBack }) => {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-
-                {/* LEFT COLUMN: Analysis Report */}
-                <div className="flex flex-col gap-6">
-                    {/* Security Alert Banner */}
-                    {!cleaned && riskLevel !== 'safe' && (
-                        <div className={`p - 4 rounded - xl border flex gap - 4 ${riskLevel === 'high' ? 'bg-red-500/10 border-red-500/30' :
-                            riskLevel === 'medium' ? 'bg-amber-500/10 border-amber-500/30' :
-                                'bg-blue-500/10 border-blue-500/30'
-                            } `}>
-                            <div className={`p - 2 rounded - full h - fit ${riskLevel === 'high' ? 'bg-red-500/20 text-red-500' :
-                                riskLevel === 'medium' ? 'bg-amber-500/20 text-amber-500' :
-                                    'bg-blue-500/20 text-blue-500'
-                                } `}>
-                                <AlertTriangle size={24} />
-                            </div>
-                            <div className="text-left">
-                                <h3 className={`font - bold text - lg ${riskLevel === 'high' ? 'text-red-400' :
-                                    riskLevel === 'medium' ? 'text-amber-400' :
-                                        'text-blue-400'
-                                    } `}>
-                                    {riskLevel === 'high' ? 'KRİTİK GİZLİLİK RİSKİ!' :
-                                        riskLevel === 'medium' ? 'Kişisel Veri Tespit Edildi' : 'Metadata Bulundu'}
-                                </h3>
-                                <p className="text-sm opacity-80 mt-1">
-                                    {riskLevel === 'high'
-                                        ? "Bu fotoğraf tam konumunuzu (ev adresi, iş yeri vb.) içeriyor. Paylaşmadan önce MUTLAKA temizlemelisiniz."
-                                        : "Bu fotoğraf ne zaman ve hangi cihazla çekildiği bilgisini içeriyor."}
-                                </p>
-                            </div>
+            <div className="min-h-[400px]">
+                {!file ? (
+                    <div
+                        onClick={() => fileInputRef.current?.click()}
+                        className="w-full py-20 border-2 border-dashed border-white/10 rounded-2xl flex flex-col items-center justify-center gap-4 hover:border-amber-500/50 hover:bg-white/5 transition-all cursor-pointer group"
+                    >
+                        <div className="p-4 bg-amber-500/10 rounded-full text-amber-400 group-hover:scale-110 transition-transform">
+                            <Shield size={32} />
                         </div>
-                    )}
-
-                    {/* Detailed Data List */}
-                    <div className="text-left bg-white/5 p-6 rounded-xl border border-white/10 flex-1">
-                        <h3 className="text-lg font-semibold mb-4 flex items-center gap-2 border-b border-white/10 pb-2">
-                            <Eye size={18} className="text-violet-400" />
-                            Fotoğrafın İfşa Ettiği Bilgiler
-                        </h3>
-
-                        {loading && !cleaned ? (
-                            <div className="text-slate-400 animate-pulse">Analiz ediliyor...</div>
-                        ) : metadata && Object.keys(metadata).length > 0 ? (
-                            <div className="flex flex-col gap-4 text-sm">
-
-                                {/* GPS Data - THE CRITICAL ONE */}
-                                {(metadata.latitude || metadata.GPSLatitude) && (
-                                    <div className="bg-red-500/10 border border-red-500/20 p-3 rounded-lg animate-pulse">
-                                        <div className="flex items-center gap-2 text-red-400 font-bold mb-1">
-                                            <MapPin size={18} />
-                                            <span>KONUM BİLGİSİ (GPS)</span>
-                                        </div>
-                                        <p className="text-slate-300 text-xs">
-                                            Koordinatlar: {metadata.latitude || metadata.GPSLatitude}, {metadata.longitude || metadata.GPSLongitude}
-                                        </p>
-                                        <p className="text-red-300 text-xs mt-2 font-semibold">
-                                            ⚠️ Bu koordinatlar haritada evinizin veya bulunduğunuz yerin tam noktasını gösterir!
-                                        </p>
-                                    </div>
-                                )}
-
-                                {/* Date & Time */}
-                                {(metadata.CreateDate || metadata.DateTimeOriginal) && (
-                                    <div className="flex items-start gap-3 p-3 bg-white/5 rounded-lg">
-                                        <Calendar size={18} className="text-blue-400 mt-1" />
-                                        <div>
-                                            <span className="font-bold block text-blue-200">Zaman Damgası</span>
-                                            <span className="opacity-70 text-xs">
-                                                {metaDateToString(metadata.CreateDate || metadata.DateTimeOriginal)}
-                                            </span>
-                                            <p className="text-xs text-slate-500 mt-1">
-                                                Saat ve tarih, nerede olduğunuzu doğrulayabilir.
-                                            </p>
-                                        </div>
-                                    </div>
-                                )}
-
-                                {/* Device Info */}
-                                {(metadata.Make || metadata.Model) && (
-                                    <div className="flex items-start gap-3 p-3 bg-white/5 rounded-lg">
-                                        <Camera size={18} className="text-emerald-400 mt-1" />
-                                        <div>
-                                            <span className="font-bold block text-emerald-200">Cihaz Bilgisi</span>
-                                            <span className="opacity-70 text-xs">{metadata.Make} {metadata.Model}</span>
-                                            <p className="text-xs text-slate-500 mt-1">
-                                                Hangi telefon veya kamerayı kullandığınız bellidir.
-                                            </p>
-                                        </div>
-                                    </div>
-                                )}
-
-                                {/* Software Info */}
-                                {metadata.Software && (
-                                    <div className="flex items-start gap-3 p-3 bg-white/5 rounded-lg">
-                                        <Info size={18} className="text-slate-400 mt-1" />
-                                        <div>
-                                            <span className="font-bold block text-slate-300">Yazılım / Düzenleme</span>
-                                            <span className="opacity-70 text-xs">{metadata.Software}</span>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        ) : (
-                            <div className="text-emerald-400 flex flex-col items-center py-8 opacity-90">
-                                <Shield size={48} className="mb-4" />
-                                <p className="font-bold text-lg">Tertemiz!</p>
-                                <p className="text-sm opacity-70">Bu dosyada hiç metadata bulunamadı.</p>
-                            </div>
-                        )}
+                        <div className="text-center px-4">
+                            <p className="font-semibold text-lg">Gizliliğinizi Korumak İçin Görsel Seçin</p>
+                            <p className="text-sm text-slate-500 mt-1">Görsellerinizdeki gizli konum, cihaz ve tarih bilgilerini bulun ve temizleyin</p>
+                        </div>
+                        <input
+                            type="file"
+                            ref={fileInputRef}
+                            onChange={handleFileChange}
+                            className="hidden"
+                            accept="image/*"
+                            title="Görsel Seç"
+                        />
                     </div>
-                </div>
+                ) : (
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
 
-                {/* RIGHT COLUMN: Action & Result */}
-                <div className="flex flex-col gap-6 ">
-                    <div className="bg-black/40 p-6 rounded-xl border border-white/10 flex flex-col items-center justify-center flex-1 min-h-[400px]">
-                        <div className="mb-6 relative group">
-                            <img
-                                src={cleaned && processedUrl ? processedUrl : URL.createObjectURL(file)}
-                                alt="Preview"
-                                className="max-h-[300px] object-contain rounded shadow-lg transition-opacity duration-300"
-                            />
-                            {cleaned && (
-                                <div className="absolute inset-0 flex items-center justify-center bg-emerald-900/40 backdrop-blur-sm rounded opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <span className="bg-emerald-600 text-white px-3 py-1 rounded-full text-sm font-bold shadow-lg">Temizlenmiş Hali</span>
+                        {/* LEFT COLUMN: Analysis Report */}
+                        <div className="flex flex-col gap-6">
+                            {/* Security Alert Banner */}
+                            {!cleaned && riskLevel !== 'safe' && (
+                                <div className={`p-4 rounded-xl border flex gap-4 ${riskLevel === 'high' ? 'bg-red-500/10 border-red-500/30' :
+                                    riskLevel === 'medium' ? 'bg-amber-500/10 border-amber-500/30' :
+                                        'bg-blue-500/10 border-blue-500/30'
+                                    }`}>
+                                    <div className={`p-2 rounded-full h-fit ${riskLevel === 'high' ? 'bg-red-500/20 text-red-500' :
+                                        riskLevel === 'medium' ? 'bg-amber-500/20 text-amber-500' :
+                                            'bg-blue-500/20 text-blue-500'
+                                        }`}>
+                                        <AlertTriangle size={24} />
+                                    </div>
+                                    <div className="text-left">
+                                        <h3 className={`font-bold text-lg ${riskLevel === 'high' ? 'text-red-400' :
+                                            riskLevel === 'medium' ? 'text-amber-400' :
+                                                'text-blue-400'
+                                            }`}>
+                                            {riskLevel === 'high' ? 'KRİTİK GİZLİLİK RİSKİ!' :
+                                                riskLevel === 'medium' ? 'Kişisel Veri Tespit Edildi' : 'Metadata Bulundu'}
+                                        </h3>
+                                        <p className="text-sm opacity-80 mt-1">
+                                            {riskLevel === 'high'
+                                                ? "Bu fotoğraf tam konumunuzu (ev adresi, iş yeri vb.) içeriyor. Paylaşmadan önce MUTLAKA temizlemelisiniz."
+                                                : "Bu fotoğraf ne zaman ve hangi cihazla çekildiği bilgisini içeriyor."}
+                                        </p>
+                                    </div>
                                 </div>
                             )}
+
+                            {/* Detailed Data List */}
+                            <div className="text-left bg-white/5 p-6 rounded-xl border border-white/10 flex-1">
+                                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2 border-b border-white/10 pb-2">
+                                    <Eye size={18} className="text-violet-400" />
+                                    Fotoğrafın İfşa Ettiği Bilgiler
+                                </h3>
+
+                                {loading && !cleaned ? (
+                                    <div className="text-slate-400 animate-pulse">Analiz ediliyor...</div>
+                                ) : metadata && Object.keys(metadata).length > 0 ? (
+                                    <div className="flex flex-col gap-4 text-sm">
+
+                                        {/* GPS Data - THE CRITICAL ONE */}
+                                        {(metadata.latitude || metadata.GPSLatitude) && (
+                                            <div className="bg-red-500/10 border border-red-500/20 p-3 rounded-lg animate-pulse">
+                                                <div className="flex items-center gap-2 text-red-400 font-bold mb-1">
+                                                    <MapPin size={18} />
+                                                    <span>KONUM BİLGİSİ (GPS)</span>
+                                                </div>
+                                                <p className="text-slate-300 text-xs">
+                                                    Koordinatlar: {metadata.latitude || metadata.GPSLatitude}, {metadata.longitude || metadata.GPSLongitude}
+                                                </p>
+                                                <p className="text-red-300 text-xs mt-2 font-semibold">
+                                                    ⚠️ Bu koordinatlar haritada evinizin veya bulunduğunuz yerin tam noktasını gösterir!
+                                                </p>
+                                            </div>
+                                        )}
+
+                                        {/* Date & Time */}
+                                        {(metadata.CreateDate || metadata.DateTimeOriginal) && (
+                                            <div className="flex items-start gap-3 p-3 bg-white/5 rounded-lg">
+                                                <Calendar size={18} className="text-blue-400 mt-1" />
+                                                <div>
+                                                    <span className="font-bold block text-blue-200">Zaman Damgası</span>
+                                                    <span className="opacity-70 text-xs">
+                                                        {metaDateToString(metadata.CreateDate || metadata.DateTimeOriginal)}
+                                                    </span>
+                                                    <p className="text-xs text-slate-500 mt-1">
+                                                        Saat ve tarih, nerede olduğunuzu doğrulayabilir.
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* Device Info */}
+                                        {(metadata.Make || metadata.Model) && (
+                                            <div className="flex items-start gap-3 p-3 bg-white/5 rounded-lg">
+                                                <Camera size={18} className="text-emerald-400 mt-1" />
+                                                <div>
+                                                    <span className="font-bold block text-emerald-200">Cihaz Bilgisi</span>
+                                                    <span className="opacity-70 text-xs">{metadata.Make} {metadata.Model}</span>
+                                                    <p className="text-xs text-slate-500 mt-1">
+                                                        Hangi telefon veya kamerayı kullandığınız bellidir.
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* Software Info */}
+                                        {metadata.Software && (
+                                            <div className="flex items-start gap-3 p-3 bg-white/5 rounded-lg">
+                                                <Info size={18} className="text-slate-400 mt-1" />
+                                                <div>
+                                                    <span className="font-bold block text-slate-300">Yazılım / Düzenleme</span>
+                                                    <span className="opacity-70 text-xs">{metadata.Software}</span>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                ) : (
+                                    <div className="text-emerald-400 flex flex-col items-center py-8 opacity-90">
+                                        <Shield size={48} className="mb-4" />
+                                        <p className="font-bold text-lg">Tertemiz!</p>
+                                        <p className="text-sm opacity-70">Bu dosyada hiç metadata bulunamadı.</p>
+                                    </div>
+                                )}
+                            </div>
                         </div>
 
-                        {!cleaned ? (
-                            <div className="w-full">
-                                <p className="text-slate-400 text-sm mb-4 text-center italic">
-                                    "Bir görüntüyü internete yüklemeden önce <br />içinde ne sakladığını bir kez daha düşünün."
-                                </p>
+                        {/* RIGHT COLUMN: Action & Result */}
+                        <div className="flex flex-col gap-6 ">
+                            <div className="bg-black/40 p-6 rounded-xl border border-white/10 flex flex-col items-center justify-center flex-1 min-h-[400px] relative group">
                                 <button
-                                    onClick={handleClean}
-                                    disabled={loading || (!metadata && riskLevel === 'safe')}
-                                    className="bg-red-600 hover:bg-red-500 text-white w-full py-4 rounded-lg font-bold text-lg flex items-center justify-center gap-2 transition-all hover:scale-[1.02] shadow-[0_0_20px_rgba(220,38,38,0.4)]"
+                                    onClick={() => setFile(null)}
+                                    className="absolute top-4 right-4 p-2 bg-slate-800 text-slate-400 hover:text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity border border-white/10 z-10"
+                                    title="Görseli Değiştir"
                                 >
-                                    <Shield size={24} />
-                                    {loading ? 'Analiz Ediliyor...' : 'BU BİLGİLERİ SİL'}
+                                    <RefreshCw size={16} />
                                 </button>
-                            </div>
-                        ) : (
-                            <div className="w-full flex flex-col gap-4 animate-[fadeSlideUp_0.5s_ease]">
-                                <div className="bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 p-4 rounded-lg text-center">
-                                    <div className="font-bold text-lg flex justify-center items-center gap-2 mb-1">
-                                        <Lock size={20} />
-                                        GİZLİLİK SAĞLANDI
-                                    </div>
-                                    <p className="text-sm opacity-80">
-                                        Konum, tarih ve cihaz bilgileri tamamen silindi. <br />Görüntü kalitesi %95 (JPG) olarak korundu.
-                                    </p>
+                                <div className="mb-6 relative group">
+                                    <img
+                                        src={cleaned && processedUrl ? processedUrl : URL.createObjectURL(file as Blob)}
+                                        alt="Preview"
+                                        className="max-h-[300px] object-contain rounded shadow-lg transition-opacity duration-300"
+                                    />
+                                    {cleaned && (
+                                        <div className="absolute inset-0 flex items-center justify-center bg-emerald-900/40 backdrop-blur-sm rounded opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <span className="bg-emerald-600 text-white px-3 py-1 rounded-full text-sm font-bold shadow-lg">Temizlenmiş Hali</span>
+                                        </div>
+                                    )}
                                 </div>
-                                <a
-                                    href={processedUrl!}
-                                    download={`safe_${file.name.split('.')[0]}.jpg`}
-                                    className="bg-white text-emerald-900 hover:bg-slate-200 w-full py-4 rounded-lg font-bold text-lg flex items-center justify-center gap-2 transition-colors shadow-lg"
-                                >
-                                    <Download size={24} />
-                                    Güvenli Dosyayı İndir
-                                </a>
-                                <button
-                                    onClick={() => { setCleaned(false); setProcessedUrl(null); }}
-                                    className="text-slate-400 text-sm hover:text-white underline"
-                                >
-                                    Orijinale Dön
-                                </button>
-                            </div>
-                        )}
-                    </div>
-                </div>
 
+                                {!cleaned ? (
+                                    <div className="w-full">
+                                        <p className="text-slate-400 text-sm mb-4 text-center italic">
+                                            "Bir görüntüyü internete yüklemeden önce <br />içinde ne sakladığını bir kez daha düşünün."
+                                        </p>
+                                        <button
+                                            onClick={handleClean}
+                                            disabled={loading || (!metadata && riskLevel === 'safe')}
+                                            className="bg-red-600 hover:bg-red-500 text-white w-full py-4 rounded-lg font-bold text-lg flex items-center justify-center gap-2 transition-all hover:scale-[1.02] shadow-[0_0_20px_rgba(220,38,38,0.4)]"
+                                        >
+                                            <Shield size={24} />
+                                            {loading ? 'Analiz Ediliyor...' : 'BU BİLGİLERİ SİL'}
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <div className="w-full flex flex-col gap-4 animate-[fadeSlideUp_0.5s_ease]">
+                                        <div className="bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 p-4 rounded-lg text-center">
+                                            <div className="font-bold text-lg flex justify-center items-center gap-2 mb-1">
+                                                <Lock size={20} />
+                                                GİZLİLİK SAĞLANDI
+                                            </div>
+                                            <p className="text-sm opacity-80">
+                                                Konum, tarih ve cihaz bilgileri tamamen silindi. <br />Görüntü kalitesi %95 (JPG) olarak korundu.
+                                            </p>
+                                        </div>
+                                        <a
+                                            href={processedUrl!}
+                                            download={`safe_${file.name.split('.')[0]}.jpg`}
+                                            className="bg-white text-emerald-900 hover:bg-slate-200 w-full py-4 rounded-lg font-bold text-lg flex items-center justify-center gap-2 transition-colors shadow-lg"
+                                        >
+                                            <Download size={24} />
+                                            Güvenli Dosyayı İndir
+                                        </a>
+                                        <button
+                                            onClick={() => { setCleaned(false); setProcessedUrl(null); }}
+                                            className="text-slate-400 text-sm hover:text-white underline"
+                                        >
+                                            Orijinale Dön
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );

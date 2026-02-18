@@ -16,12 +16,22 @@ const TR = {
     pngImg: 'PNG Görüntüsü',
     webpImg: 'WebP Görüntüsü',
     jsonFile: 'JSON Dosyası',
-    mdFile: 'Markdown Dosyası'
+    mdFile: 'Markdown Dosyası',
+    pdfDoc: 'PDF Belgesi',
+    wordDoc: 'Word Belgesi (.docx)',
 };
 
 export const SUPPORTED_CONVERSIONS: Record<string, Format[]> = {
-    // Microsoft Office types are actually Zips
+    // Microsoft Office types
     'application/vnd.openxmlformats-officedocument.wordprocessingml.document': [ // .docx
+        { ext: 'pdf', label: TR.pdfDoc, mime: 'application/pdf' },
+        { ext: 'txt', label: TR.txtFile, mime: 'text/plain' },
+        { ext: 'zip', label: TR.zipArchive, mime: 'application/zip', isRenameOnly: true }
+    ],
+    // PDF
+    'application/pdf': [
+        { ext: 'docx', label: TR.wordDoc, mime: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' },
+        { ext: 'txt', label: TR.txtFile, mime: 'text/plain' },
         { ext: 'zip', label: TR.zipArchive, mime: 'application/zip', isRenameOnly: true }
     ],
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': [ // .xlsx
@@ -30,40 +40,55 @@ export const SUPPORTED_CONVERSIONS: Record<string, Format[]> = {
     'application/vnd.openxmlformats-officedocument.presentationml.presentation': [ // .pptx
         { ext: 'zip', label: TR.zipArchive, mime: 'application/zip', isRenameOnly: true }
     ],
-    // Standard Zip can be renamed to docx if user knows what they are doing (risky but allowed)
-    'application/zip': [
-        { ext: 'docx', label: 'Word Belgesi (Deneysel)', mime: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', isRenameOnly: true }
-    ],
 
     // Images
     'image/png': [
         { ext: 'jpg', label: TR.jpegImg, mime: 'image/jpeg' },
-        { ext: 'webp', label: TR.webpImg, mime: 'image/webp' }
+        { ext: 'webp', label: TR.webpImg, mime: 'image/webp' },
+        { ext: 'pdf', label: TR.pdfDoc, mime: 'application/pdf' }
     ],
     'image/jpeg': [
         { ext: 'png', label: TR.pngImg, mime: 'image/png' },
-        { ext: 'webp', label: TR.webpImg, mime: 'image/webp' }
+        { ext: 'webp', label: TR.webpImg, mime: 'image/webp' },
+        { ext: 'pdf', label: TR.pdfDoc, mime: 'application/pdf' }
     ],
     'image/webp': [
         { ext: 'png', label: TR.pngImg, mime: 'image/png' },
-        { ext: 'jpg', label: TR.jpegImg, mime: 'image/jpeg' }
+        { ext: 'jpg', label: TR.jpegImg, mime: 'image/jpeg' },
+        { ext: 'pdf', label: TR.pdfDoc, mime: 'application/pdf' }
     ],
 
     // Text
     'text/plain': [
+        { ext: 'pdf', label: TR.pdfDoc, mime: 'application/pdf' },
         { ext: 'json', label: TR.jsonFile, mime: 'application/json' },
         { ext: 'md', label: TR.mdFile, mime: 'text/markdown' }
     ],
     'application/json': [
-        { ext: 'txt', label: TR.txtFile, mime: 'text/plain' }
+        { ext: 'txt', label: TR.txtFile, mime: 'text/plain' },
+        { ext: 'pdf', label: TR.pdfDoc, mime: 'application/pdf' }
     ]
 };
 
-// Fallback lookup by extension if MIME is generic
+// Fallback lookup by extension if MIME is generic (Windows sometimes gives empty MIME)
 export const getFormatByExtension = (filename: string): Format[] => {
     const ext = filename.split('.').pop()?.toLowerCase();
 
-    if (ext === 'docx' || ext === 'xlsx' || ext === 'pptx' || ext === 'apk' || ext === 'jar') {
+    if (ext === 'docx') {
+        return [
+            { ext: 'pdf', label: TR.pdfDoc, mime: 'application/pdf' },
+            { ext: 'txt', label: TR.txtFile, mime: 'text/plain' },
+            { ext: 'zip', label: TR.zipArchive, mime: 'application/zip', isRenameOnly: true }
+        ];
+    }
+    if (ext === 'pdf') {
+        return [
+            { ext: 'docx', label: TR.wordDoc, mime: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' },
+            { ext: 'txt', label: TR.txtFile, mime: 'text/plain' }
+        ];
+    }
+
+    if (ext === 'xlsx' || ext === 'pptx' || ext === 'apk' || ext === 'jar') {
         return [{ ext: 'zip', label: TR.zipArchive, mime: 'application/zip', isRenameOnly: true }];
     }
 
@@ -80,14 +105,14 @@ export const getFileCategory = (file: File): FileCategory => {
 };
 
 export const getAvailableFormats = (file: File): Format[] => {
-    // 1. Check exact mime match
+    // 1. Check extension based logic first (more reliable for Office/PDF on some systems)
+    const extFormats = getFormatByExtension(file.name);
+    if (extFormats.length > 0) return extFormats;
+
+    // 2. Check exact mime match
     if (SUPPORTED_CONVERSIONS[file.type]) {
         return SUPPORTED_CONVERSIONS[file.type];
     }
-
-    // 2. Check extension based logic (better for Windows files)
-    const extFormats = getFormatByExtension(file.name);
-    if (extFormats.length > 0) return extFormats;
 
     // 3. Category Fallbacks
     if (file.type.startsWith('image/')) {
@@ -95,22 +120,14 @@ export const getAvailableFormats = (file: File): Format[] => {
             { ext: 'png', label: TR.pngImg, mime: 'image/png' },
             { ext: 'jpg', label: TR.jpegImg, mime: 'image/jpeg' },
             { ext: 'webp', label: TR.webpImg, mime: 'image/webp' },
-            { ext: 'pdf', label: 'PDF Belgesi', mime: 'application/pdf' }
+            { ext: 'pdf', label: TR.pdfDoc, mime: 'application/pdf' }
         ];
     }
 
     if (file.type.startsWith('text/') || /\.(txt|md|js|ts|json|xml|html|css|py|java|c|cpp|h)$/i.test(file.name)) {
         return [
-            { ext: 'pdf', label: 'PDF Belgesi', mime: 'application/pdf' },
+            { ext: 'pdf', label: TR.pdfDoc, mime: 'application/pdf' },
             { ext: 'json', label: TR.jsonFile, mime: 'application/json', isRenameOnly: true }
-        ];
-    }
-
-    // Fallback for docx/xlsx if not caught by mime (often happens)
-    if (/\.(docx|xlsx|pptx)$/i.test(file.name)) {
-        return [
-            { ext: 'zip', label: TR.zipArchive, mime: 'application/zip', isRenameOnly: true },
-            { ext: 'pdf', label: 'PDF Belgesi (Metin)', mime: 'application/pdf' }
         ];
     }
 
@@ -120,3 +137,4 @@ export const getAvailableFormats = (file: File): Format[] => {
         { ext: 'txt', label: TR.txtFile, mime: 'text/plain', isRenameOnly: true }
     ];
 };
+
