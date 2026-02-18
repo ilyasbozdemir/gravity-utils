@@ -16,11 +16,12 @@ import { SocialResizer } from './components/SocialResizer';
 import { FaviconGenerator } from './components/FaviconGenerator';
 
 import { UnitConverter } from './components/UnitConverter';
+import { ImageToPdf } from './components/ImageToPdf';
 
 import { Zap } from 'lucide-react';
 import { LandingHero } from './components/LandingHero';
 
-type ViewType = 'home' | 'convert' | 'inspect' | 'base64' | 'optimize' | 'hash' | 'json' | 'text' | 'pdf' | 'exif' | 'qr' | 'social' | 'favicon' | 'units' | 'encrypt';
+type ViewType = 'home' | 'convert' | 'inspect' | 'base64' | 'optimize' | 'hash' | 'json' | 'text' | 'pdf' | 'exif' | 'qr' | 'social' | 'favicon' | 'units' | 'encrypt' | 'imagetopdf';
 
 function App() {
   const [file, setFile] = useState<File | null>(null);
@@ -43,6 +44,7 @@ function App() {
       favicon: 'Favicon Oluşturucu - Gravity Utils',
       units: 'Teknik Birim Çevirici - Gravity Utils',
       encrypt: 'Güvenli Şifreleme - Gravity Utils',
+      imagetopdf: 'Resimden PDF Oluştur - Gravity Utils',
     };
     document.title = titles[view] || 'Gravity Utils';
   }, [view]);
@@ -149,6 +151,10 @@ function App() {
 
             {view === 'units' && (
               <UnitConverter file={file} onBack={() => setView('home')} />
+            )}
+
+            {view === 'imagetopdf' && (
+              <ImageToPdf file={file} onBack={() => setView('home')} />
             )}
           </div>
         )}

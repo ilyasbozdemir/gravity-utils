@@ -8,7 +8,7 @@ import {
 interface ActionPanelProps {
     file: File;
     onClear: () => void;
-    onAction: (action: 'convert' | 'inspect' | 'base64' | 'optimize' | 'hash' | 'json' | 'text' | 'pdf' | 'exif' | 'qr' | 'social' | 'favicon' | 'units' | 'encrypt') => void;
+    onAction: (action: 'convert' | 'inspect' | 'base64' | 'optimize' | 'hash' | 'json' | 'text' | 'pdf' | 'exif' | 'qr' | 'social' | 'favicon' | 'units' | 'encrypt' | 'imagetopdf') => void;
 }
 
 export const ActionPanel: React.FC<ActionPanelProps> = ({ file, onClear, onAction }) => {
@@ -20,7 +20,7 @@ export const ActionPanel: React.FC<ActionPanelProps> = ({ file, onClear, onActio
     const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
 
     const getRecommendedActions = () => {
-        const actions: ('convert' | 'inspect' | 'base64' | 'optimize' | 'hash' | 'json' | 'text' | 'pdf' | 'exif' | 'qr' | 'social' | 'favicon' | 'units' | 'encrypt')[] = [];
+        const actions: ('convert' | 'inspect' | 'base64' | 'optimize' | 'hash' | 'json' | 'text' | 'pdf' | 'exif' | 'qr' | 'social' | 'favicon' | 'units' | 'encrypt' | 'imagetopdf')[] = [];
         const ext = file.name.split('.').pop()?.toLowerCase();
 
         if (ext === 'webp' || ext === 'avif') actions.push('convert');
@@ -30,6 +30,7 @@ export const ActionPanel: React.FC<ActionPanelProps> = ({ file, onClear, onActio
         if (isImage) {
             actions.push('social');
             actions.push('exif');
+            actions.push('imagetopdf');
         }
         if (isText && !isJson) actions.push('text');
         if (isPdf) actions.push('pdf');
@@ -46,7 +47,7 @@ export const ActionPanel: React.FC<ActionPanelProps> = ({ file, onClear, onActio
     const recommended = getRecommendedActions();
 
     const renderButton = (
-        action: 'convert' | 'inspect' | 'base64' | 'optimize' | 'hash' | 'json' | 'text' | 'pdf' | 'exif' | 'qr' | 'social' | 'favicon' | 'units' | 'encrypt',
+        action: 'convert' | 'inspect' | 'base64' | 'optimize' | 'hash' | 'json' | 'text' | 'pdf' | 'exif' | 'qr' | 'social' | 'favicon' | 'units' | 'encrypt' | 'imagetopdf',
         icon: React.ReactNode,
         title: string,
         desc: string,
@@ -112,6 +113,7 @@ export const ActionPanel: React.FC<ActionPanelProps> = ({ file, onClear, onActio
                             {recommended.includes('pdf') && renderButton('pdf', <FileDiff size={28} />, 'PDF İşlemleri', 'Ayır / Birleştir', '#ef4444', true)}
                             {recommended.includes('social') && renderButton('social', <Crop size={28} />, 'Sosyal Medya', 'Boyutlandır', '#e879f9', true)}
                             {recommended.includes('exif') && renderButton('exif', <Shield size={28} />, 'Güvenli Paylaş', 'Exif Sil', '#10b981', true)}
+                            {recommended.includes('imagetopdf') && renderButton('imagetopdf', <FileText size={28} />, 'PDF Oluştur', 'Resimleri Birleştir', '#f43f5e', true)}
                             {recommended.includes('units') && renderButton('units', <Calculator size={28} />, 'Birim Çevirici', 'Alan / Uzunluk', '#f97316', true)}
                             {recommended.includes('encrypt') && renderButton('encrypt', <Shield size={28} />, 'Dosyayı Şifrele', 'AES-256 İle Koru', '#10b981', true)}
                         </div>
@@ -128,6 +130,7 @@ export const ActionPanel: React.FC<ActionPanelProps> = ({ file, onClear, onActio
                             {renderButton('optimize', <ImageIcon size={28} />, 'Optimize Et', 'Resim Sıkıştırma', '#34d399')}
                             {renderButton('qr', <QrCode size={28} />, 'QR Oku', 'Barkod Tara', '#3b82f6')}
                             {renderButton('favicon', <ImageIcon size={28} />, 'Favicon Yap', 'İkon Seti', '#8b5cf6')}
+                            {renderButton('imagetopdf', <FileText size={28} />, 'PDF Yap', 'Görselleri Birleştir', '#f43f5e')}
                         </div>
                     </div>
                 )}
