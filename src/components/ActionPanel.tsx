@@ -15,9 +15,9 @@ interface ActionPanelProps {
 export const ActionPanel: React.FC<ActionPanelProps> = ({ file, onClear, onAction }) => {
     const isImage = file.type.startsWith('image/');
     const isText = file.type.startsWith('text/') || file.name.endsWith('.txt') || file.name.endsWith('.md') || file.name.endsWith('.js') || file.name.endsWith('.ts') || file.name.endsWith('.html') || file.name.endsWith('.css') || file.name.endsWith('.json');
-    const isJson = file.type === 'application/json' || file.name.endsWith('.json');
-    const isOffice = /\.(docx|xlsx|pptx|odt|ods|odp|doc|xls|ppt)$/i.test(file.name);
+    const isOffice = file.name.match(/\.(docx|xlsx|pptx)$/i);
     const isArchive = /\.(zip|rar|7z|tar|gz|apk|jar|war)$/i.test(file.name);
+    const isJson = file.type === 'application/json' || file.name.endsWith('.json');
     const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
 
     const getRecommendedActions = () => {
@@ -26,7 +26,7 @@ export const ActionPanel: React.FC<ActionPanelProps> = ({ file, onClear, onActio
 
         if (ext === 'webp' || ext === 'avif') actions.push('convert');
         if (isJson) actions.push('json');
-        if (isArchive || isOffice) actions.push('inspect');
+        if (isOffice || isArchive) actions.push('inspect');
         if (isImage && !['webp', 'avif', 'svg'].includes(ext || '')) actions.push('optimize');
         if (isImage) {
             actions.push('social');
@@ -62,84 +62,106 @@ export const ActionPanel: React.FC<ActionPanelProps> = ({ file, onClear, onActio
         icon: React.ReactNode,
         title: string,
         desc: string,
-        highlight: boolean = false
+        primary: boolean = false
     ) => (
         <button
-            className={`flex flex-col items-center justify-start text-center w-full min-h-[140px] p-5 gap-2 border text-white rounded-lg font-medium cursor-pointer transition-all duration-200 group relative overflow-hidden
-                ${highlight
-                    ? 'bg-violet-500/20 border-violet-500/60 shadow-[0_0_20px_rgba(139,92,246,0.3)] hover:bg-violet-500/30'
-                    : 'bg-blue-500/20 border-blue-500/40 hover:bg-blue-500/40 hover:-translate-y-0.5 hover:shadow-[0_0_15px_rgba(59,130,246,0.3)]'
-                }`}
             onClick={() => onAction(action)}
+            className={`group relative overflow-hidden p-6 text-left rounded-2xl border transition-all duration-300 w-full hover:-translate-y-1 hover:shadow-xl
+                ${primary
+                    ? 'bg-blue-600 dark:bg-blue-600 text-white border-blue-500 dark:border-blue-400 shadow-lg shadow-blue-500/30'
+                    : 'bg-white dark:bg-white/5 border-slate-200 dark:border-white/10 hover:border-blue-400 dark:hover:border-blue-500/50 hover:bg-slate-50 dark:hover:bg-white/10'
+                }`}
         >
-            {highlight && (
-                <div className="absolute top-0 right-0 bg-violet-500 text-white text-[10px] px-2 py-0.5 rounded-bl-lg font-bold">
-                    ÖNERİLEN
+            <div className="flex items-start justify-between mb-2 relative z-10">
+                <div className={`p-3 rounded-xl ${primary ? 'bg-white/20' : 'bg-blue-50 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400'}`}>
+                    {icon}
                 </div>
-            )}
-            <div className="mb-2 transform group-hover:scale-110 transition-transform duration-200 opacity-90">{icon}</div>
-            <div className="text-base font-semibold text-white">{title}</div>
-            <div className={`text-xs ${highlight ? 'text-violet-200' : 'text-slate-300'}`}>{desc}</div>
+                {!primary && <ArrowRight size={20} className="text-slate-300 dark:text-slate-600 group-hover:text-blue-500 transition-colors" />}
+            </div>
+
+            <h3 className={`text-lg font-bold mb-1 relative z-10 ${primary ? 'text-white' : 'text-slate-800 dark:text-white'}`}>
+                {title}
+            </h3>
+            <p className={`text-sm leading-relaxed relative z-10 ${primary ? 'text-blue-100' : 'text-slate-500 dark:text-slate-400'}`}>
+                {desc}
+            </p>
         </button>
     );
 
     return (
-        <div className="max-w-[900px] mx-auto p-8 animate-[fadeIn_0.5s_ease] rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 shadow-lg">
-            {/* Header / File Info */}
-            <div className="flex items-center justify-between mb-8 bg-black/20 p-4 rounded-xl flex-wrap gap-4">
-                <div className="flex items-center gap-4 flex-1 min-w-[200px]">
-                    <div className="bg-violet-400/20 p-3 rounded-xl">
-                        <FileCode2 size={28} className="text-violet-400" />
+        <div className="w-full max-w-5xl mx-auto animate-in fade-in zoom-in duration-500">
+            {/* File Info Card */}
+            <div className="bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-white/10 rounded-3xl p-6 sm:p-8 mb-12 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-xl shadow-slate-200/50 dark:shadow-none relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/5 rounded-full blur-3xl -z-10"></div>
+
+                <div className="flex items-center gap-6 w-full">
+                    <div className="w-20 h-20 bg-blue-50 dark:bg-blue-500/20 rounded-2xl flex items-center justify-center shrink-0 border border-blue-100 dark:border-blue-500/30 shadow-inner">
+                        <FileText size={40} className="text-blue-600 dark:text-blue-400" />
                     </div>
-                    <div className="text-left overflow-hidden">
-                        <div className="font-bold text-lg truncate max-w-[300px]" title={file.name}>{file.name}</div>
-                        <div className="text-sm text-slate-400">{(file.size / 1024).toFixed(2)} KB • {file.type || 'Bilinmeyen Tür'}</div>
+                    <div className="flex-1 min-w-0">
+                        <h2 className="text-2xl font-black text-slate-800 dark:text-white truncate mb-1" title={file.name}>
+                            {file.name}
+                        </h2>
+                        <p className="text-slate-500 dark:text-slate-400 font-medium flex items-center gap-3">
+                            <span className="bg-slate-100 dark:bg-white/10 px-2 py-0.5 rounded text-xs uppercase tracking-wider font-bold text-slate-600 dark:text-slate-300">
+                                {file.name.split('.').pop()}
+                            </span>
+                            <span>•</span>
+                            <span>{(file.size / 1024 / 1024).toFixed(2)} MB</span>
+                        </p>
                     </div>
                 </div>
+
                 <button
-                    onClick={(e) => { e.stopPropagation(); onClear(); }}
-                    className="bg-transparent border border-white/10 cursor-pointer text-slate-400 px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-white/5 transition-colors"
-                    title="Dosyayı Kaldır"
+                    onClick={onClear}
+                    className="p-3 rounded-xl bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-500/20 transition-colors shrink-0 flex items-center gap-2 font-bold"
                 >
-                    <X size={18} />
-                    <span className="hidden sm:inline">Dosyayı Değiştir</span>
+                    <X size={20} />
+                    <span className="hidden sm:inline">Kaldır</span>
                 </button>
             </div>
 
-            <div className="flex flex-col gap-8">
+            <div className="flex flex-col gap-10">
 
                 {/* POPULAR CONVERSIONS & FEATURED */}
                 {(popularConversions.length > 0 || isPdf) && (
-                    <div className="text-left space-y-4">
-                        <h3 className="text-amber-400 text-xs font-black uppercase tracking-[0.2em] flex items-center gap-2">
-                            <Star size={14} className="fill-amber-400" /> Öne Çıkan İşlemler
+                    <div className="text-left space-y-6">
+                        <h3 className="text-slate-800 dark:text-slate-200 text-lg font-black flex items-center gap-3">
+                            <Star size={20} className="fill-amber-400 text-amber-400" />
+                            Öne Çıkan İşlemler
                         </h3>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                             {isPdf && (
                                 <button
                                     onClick={() => onAction('pdf')}
-                                    className="flex items-center justify-between p-5 bg-gradient-to-br from-red-500/10 to-transparent border border-red-500/30 rounded-2xl hover:bg-red-500/20 transition-all group shadow-lg shadow-red-500/5"
+                                    className="flex items-center justify-between p-6 bg-gradient-to-br from-red-500 to-red-600 rounded-2xl hover:brightness-110 transition-all group shadow-lg shadow-red-500/30 text-white w-full"
                                 >
                                     <div className="flex flex-col text-left">
-                                        <span className="text-[10px] text-red-400 font-black uppercase tracking-widest mb-1">PDF Araçları</span>
-                                        <span className="text-sm font-black text-white">PDF Birleştir / Ayır</span>
+                                        <span className="text-xs text-red-100 font-bold uppercase tracking-widest mb-2 opacity-80">PDF Araçları</span>
+                                        <span className="text-xl font-black">PDF Yönetimi</span>
+                                        <span className="text-sm text-red-100 mt-1 opacity-90">Birleştir, Ayır, Sıkıştır</span>
                                     </div>
-                                    <ArrowRight size={20} className="text-red-500 group-hover:translate-x-1 transition-transform" />
+                                    <div className="bg-white/20 p-3 rounded-xl">
+                                        <ArrowRight size={24} className="text-white" />
+                                    </div>
                                 </button>
                             )}
                             {popularConversions.map((fmt) => (
                                 <button
                                     key={fmt.ext}
                                     onClick={() => onAction('convert')}
-                                    className="flex items-center justify-between p-5 bg-gradient-to-br from-blue-500/10 to-transparent border border-blue-500/30 rounded-2xl hover:bg-blue-500/20 transition-all group shadow-lg shadow-blue-500/5 text-left"
+                                    className="flex items-center justify-between p-6 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl hover:border-blue-500 hover:shadow-lg transition-all group text-left relative overflow-hidden"
                                 >
-                                    <div className="flex flex-col">
-                                        <span className="text-[10px] text-blue-400 font-black uppercase tracking-widest mb-1">
+                                    <div className="absolute inset-0 bg-blue-50 dark:bg-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                    <div className="flex flex-col relative z-10">
+                                        <span className="text-xs text-slate-400 font-bold uppercase tracking-widest mb-2">
                                             {file.name.split('.').pop()?.toUpperCase()} &#8594; {fmt.ext.toUpperCase()}
                                         </span>
-                                        <span className="text-sm font-black text-white">{fmt.label}</span>
+                                        <span className="text-lg font-black text-slate-800 dark:text-white">{fmt.label}</span>
                                     </div>
-                                    <ArrowRight size={20} className="text-blue-500 group-hover:translate-x-1 transition-transform" />
+                                    <div className="w-10 h-10 rounded-full bg-blue-50 dark:bg-white/10 flex items-center justify-center group-hover:bg-blue-500 group-hover:text-white transition-all text-blue-500 dark:text-blue-400 relative z-10">
+                                        <ArrowRight size={20} />
+                                    </div>
                                 </button>
                             ))}
                         </div>
@@ -148,22 +170,24 @@ export const ActionPanel: React.FC<ActionPanelProps> = ({ file, onClear, onActio
 
                 {/* OTHER FORMATS */}
                 {otherConversions.length > 0 && (
-                    <div className="text-left space-y-4">
-                        <h3 className="text-blue-300 text-xs font-black uppercase tracking-[0.2em] flex items-center gap-2">
-                            🔄 Diğer Dönüştürme Seçenekleri
+                    <div className="text-left space-y-6">
+                        <h3 className="text-slate-600 dark:text-slate-400 text-sm font-bold uppercase tracking-widest flex items-center gap-2 pl-1">
+                            Diğer Dönüştürme Seçenekleri
                         </h3>
-                        <div className="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-4">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                             {otherConversions.map((fmt) => (
                                 <button
                                     key={fmt.ext}
                                     onClick={() => onAction('convert')}
-                                    className="flex items-center justify-between p-4 bg-blue-500/10 border border-blue-500/30 rounded-xl hover:bg-blue-500/20 transition-all group"
+                                    className="flex items-center gap-3 p-4 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl hover:bg-slate-50 dark:hover:bg-white/10 hover:border-slate-300 dark:hover:border-white/20 transition-all text-left"
                                 >
-                                    <div className="flex flex-col text-left">
-                                        <span className="text-[10px] text-blue-400 font-bold uppercase tracking-tighter">{file.name.split('.').pop()} &#8594; {fmt.ext.toUpperCase()}</span>
-                                        <span className="text-sm font-bold text-white leading-tight">{fmt.label}</span>
+                                    <div className="text-slate-300 dark:text-slate-600">
+                                        <ArrowRight size={16} />
                                     </div>
-                                    <ArrowRight size={18} className="text-blue-500 transform group-hover:translate-x-1 transition-transform" />
+                                    <div className="flex flex-col">
+                                        <span className="text-sm font-bold text-slate-700 dark:text-slate-200">{fmt.label}</span>
+                                        <span className="text-[10px] text-slate-400 font-semibold uppercase">{fmt.ext} Formatına</span>
+                                    </div>
                                 </button>
                             ))}
                         </div>
@@ -172,11 +196,11 @@ export const ActionPanel: React.FC<ActionPanelProps> = ({ file, onClear, onActio
 
                 {/* Recommended Section (Conditional) */}
                 {recommended.length > 0 && (
-                    <div className="text-left space-y-4 pt-4">
-                        <h3 className="text-violet-400 text-xs font-black uppercase tracking-[0.2em] flex items-center gap-2">
-                            ✨ Diğer Önerilen Seçenekler
+                    <div className="text-left space-y-6 pt-6 border-t border-slate-200 dark:border-white/5">
+                        <h3 className="text-slate-800 dark:text-slate-200 text-lg font-black">
+                            Bu Dosya İçin Diğer Araçlar
                         </h3>
-                        <div className="grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))] gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                             {recommended.includes('convert') && !isPdf && renderButton('convert', <FileType size={28} className="text-amber-400" />, 'Dönüştür', 'Format Değiştir', true)}
                             {recommended.includes('json') && renderButton('json', <FileJson size={28} className="text-cyan-400" />, 'JSON Formatla', 'Okunabilir Yap', true)}
                             {recommended.includes('inspect') && renderButton('inspect', <Archive size={28} className="text-pink-400" />, 'İçeriği İncele', isOffice ? 'Belge Detayları' : 'Arşiv Analizi', true)}

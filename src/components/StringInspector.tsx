@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Search, Info, Hash, AlignLeft, Scale } from 'lucide-react';
+import { ArrowLeft, Info, Scale } from 'lucide-react';
 
 interface StringInspectorProps {
     onBack: () => void;

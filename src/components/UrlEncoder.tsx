@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Copy, RefreshCw, Globe, Check } from 'lucide-react';
+import { ArrowLeft, Copy, Globe, Check } from 'lucide-react';
 
 interface UrlEncoderProps {
     onBack: () => void;
@@ -17,7 +17,7 @@ export const UrlEncoder: React.FC<UrlEncoderProps> = ({ onBack }) => {
             } else {
                 setOutput(decodeURIComponent(input));
             }
-        } catch (e) {
+        } catch {
             setOutput('Hata: Geçersiz karakter dizisi.');
         }
     };

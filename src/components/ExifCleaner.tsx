@@ -64,6 +64,7 @@ export const ExifCleaner: React.FC<ExifCleanerProps> = ({ file: initialFile, onB
     }, [file]);
 
     const handleClean = async () => {
+        if (!file) return;
         setLoading(true);
         const img = new Image();
         img.src = URL.createObjectURL(file);

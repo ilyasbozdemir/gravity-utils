@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Copy, Eye, Check, AlertCircle, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, Copy, Eye, AlertCircle, ShieldCheck } from 'lucide-react';
 
 interface JwtDebuggerProps {
     onBack: () => void;
@@ -20,7 +20,7 @@ export const JwtDebugger: React.FC<JwtDebuggerProps> = ({ onBack }) => {
                 return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
             }).join(''));
             return JSON.parse(jsonStr);
-        } catch (e) {
+        } catch {
             return null;
         }
     };

@@ -3,7 +3,7 @@ import { ArrowLeft, RefreshCw, AlertCircle } from 'lucide-react';
 import jsPDF from 'jspdf';
 import { getAvailableFormats, type Format } from '../utils/formats';
 import { saveAs } from 'file-saver';
-import { Document, Packer, Paragraph, TextRun, ImageRun } from 'docx';
+import { Document, Packer, Paragraph, TextRun, ImageRun, type ISectionOptions } from 'docx';
 import * as pdfjsLib from 'pdfjs-dist';
 import { PDFDocument } from 'pdf-lib';
 import fontkit from '@pdf-lib/fontkit';
@@ -236,7 +236,7 @@ export const FileConverter: React.FC<FileConverterProps> = ({ file: initialFile,
                     // If text is too sparse (less than 50 chars per page on average), use visual mode
                     const isVisualMode = fullText.trim().length < (pdf.numPages * 50);
 
-                    const sections: { properties: unknown, children: unknown[] }[] = [];
+                    const sections: ISectionOptions[] = [];
 
                     if (isVisualMode) {
                         setProgress('Görsel Fidelity Modu devrede...');
