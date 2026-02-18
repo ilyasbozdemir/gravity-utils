@@ -33,8 +33,8 @@ export const FileDropper: React.FC<FileDropperProps> = ({ onFileSelect }) => {
     return (
         <div
             className={`w-full max-w-[600px] min-h-[200px] flex flex-col justify-center items-center border-2 border-dashed cursor-pointer transition-all duration-300 p-8 rounded-2xl ${isDragging
-                    ? 'border-blue-400 bg-blue-400/5'
-                    : 'border-white/10 bg-white/5 hover:bg-white/10'
+                ? 'border-blue-400 bg-blue-50 dark:bg-blue-400/5'
+                : 'border-slate-300 dark:border-white/10 bg-white/50 dark:bg-white/5 hover:bg-white/80 dark:hover:bg-white/10'
                 }`}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
@@ -48,13 +48,13 @@ export const FileDropper: React.FC<FileDropperProps> = ({ onFileSelect }) => {
                 className="hidden"
             />
 
-            <div className="flex items-center justify-center mb-8 bg-blue-400/10 p-6 rounded-full shadow-[0_0_20px_rgba(96,165,250,0.1)]">
-                <Upload size={48} className="text-blue-400" />
+            <div className="flex items-center justify-center mb-8 bg-blue-100 dark:bg-blue-400/10 p-6 rounded-full shadow-[0_0_20px_rgba(96,165,250,0.1)]">
+                <Upload size={48} className="text-blue-600 dark:text-blue-400" />
             </div>
-            <h3 className="m-0 mb-2 text-2xl font-semibold">
+            <h3 className="m-0 mb-2 text-2xl font-semibold text-slate-800 dark:text-white">
                 {isDragging ? 'Bırak Gelsin!' : 'Dosyayı Buraya Sürükle'}
             </h3>
-            <p className="text-sm text-slate-400">veya bilgisayarından seçmek için tıkla</p>
+            <p className="text-sm text-slate-500 dark:text-slate-400">veya bilgisayarından seçmek için tıkla</p>
         </div>
     );
 };

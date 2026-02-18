@@ -22,18 +22,18 @@ export const LandingHero: React.FC<LandingHeroProps> = ({ onFileSelect, onToolSe
             <div className="min-h-[60vh] flex flex-col items-center justify-center text-center relative pt-12">
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[radial-gradient(circle,rgba(167,139,250,0.15)_0%,rgba(96,165,250,0.05)_40%,transparent_70%)] -z-10 pointer-events-none"></div>
 
-                <div className="mb-4 px-4 py-2 rounded-full bg-white/5 border border-white/10 inline-flex items-center gap-2 text-sm text-slate-400">
-                    <Star size={14} fill="#fbbf24" color="#fbbf24" />
+                <div className="mb-4 px-4 py-2 rounded-full bg-blue-50 dark:bg-white/5 border border-blue-100 dark:border-white/10 inline-flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400 font-medium">
+                    <Star size={14} className="fill-amber-400 text-amber-400" />
                     <span>80+ Ücretsiz Araç | %100 Güvenli ve Çevrimdışı</span>
                 </div>
 
-                <h1 className="text-[clamp(2.5rem,6vw,4rem)] font-extrabold leading-[1.1] tracking-tighter mb-6 max-w-[900px] bg-gradient-to-br from-white to-slate-400 bg-clip-text text-transparent">
-                    Profesyonel <span className="text-blue-400">Dosya Araçları</span> <br />
+                <h1 className="text-[clamp(2.5rem,6vw,4rem)] font-extrabold leading-[1.1] tracking-tighter mb-6 max-w-[900px] text-slate-900 dark:text-white">
+                    Profesyonel <span className="text-blue-600 dark:text-blue-400">Dosya Araçları</span> <br />
                     Elinizin Altında.
                 </h1>
 
                 <div className="w-full max-w-[700px] relative z-20 mb-12">
-                    <div className="p-2 rounded-3xl bg-slate-800/40 backdrop-blur-xl border border-white/10 shadow-2xl">
+                    <div className="p-2 rounded-3xl bg-white/50 dark:bg-slate-800/40 backdrop-blur-xl border border-slate-200 dark:border-white/10 shadow-2xl dark:shadow-none">
                         <FileDropper onFileSelect={onFileSelect} />
                     </div>
                 </div>
@@ -46,7 +46,7 @@ export const LandingHero: React.FC<LandingHeroProps> = ({ onFileSelect, onToolSe
                         placeholder="Araç ara... (Örn: pdf birleştir, exif temizle)"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-sm focus:outline-none focus:border-blue-500/50 transition-all text-slate-300"
+                        className="w-full bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl py-3 pl-12 pr-4 text-sm focus:outline-none focus:border-blue-500/50 focus:ring-4 focus:ring-blue-500/10 transition-all text-slate-700 dark:text-slate-300 placeholder:text-slate-400 dark:placeholder:text-slate-500 shadow-xl shadow-slate-200/50 dark:shadow-none"
                     />
                 </div>
             </div>
@@ -59,8 +59,8 @@ export const LandingHero: React.FC<LandingHeroProps> = ({ onFileSelect, onToolSe
                     <section>
                         <div className="flex items-center justify-between mb-8">
                             <div className="flex items-center gap-3">
-                                <div className="p-2 bg-amber-500/10 rounded-lg text-amber-400"><Zap size={20} /></div>
-                                <h3 className="text-xl font-bold">Popüler Dönüştürmeler</h3>
+                                <div className="p-2 bg-amber-50 dark:bg-amber-500/10 rounded-lg text-amber-600 dark:text-amber-400"><Zap size={20} /></div>
+                                <h3 className="text-xl font-bold text-slate-800 dark:text-slate-200">Popüler Dönüştürmeler</h3>
                             </div>
                         </div>
                         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
@@ -76,8 +76,8 @@ export const LandingHero: React.FC<LandingHeroProps> = ({ onFileSelect, onToolSe
                     {/* Category: PDF & Doküman */}
                     <section>
                         <div className="flex items-center gap-3 mb-8">
-                            <div className="p-2 bg-red-500/10 rounded-lg text-red-400"><FileText size={20} /></div>
-                            <h3 className="text-xl font-bold">PDF & Doküman Araçları</h3>
+                            <div className="p-2 bg-red-50 dark:bg-red-500/10 rounded-lg text-red-600 dark:text-red-400"><FileText size={20} /></div>
+                            <h3 className="text-xl font-bold text-slate-800 dark:text-slate-200">PDF & Doküman Araçları</h3>
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                             <ToolItem
@@ -114,8 +114,8 @@ export const LandingHero: React.FC<LandingHeroProps> = ({ onFileSelect, onToolSe
                     {/* Category: Resim & Medya */}
                     <section>
                         <div className="flex items-center gap-3 mb-8">
-                            <div className="p-2 bg-emerald-500/10 rounded-lg text-emerald-400"><ImageIcon size={20} /></div>
-                            <h3 className="text-xl font-bold">Görsel & Grafik Araçları</h3>
+                            <div className="p-2 bg-emerald-50 dark:bg-emerald-500/10 rounded-lg text-emerald-600 dark:text-emerald-400"><ImageIcon size={20} /></div>
+                            <h3 className="text-xl font-bold text-slate-800 dark:text-slate-200">Görsel & Grafik Araçları</h3>
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                             <ToolItem
@@ -152,8 +152,8 @@ export const LandingHero: React.FC<LandingHeroProps> = ({ onFileSelect, onToolSe
                     {/* Category: Güvenlik & Gizlilik */}
                     <section>
                         <div className="flex items-center gap-3 mb-8">
-                            <div className="p-2 bg-purple-500/10 rounded-lg text-purple-400"><ShieldCheck size={20} /></div>
-                            <h3 className="text-xl font-bold">Güvenlik & Gizlilik</h3>
+                            <div className="p-2 bg-purple-50 dark:bg-purple-500/10 rounded-lg text-purple-600 dark:text-purple-400"><ShieldCheck size={20} /></div>
+                            <h3 className="text-xl font-bold text-slate-800 dark:text-slate-200">Güvenlik & Gizlilik</h3>
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                             <ToolItem
@@ -183,8 +183,8 @@ export const LandingHero: React.FC<LandingHeroProps> = ({ onFileSelect, onToolSe
                     {/* Category: Teknik / Dev */}
                     <section>
                         <div className="flex items-center gap-3 mb-8">
-                            <div className="p-2 bg-blue-500/10 rounded-lg text-blue-400"><Code size={20} /></div>
-                            <h3 className="text-xl font-bold">Geliştirici Araçları</h3>
+                            <div className="p-2 bg-blue-50 dark:bg-blue-500/10 rounded-lg text-blue-600 dark:text-blue-400"><Code size={20} /></div>
+                            <h3 className="text-xl font-bold text-slate-800 dark:text-slate-200">Geliştirici Araçları</h3>
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                             <ToolItem
@@ -254,43 +254,43 @@ export const LandingHero: React.FC<LandingHeroProps> = ({ onFileSelect, onToolSe
 const ToolItem = ({ icon, title, desc, color, onClick }: { icon: React.ReactNode, title: string, desc: string, color: string, onClick: () => void }) => (
     <button
         onClick={onClick}
-        className="group p-5 text-left bg-white/[0.03] border border-white/5 rounded-2xl transition-all duration-300 hover:bg-white/[0.07] hover:border-white/20 hover:-translate-y-1 active:scale-95"
+        className="group p-5 text-left bg-white dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 rounded-2xl transition-all duration-300 hover:border-blue-300 dark:hover:border-white/20 hover:-translate-y-1 active:scale-95 shadow-sm hover:shadow-md dark:shadow-none"
     >
         <div className={`mb-4 w-10 h-10 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110
-            ${color === 'blue' ? 'bg-blue-500/10 text-blue-400' : ''}
-            ${color === 'red' ? 'bg-red-500/10 text-red-400' : ''}
-            ${color === 'emerald' ? 'bg-emerald-500/10 text-emerald-400' : ''}
-            ${color === 'purple' ? 'bg-purple-500/10 text-purple-400' : ''}
-            ${color === 'sky' ? 'bg-sky-500/10 text-sky-400' : ''}
-            ${color === 'indigo' ? 'bg-indigo-500/10 text-indigo-400' : ''}
-            ${color === 'orange' ? 'bg-orange-500/10 text-orange-400' : ''}
-            ${color === 'pink' ? 'bg-pink-500/10 text-pink-400' : ''}
-            ${color === 'amber' ? 'bg-amber-500/10 text-amber-400' : ''}
-            ${color === 'cyan' ? 'bg-cyan-500/10 text-cyan-400' : ''}
-            ${color === 'violet' ? 'bg-violet-500/10 text-violet-400' : ''}
+            ${color === 'blue' ? 'bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400' : ''}
+            ${color === 'red' ? 'bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400' : ''}
+            ${color === 'emerald' ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : ''}
+            ${color === 'purple' ? 'bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400' : ''}
+            ${color === 'sky' ? 'bg-sky-50 dark:bg-sky-500/10 text-sky-600 dark:text-sky-400' : ''}
+            ${color === 'indigo' ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400' : ''}
+            ${color === 'orange' ? 'bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400' : ''}
+            ${color === 'pink' ? 'bg-pink-50 dark:bg-pink-500/10 text-pink-600 dark:text-pink-400' : ''}
+            ${color === 'amber' ? 'bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400' : ''}
+            ${color === 'cyan' ? 'bg-cyan-50 dark:bg-cyan-500/10 text-cyan-600 dark:text-cyan-400' : ''}
+            ${color === 'violet' ? 'bg-violet-50 dark:bg-violet-500/10 text-violet-600 dark:text-violet-400' : ''}
         `}>
             {icon}
         </div>
-        <h4 className="text-sm font-bold mb-1 group-hover:text-white transition-colors">{title}</h4>
-        <p className="text-[12px] text-slate-500 leading-snug group-hover:text-slate-400 transition-colors">{desc}</p>
+        <h4 className="text-sm font-bold mb-1 text-slate-800 dark:text-white transition-colors">{title}</h4>
+        <p className="text-[12px] text-slate-500 leading-snug dark:group-hover:text-slate-400 transition-colors">{desc}</p>
     </button>
 );
 
 const QuickAction = ({ title, onClick, icon, color }: { title: string, onClick: () => void, icon?: React.ReactNode, color: string }) => (
     <button
         onClick={onClick}
-        className="group flex items-center gap-2 p-3 bg-white/[0.02] border border-white/5 rounded-xl hover:bg-white/[0.05] hover:border-white/10 transition-all text-left"
+        className="group flex items-center gap-2 p-3 bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-white/5 rounded-xl hover:border-blue-300 dark:hover:border-white/10 transition-all text-left shadow-sm dark:shadow-none"
     >
         <div className={`p-1.5 rounded-lg transition-transform group-hover:scale-110
-            ${color === 'blue' ? 'bg-blue-500/10 text-blue-400' : ''}
-            ${color === 'red' ? 'bg-red-500/10 text-red-400' : ''}
-            ${color === 'emerald' ? 'bg-emerald-500/10 text-emerald-400' : ''}
-            ${color === 'sky' ? 'bg-sky-500/10 text-sky-400' : ''}
-            ${color === 'indigo' ? 'bg-indigo-500/10 text-indigo-400' : ''}
-            ${color === 'orange' ? 'bg-orange-500/10 text-orange-400' : ''}
+            ${color === 'blue' ? 'bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400' : ''}
+            ${color === 'red' ? 'bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400' : ''}
+            ${color === 'emerald' ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : ''}
+            ${color === 'sky' ? 'bg-sky-50 dark:bg-sky-500/10 text-sky-600 dark:text-sky-400' : ''}
+            ${color === 'indigo' ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400' : ''}
+            ${color === 'orange' ? 'bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400' : ''}
         `}>
             {icon}
         </div>
-        <span className="text-xs font-semibold text-slate-400 group-hover:text-slate-200 transition-colors">{title}</span>
+        <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 group-hover:text-slate-800 dark:group-hover:text-slate-200 transition-colors">{title}</span>
     </button>
 );
