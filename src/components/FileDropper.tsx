@@ -30,6 +30,12 @@ export const FileDropper: React.FC<FileDropperProps> = ({ onFileSelect }) => {
         inputRef.current?.click();
     };
 
+    const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files.length > 0) {
+            onFileSelect(e.target.files[0]);
+        }
+    };
+
     return (
         <div
             className={`w-full max-w-[600px] min-h-[200px] flex flex-col justify-center items-center border-2 border-dashed cursor-pointer transition-all duration-300 p-8 rounded-2xl ${isDragging
@@ -43,9 +49,12 @@ export const FileDropper: React.FC<FileDropperProps> = ({ onFileSelect }) => {
         >
             <input
                 type="file"
+                id="file-upload"
                 ref={inputRef}
-                onChange={(e) => e.target.files && onFileSelect(e.target.files[0])}
+                onChange={handleFileInput}
                 className="hidden"
+                aria-label="Dosya yükle"
+                title="Dosya yükle"
             />
 
             <div className="flex items-center justify-center mb-8 bg-blue-100 dark:bg-blue-400/10 p-6 rounded-full shadow-[0_0_20px_rgba(96,165,250,0.1)]">

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Menu } from 'lucide-react';
 
 import { ActionPanel } from './components/ActionPanel';
 import { FileConverter } from './components/FileConverter';
@@ -64,6 +65,7 @@ function App() {
 function AppContent() {
   const [file, setFile] = useState<File | null>(null);
   const [view, setView] = useState<ViewType>('home');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     document.title = TOOL_TITLES[view] || 'Gravity Utils';
@@ -76,6 +78,7 @@ function AppContent() {
 
   const handleAction = (action: ViewType) => {
     setView(action);
+    setSidebarOpen(false); // Close sidebar on selection (mobile)
   };
 
   const clearFile = () => {
@@ -84,22 +87,51 @@ function AppContent() {
   };
 
   const handleToolSelect = (tool: ViewType) => {
-    setFile(null); // Ensure no file is active
+    setFile(null);
     setView(tool);
+    setSidebarOpen(false);
   };
 
   return (
-    <div className="flex min-h-screen bg-slate-50 dark:bg-[#06070a] text-slate-800 dark:text-slate-200 overflow-x-hidden transition-colors duration-300">
+    <div className="flex h-screen overflow-hidden bg-slate-50 dark:bg-[#06070a] text-slate-800 dark:text-slate-200 transition-colors duration-300">
 
-      {/* Persistent Sidebar */}
-      <Sidebar currentView={view} onViewChange={handleAction} />
+      <Sidebar
+        currentView={view}
+        onViewChange={handleAction}
+        isOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+      />
 
-      <div className="flex-1 flex flex-col lg:pl-72 transition-all duration-300">
+      <div className="flex-1 flex flex-col h-full overflow-hidden relative">
 
-        {/* Simplified Top Header */}
-        {/* Simplified Top Header */}
+        {/* Mobile Header - Always visible on mobile */}
+        <div className="lg:hidden px-4 py-3 bg-white dark:bg-[#0b101b] border-b border-slate-200 dark:border-white/5 flex items-center justify-between z-20">
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="p-2 -ml-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/5 rounded-lg transition-colors"
+            title="Menüyü Aç"
+            aria-label="Menüyü Aç"
+          >
+            <Menu size={24} />
+          </button>
+          <span className="text-sm font-bold uppercase tracking-wider text-slate-700 dark:text-slate-200">
+            {view === 'home' ? 'Gravity Utils' : TOOL_TITLES[view]?.split(' - ')[0]}
+          </span>
+          {file ? (
+            <button
+              onClick={clearFile}
+              className="text-[10px] font-bold text-red-500 hover:text-red-600 bg-red-50 dark:bg-red-500/10 px-3 py-1.5 rounded-lg transition-all"
+            >
+              Kaldır
+            </button>
+          ) : (
+            <div className="w-8" />
+          )}
+        </div>
+
+        {/* Desktop Header - Only for context or file actions */}
         {(file || view !== 'home') && (
-          <header className="px-8 py-5 border-b border-slate-200 dark:border-white/5 flex items-center justify-between bg-white/80 dark:bg-slate-900/40 backdrop-blur-xl sticky top-0 z-30 transition-colors duration-300">
+          <header className="hidden lg:flex px-8 py-5 border-b border-slate-200 dark:border-white/5 items-center justify-between bg-white/80 dark:bg-[#06070a]/80 backdrop-blur-xl sticky top-0 z-30 transition-colors duration-300">
             <div className="flex items-center gap-4">
               <h2 className="text-sm font-bold text-slate-400 uppercase tracking-widest">
                 {view === 'home' && file ? 'Dosya İşlemleri' : TOOL_TITLES[view]?.split(' - ')[0]}
@@ -116,15 +148,16 @@ function AppContent() {
           </header>
         )}
 
-        <main className="w-full flex-1 flex flex-col">
+        {/* Scrollable Main Content */}
+        <main className="flex-1 overflow-y-auto w-full custom-scrollbar">
           {/* Landing Page: Show if NO file AND view IS home */}
           {!file && view === 'home' && (
             <LandingHero onFileSelect={handleFileSelect} onToolSelect={handleToolSelect} />
           )}
 
-          {/* Action Panel or Specific Tools: Show if FILE exists OR view is NOT home */}
+          {/* Action Panel or Specific Tools */}
           {(file || view !== 'home') && (
-            <div className="p-8 max-w-[1200px] mx-auto w-full animate-[fadeIn_0.5s_ease]">
+            <div className="p-4 lg:p-8 max-w-[1200px] mx-auto w-full animate-[fadeIn_0.5s_ease] pb-20">
               {view === 'home' && file && (
                 <ActionPanel file={file} onClear={clearFile} onAction={handleAction} />
               )}
@@ -185,7 +218,6 @@ function AppContent() {
                 <UnitConverter file={file} onBack={() => setView('home')} />
               )}
 
-
               {view === 'uuid' && (
                 <UuidGenerator onBack={() => setView('home')} />
               )}
@@ -211,11 +243,11 @@ function AppContent() {
               )}
             </div>
           )}
-        </main>
 
-        <footer className="text-sm p-8 text-center opacity-30 mt-auto">
-          <p>© 2026 Gravity Utils • %100 Yerel Veri İşleme</p>
-        </footer>
+          <footer className="text-sm p-8 text-center opacity-30 mt-auto">
+            <p>© 2026 Gravity Utils • %100 Yerel Veri İşleme</p>
+          </footer>
+        </main>
       </div>
     </div>
   );
