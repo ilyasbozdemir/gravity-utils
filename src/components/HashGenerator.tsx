@@ -55,33 +55,42 @@ export const HashGenerator: React.FC<HashGeneratorProps> = ({ file: initialFile,
     };
 
     return (
-        <div className="glass-panel" style={{ maxWidth: '600px', margin: '0 auto', padding: '2rem', animation: 'fadeIn 0.5s ease' }}>
-            <div className="flex-center" style={{ justifyContent: 'flex-start', gap: '1rem', marginBottom: '2rem' }}>
-                <button onClick={onBack} className="glass-button" style={{ padding: '8px' }}><ArrowLeft size={18} /></button>
-                <h2 style={{ margin: 0, fontSize: '1.5rem' }}>Dosya İmzası (Hash)</h2>
+        <div className="max-w-[800px] mx-auto p-8 animate-[fadeIn_0.5s_ease] bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl shadow-2xl">
+            <div className="flex items-center justify-start gap-4 mb-8">
+                <button
+                    onClick={onBack}
+                    className="p-2 bg-emerald-500/20 border border-emerald-500/40 text-white rounded-lg hover:bg-emerald-500/40 transition-all shadow-[0_0_15px_rgba(16,185,129,0.2)]"
+                    title="Geri Dön"
+                >
+                    <ArrowLeft size={18} />
+                </button>
+                <div className="text-left">
+                    <h2 className="m-0 text-2xl font-bold tracking-tight text-white">Dosya İmzası (Hash)</h2>
+                    <p className="text-sm text-emerald-400 font-medium tracking-wide">SHA-1 ve SHA-256 Hesaplayıcı</p>
+                </div>
             </div>
 
-            <p className="text-sm" style={{ textAlign: 'left', marginBottom: '1rem', opacity: 0.7 }}>
+            <p className="text-sm text-slate-400 text-left mb-6 leading-relaxed">
                 {file ? (
                     <>
-                        <strong>{file.name}</strong> dosyası için benzersiz imzalar oluşturuldu.
+                        <span className="font-semibold text-slate-200">{file.name}</span> dosyası için benzersiz imzalar oluşturuldu. Bu imzalar dosyanın bütünlüğünü doğrulamak için kullanılır.
                     </>
                 ) : (
-                    'İmzasını (hash) hesaplamak istediğiniz dosyayı seçin.'
+                    'İmzasını (hash) hesaplamak istediğiniz dosyayı seçin. Dosya içeriği asla sunucuya yüklenmez, işlem tarayıcınızda yapılır.'
                 )}
             </p>
 
             {!file ? (
                 <div
                     onClick={() => fileInputRef.current?.click()}
-                    className="w-full py-20 border-2 border-dashed border-white/10 rounded-2xl flex flex-col items-center justify-center gap-4 hover:border-emerald-500/50 hover:bg-white/5 transition-all cursor-pointer group"
+                    className="w-full py-24 border-2 border-dashed border-white/10 rounded-2xl flex flex-col items-center justify-center gap-4 hover:border-emerald-500/50 hover:bg-white/5 transition-all cursor-pointer group shadow-inner"
                 >
-                    <div className="p-4 bg-emerald-500/10 rounded-full text-emerald-400 group-hover:scale-110 transition-transform">
-                        <Fingerprint size={32} />
+                    <div className="p-5 bg-emerald-500/10 rounded-full text-emerald-400 group-hover:scale-110 transition-transform shadow-[0_0_20px_rgba(16,185,129,0.1)]">
+                        <Fingerprint size={36} />
                     </div>
-                    <div className="text-center">
-                        <p className="font-semibold text-lg">Hash Hesaplamak İçin Dosya Seçin</p>
-                        <p className="text-sm text-slate-500 mt-1">Dosya içeriği asla sunucuya yüklenmez</p>
+                    <div className="text-center px-4">
+                        <p className="font-bold text-xl mb-1 text-slate-200">Hash Hesaplamak İçin Dosya Seçin</p>
+                        <p className="text-sm text-slate-500">Herhangi bir dosya türü desteklenir</p>
                     </div>
                     <input
                         type="file"
@@ -92,60 +101,82 @@ export const HashGenerator: React.FC<HashGeneratorProps> = ({ file: initialFile,
                     />
                 </div>
             ) : (
-                <div className="flex-col" style={{ gap: '1.5rem', alignItems: 'stretch' }}>
+                <div className="flex flex-col gap-8">
                     {loading ? (
-                        <div className="flex-center flex-col" style={{ padding: '3rem', gap: '1rem' }}>
-                            <RefreshCw size={32} className="animate-spin text-emerald-400" />
-                            <span>İmzalar Hesaplanıyor...</span>
+                        <div className="p-16 flex flex-col items-center gap-4 text-emerald-400 animate-pulse">
+                            <RefreshCw size={40} className="animate-spin" />
+                            <span className="font-bold tracking-widest uppercase text-xs">Hesaplanıyor...</span>
                         </div>
                     ) : (
                         <>
                             {/* SHA-1 */}
-                            <div className="flex-col" style={{ alignItems: 'flex-start' }}>
-                                <label className="text-sm opacity-60 mb-1">SHA-1</label>
-                                <div className="flex-center w-full" style={{ gap: '10px' }}>
-                                    <input readOnly value={hashes.sha1} title="SHA-1 Hash" style={{
-                                        flex: 1,
-                                        background: 'rgba(0,0,0,0.3)',
-                                        border: '1px solid rgba(255,255,255,0.1)',
-                                        padding: '12px',
-                                        borderRadius: '8px',
-                                        color: '#e2e8f0',
-                                        fontFamily: 'monospace',
-                                        fontSize: '0.9rem'
-                                    }} />
-                                    <button className="glass-button" style={{ padding: '12px' }} onClick={() => copyToClipboard(hashes.sha1, 'sha1')} title="Kopyala">
-                                        {copied === 'sha1' ? <Check size={18} color="#4ade80" /> : <Copy size={18} />}
+                            <div className="space-y-3">
+                                <div className="flex items-center justify-between px-1">
+                                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">SHA-1</label>
+                                    <span className="text-[10px] text-emerald-500/70 font-mono select-none">40 Karakter</span>
+                                </div>
+                                <div className="flex items-center gap-3 w-full group">
+                                    <div className="relative flex-1">
+                                        <input
+                                            readOnly
+                                            value={hashes.sha1}
+                                            title="SHA-1 Hash"
+                                            className="w-full bg-black/40 border border-white/10 rounded-xl py-3.5 px-4 text-[13px] font-mono text-emerald-200/90 leading-none focus:outline-none focus:border-emerald-500/30 transition-all select-all scrollbar-hide"
+                                        />
+                                        <div className="absolute inset-0 rounded-xl bg-emerald-500/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                                    </div>
+                                    <button
+                                        onClick={() => copyToClipboard(hashes.sha1, 'sha1')}
+                                        className={`p-3.5 rounded-xl border transition-all shadow-lg ${copied === 'sha1'
+                                            ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-400'
+                                            : 'bg-white/5 border-white/5 text-slate-400 hover:bg-white/10 hover:text-white'
+                                            }`}
+                                        title="Kopyala"
+                                    >
+                                        {copied === 'sha1' ? <Check size={18} /> : <Copy size={18} />}
                                     </button>
                                 </div>
                             </div>
 
                             {/* SHA-256 */}
-                            <div className="flex-col" style={{ alignItems: 'flex-start' }}>
-                                <label className="text-sm opacity-60 mb-1">SHA-256</label>
-                                <div className="flex-center w-full" style={{ gap: '10px' }}>
-                                    <input readOnly value={hashes.sha256} title="SHA-256 Hash" style={{
-                                        flex: 1,
-                                        background: 'rgba(0,0,0,0.3)',
-                                        border: '1px solid rgba(255,255,255,0.1)',
-                                        padding: '12px',
-                                        borderRadius: '8px',
-                                        color: '#e2e8f0',
-                                        fontFamily: 'monospace',
-                                        fontSize: '0.9rem'
-                                    }} />
-                                    <button className="glass-button" style={{ padding: '12px' }} onClick={() => copyToClipboard(hashes.sha256, 'sha256')} title="Kopyala">
-                                        {copied === 'sha256' ? <Check size={18} color="#4ade80" /> : <Copy size={18} />}
+                            <div className="space-y-3">
+                                <div className="flex items-center justify-between px-1">
+                                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">SHA-256</label>
+                                    <span className="text-[10px] text-emerald-500/70 font-mono select-none">64 Karakter</span>
+                                </div>
+                                <div className="flex items-center gap-3 w-full group">
+                                    <div className="relative flex-1">
+                                        <textarea
+                                            readOnly
+                                            value={hashes.sha256}
+                                            title="SHA-256 Hash"
+                                            rows={2}
+                                            className="w-full bg-black/40 border border-white/10 rounded-xl py-3.5 px-4 text-[13px] font-mono text-emerald-200/90 leading-relaxed focus:outline-none focus:border-emerald-500/30 transition-all select-all resize-none scrollbar-hide"
+                                        />
+                                        <div className="absolute inset-0 rounded-xl bg-emerald-500/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                                    </div>
+                                    <button
+                                        onClick={() => copyToClipboard(hashes.sha256, 'sha256')}
+                                        className={`p-3.5 rounded-xl border transition-all h-fit shadow-lg ${copied === 'sha256'
+                                            ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-400'
+                                            : 'bg-white/5 border-white/5 text-slate-400 hover:bg-white/10 hover:text-white'
+                                            }`}
+                                        title="Kopyala"
+                                    >
+                                        {copied === 'sha256' ? <Check size={18} /> : <Copy size={18} />}
                                     </button>
                                 </div>
                             </div>
 
-                            <button
-                                onClick={() => { setFile(null); setHashes({ sha1: '', sha256: '' }); }}
-                                className="text-sm text-slate-500 hover:text-white transition-colors mt-4"
-                            >
-                                Başka Bir Dosya Seç
-                            </button>
+                            <div className="flex items-center justify-between pt-4 border-t border-white/5">
+                                <span className="text-[10px] text-slate-600 font-bold uppercase tracking-wider">Dosya Hazır</span>
+                                <button
+                                    onClick={() => { setFile(null); setHashes({ sha1: '', sha256: '' }); }}
+                                    className="text-xs font-bold text-slate-500 hover:text-red-400 transition-colors uppercase tracking-widest py-1"
+                                >
+                                    Değiştir
+                                </button>
+                            </div>
                         </>
                     )}
                 </div>
@@ -153,3 +184,4 @@ export const HashGenerator: React.FC<HashGeneratorProps> = ({ file: initialFile,
         </div>
     );
 };
+

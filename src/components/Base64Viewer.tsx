@@ -17,12 +17,22 @@ export const Base64Viewer: React.FC<Base64ViewerProps> = ({ file: initialFile, o
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
-            setFile(e.target.files[0]);
+            const newFile = e.target.files[0];
+            setFile(newFile);
+            setLoading(true);
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                if (ev.target?.result) {
+                    setBase64(ev.target.result as string);
+                    setLoading(false);
+                }
+            };
+            reader.readAsDataURL(newFile);
         }
     };
 
     useEffect(() => {
-        if (!file) return;
+        if (!initialFile) return;
         setLoading(true);
         const reader = new FileReader();
         reader.onload = (e) => {
@@ -31,8 +41,8 @@ export const Base64Viewer: React.FC<Base64ViewerProps> = ({ file: initialFile, o
                 setLoading(false);
             }
         };
-        reader.readAsDataURL(file);
-    }, [file]);
+        reader.readAsDataURL(initialFile);
+    }, [initialFile]);
 
     const handleCopy = () => {
         const textToCopy = includeScheme ? base64 : base64.split(',')[1];
@@ -154,5 +164,6 @@ export const Base64Viewer: React.FC<Base64ViewerProps> = ({ file: initialFile, o
                     )}
                 </>
             )}
-            );
+        </div>
+    );
 };

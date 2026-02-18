@@ -37,25 +37,42 @@ export const TextAnalyzer: React.FC<TextAnalyzerProps> = ({ file: initialFile, o
     }, [file]);
 
     return (
-        <div className="glass-panel" style={{ maxWidth: '800px', margin: '0 auto', padding: '2rem', animation: 'fadeIn 0.5s ease' }}>
-            <div className="flex-center" style={{ justifyContent: 'flex-start', gap: '1rem', marginBottom: '2rem' }}>
-                <button onClick={onBack} className="glass-button" style={{ padding: '8px' }}><ArrowLeft size={18} /></button>
-                <h2 style={{ margin: 0, fontSize: '1.5rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <BarChart size={24} /> Metin Analizi
-                </h2>
+        <div className="max-w-[800px] mx-auto p-8 animate-[fadeIn_0.5s_ease] bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl shadow-2xl">
+            <div className="flex items-center justify-start gap-4 mb-8">
+                <button
+                    onClick={onBack}
+                    className="p-2 bg-pink-500/20 border border-pink-500/40 text-white rounded-lg hover:bg-pink-500/40 transition-all shadow-[0_0_15px_rgba(236,72,153,0.2)]"
+                    title="Geri Dön"
+                >
+                    <ArrowLeft size={18} />
+                </button>
+                <div className="text-left">
+                    <h2 className="m-0 text-2xl font-bold tracking-tight text-white">Metin Analizi</h2>
+                    <p className="text-sm text-pink-400 font-medium tracking-wide">İstatistikler ve İçerik Kontrolü</p>
+                </div>
             </div>
+
+            <p className="text-sm text-slate-400 text-left mb-8 leading-relaxed">
+                {file ? (
+                    <>
+                        <span className="font-semibold text-slate-200">{file.name}</span> dosyası analiz edildi. Aşağıda dosya içeriğine dair detaylı istatistikleri görebilirsiniz.
+                    </>
+                ) : (
+                    'Metin belgenizin kelime, karakter, satır ve boşluk sayılarını analiz edin. Dosyanızı seçerek başlayın.'
+                )}
+            </p>
 
             {!file ? (
                 <div
                     onClick={() => fileInputRef.current?.click()}
-                    className="w-full py-20 border-2 border-dashed border-white/10 rounded-2xl flex flex-col items-center justify-center gap-4 hover:border-violet-500/50 hover:bg-white/5 transition-all cursor-pointer group"
+                    className="w-full py-24 border-2 border-dashed border-white/10 rounded-2xl flex flex-col items-center justify-center gap-4 hover:border-pink-500/50 hover:bg-white/5 transition-all cursor-pointer group shadow-inner"
                 >
-                    <div className="p-4 bg-violet-500/10 rounded-full text-violet-400 group-hover:scale-110 transition-transform">
-                        <BarChart size={32} />
+                    <div className="p-5 bg-pink-500/10 rounded-full text-pink-400 group-hover:scale-110 transition-transform shadow-[0_0_20px_rgba(236,72,153,0.1)]">
+                        <BarChart size={36} />
                     </div>
-                    <div className="text-center">
-                        <p className="font-semibold text-lg">Analiz Etmek İçin Metin Dosyası Seçin</p>
-                        <p className="text-sm text-slate-500 mt-1">Kelime, karakter ve satır sayılarını anında görün</p>
+                    <div className="text-center px-4">
+                        <p className="font-bold text-xl mb-1 text-slate-200">Analiz İçin Belge Seçin</p>
+                        <p className="text-sm text-slate-500">TXT, MD, PDF veya Kod dosyaları</p>
                     </div>
                     <input
                         type="file"
@@ -67,50 +84,54 @@ export const TextAnalyzer: React.FC<TextAnalyzerProps> = ({ file: initialFile, o
                     />
                 </div>
             ) : (
-                <>
+                <div className="space-y-8">
                     {stats && (
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
-                            <div className="glass-panel" style={{ padding: '1.5rem', textAlign: 'center' }}>
-                                <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#60a5fa' }}>{stats.words}</div>
-                                <div className="text-sm">Kelime</div>
-                            </div>
-                            <div className="glass-panel" style={{ padding: '1.5rem', textAlign: 'center' }}>
-                                <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#f472b6' }}>{stats.chars}</div>
-                                <div className="text-sm">Karakter</div>
-                            </div>
-                            <div className="glass-panel" style={{ padding: '1.5rem', textAlign: 'center' }}>
-                                <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#34d399' }}>{stats.lines}</div>
-                                <div className="text-sm">Satır</div>
-                            </div>
-                            <div className="glass-panel" style={{ padding: '1.5rem', textAlign: 'center' }}>
-                                <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#fbbf24' }}>{stats.spaces}</div>
-                                <div className="text-sm">Boşluk</div>
-                            </div>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            {[
+                                { label: 'Kelime', value: stats.words, color: 'text-blue-400', bg: 'bg-blue-500/10' },
+                                { label: 'Karakter', value: stats.chars, color: 'text-pink-400', bg: 'bg-pink-500/10' },
+                                { label: 'Satır', value: stats.lines, color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
+                                { label: 'Boşluk', value: stats.spaces, color: 'text-amber-400', bg: 'bg-amber-500/10' },
+                            ].map((item, idx) => (
+                                <div key={idx} className={`p-6 rounded-2xl border border-white/5 ${item.bg} backdrop-blur-sm flex flex-col items-center justify-center gap-1 shadow-lg group hover:scale-[1.02] transition-transform`}>
+                                    <div className={`text-2xl font-black ${item.color} leading-none`}>{item.value.toLocaleString()}</div>
+                                    <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{item.label}</div>
+                                </div>
+                            ))}
                         </div>
                     )}
 
-                    <div className="flex-col" style={{ alignItems: 'flex-start' }}>
-                        <div className="flex-center w-full" style={{ justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                            <label className="text-sm">Önizleme (İlk 1000 karakter):</label>
-                            <button onClick={() => setFile(null)} className="text-xs text-slate-400 hover:text-white transition-colors">Başka Dosya Seç</button>
+                    <div className="space-y-4">
+                        <div className="flex items-center justify-between px-1">
+                            <label className="text-xs font-bold text-slate-500 uppercase tracking-widest group flex items-center gap-2">
+                                <span className="w-1.5 h-1.5 rounded-full bg-pink-500 animate-pulse" />
+                                Önizleme <span className="text-[10px] opacity-50 lowercase font-normal">(İlk 1000 karakter)</span>
+                            </label>
+                            <button
+                                onClick={() => setFile(null)}
+                                className="text-[10px] font-bold text-slate-600 hover:text-red-400 uppercase tracking-widest transition-colors py-1 px-2"
+                            >
+                                Dosyayı Değiştir
+                            </button>
                         </div>
-                        <div style={{
-                            background: 'rgba(0,0,0,0.3)',
-                            padding: '1rem',
-                            borderRadius: '8px',
-                            width: '100%',
-                            boxSizing: 'border-box',
-                            textAlign: 'left',
-                            maxHeight: '300px',
-                            overflowY: 'auto',
-                            whiteSpace: 'pre-wrap',
-                            fontFamily: 'monospace',
-                            fontSize: '0.9rem'
-                        }}>
-                            {preview}
+                        <div className="relative group">
+                            <div className="absolute inset-x-0 -top-px h-px bg-gradient-to-r from-transparent via-pink-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                            <div className="bg-black/40 border border-white/10 rounded-2xl p-6 font-mono text-sm leading-relaxed text-slate-300 max-h-[400px] overflow-y-auto custom-scrollbar text-left shadow-inner select-text">
+                                {preview || <span className="italic opacity-30">İçerik yüklenemedi...</span>}
+                            </div>
+                            <div className="absolute inset-x-0 -bottom-px h-px bg-gradient-to-r from-transparent via-pink-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                         </div>
                     </div>
-                </>
+
+                    <div className="pt-4 flex items-center justify-between">
+                        <span className="text-[10px] text-slate-600 font-bold uppercase tracking-wider">Analiz Tamamlandı</span>
+                        <div className="flex items-center gap-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                            <span>{file.type || 'text/plain'}</span>
+                            <span className="w-1 h-1 rounded-full bg-white/20" />
+                            <span>{(file.size / 1024).toFixed(1)} KB</span>
+                        </div>
+                    </div>
+                </div>
             )}
         </div>
     );
