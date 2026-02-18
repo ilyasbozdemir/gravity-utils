@@ -19,6 +19,7 @@ const TR = {
     mdFile: 'Markdown Dosyası',
     pdfDoc: 'PDF Belgesi',
     wordDoc: 'Word Belgesi (.docx)',
+    svgImg: 'SVG Çizimi',
 };
 
 export const SUPPORTED_CONVERSIONS: Record<string, Format[]> = {
@@ -26,12 +27,15 @@ export const SUPPORTED_CONVERSIONS: Record<string, Format[]> = {
     'application/vnd.openxmlformats-officedocument.wordprocessingml.document': [ // .docx
         { ext: 'pdf', label: TR.pdfDoc, mime: 'application/pdf' },
         { ext: 'txt', label: TR.txtFile, mime: 'text/plain' },
+        { ext: 'jpg', label: TR.jpegImg, mime: 'image/jpeg' },
         { ext: 'zip', label: TR.zipArchive, mime: 'application/zip', isRenameOnly: true }
     ],
     // PDF
     'application/pdf': [
         { ext: 'docx', label: TR.wordDoc, mime: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' },
         { ext: 'txt', label: TR.txtFile, mime: 'text/plain' },
+        { ext: 'jpg', label: TR.jpegImg, mime: 'image/jpeg' },
+        { ext: 'png', label: TR.pngImg, mime: 'image/png' },
         { ext: 'zip', label: TR.zipArchive, mime: 'application/zip', isRenameOnly: true }
     ],
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': [ // .xlsx
@@ -57,6 +61,11 @@ export const SUPPORTED_CONVERSIONS: Record<string, Format[]> = {
         { ext: 'jpg', label: TR.jpegImg, mime: 'image/jpeg' },
         { ext: 'pdf', label: TR.pdfDoc, mime: 'application/pdf' }
     ],
+    'image/svg+xml': [
+        { ext: 'png', label: TR.pngImg, mime: 'image/png' },
+        { ext: 'jpg', label: TR.jpegImg, mime: 'image/jpeg' },
+        { ext: 'webp', label: TR.webpImg, mime: 'image/webp' }
+    ],
 
     // Text
     'text/plain': [
@@ -78,13 +87,22 @@ export const getFormatByExtension = (filename: string): Format[] => {
         return [
             { ext: 'pdf', label: TR.pdfDoc, mime: 'application/pdf' },
             { ext: 'txt', label: TR.txtFile, mime: 'text/plain' },
+            { ext: 'jpg', label: TR.jpegImg, mime: 'image/jpeg' },
             { ext: 'zip', label: TR.zipArchive, mime: 'application/zip', isRenameOnly: true }
         ];
     }
     if (ext === 'pdf') {
         return [
             { ext: 'docx', label: TR.wordDoc, mime: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' },
+            { ext: 'jpg', label: TR.jpegImg, mime: 'image/jpeg' },
+            { ext: 'png', label: TR.pngImg, mime: 'image/png' },
             { ext: 'txt', label: TR.txtFile, mime: 'text/plain' }
+        ];
+    }
+    if (ext === 'svg') {
+        return [
+            { ext: 'png', label: TR.pngImg, mime: 'image/png' },
+            { ext: 'jpg', label: TR.jpegImg, mime: 'image/jpeg' }
         ];
     }
 

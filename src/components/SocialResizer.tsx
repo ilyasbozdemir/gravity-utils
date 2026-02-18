@@ -154,6 +154,5 @@ export const SocialResizer: React.FC<SocialResizerProps> = ({ file: initialFile,
                 )}
             </div>
         </div>
-        </div >
     );
 };

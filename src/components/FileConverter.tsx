@@ -77,10 +77,30 @@ export const FileConverter: React.FC<FileConverterProps> = ({ file: initialFile,
                     });
 
                     const imgProps = doc.getImageProperties(imgData);
-                    const pdfWidth = doc.internal.pageSize.getWidth();
-                    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
 
-                    doc.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
+                    // PDF Page Dimensions (default A4: 210 x 297 mm)
+                    const pageWidth = doc.internal.pageSize.getWidth();
+                    const pageHeight = doc.internal.pageSize.getHeight();
+                    const margin = 10; // 10mm margin
+                    const maxWidth = pageWidth - (margin * 2);
+                    const maxHeight = pageHeight - (margin * 2);
+
+                    // Convert pixels to mm (Standard 96 DPI: 1px = 0.264583 mm)
+                    const pxToMm = 0.264583;
+                    let imgWidthMM = imgProps.width * pxToMm;
+                    let imgHeightMM = imgProps.height * pxToMm;
+
+                    // Calculate scale to fit within margins, but ONLY downscale (don't upscale small images)
+                    const scale = Math.min(1, maxWidth / imgWidthMM, maxHeight / imgHeightMM);
+
+                    const finalWidth = imgWidthMM * scale;
+                    const finalHeight = imgHeightMM * scale;
+
+                    // Center on page
+                    const x = (pageWidth - finalWidth) / 2;
+                    const y = (pageHeight - finalHeight) / 2;
+
+                    doc.addImage(imgData, 'JPEG', x, y, finalWidth, finalHeight);
                     doc.save(finalName);
 
                 } else if (file.name.toLowerCase().endsWith('.docx')) {
@@ -138,7 +158,9 @@ export const FileConverter: React.FC<FileConverterProps> = ({ file: initialFile,
                         setProgress(`Sayfa işleniyor: ${i}/${pdf.numPages}`);
                         const page = await pdf.getPage(i);
                         const textContent = await page.getTextContent();
-                        const pageText = textContent.items.map((item: any) => item.str).join(' ');
+                        const pageText = textContent.items
+                            .map((item) => ('str' in item ? item.str : ''))
+                            .join(' ');
                         fullText += pageText + '\n\n';
                     }
 
@@ -147,7 +169,7 @@ export const FileConverter: React.FC<FileConverterProps> = ({ file: initialFile,
                         sections: [{
                             properties: {},
                             children: fullText.split('\n').map(line => new Paragraph({
-                                children: [new TextRun(line)],
+                                children: [line.trim() ? new TextRun(line) : new TextRun("")],
                             })),
                         }],
                     });
@@ -164,7 +186,120 @@ export const FileConverter: React.FC<FileConverterProps> = ({ file: initialFile,
                 return;
             }
 
-            // 3. Fallback / Rename Logic
+            // 3. Image Conversion Logic (PDF to Image / SVG to Image)
+            if (['jpg', 'jpeg', 'png', 'webp'].includes(targetExt.toLowerCase()) && !isRenameOnly) {
+                // a) PDF to Image
+                if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
+                    setProgress('PDF sayfaları resme dönüştürülüyor...');
+                    const arrayBuffer = await file.arrayBuffer();
+                    const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
+                    const pdf = await loadingTask.promise;
+
+                    if (pdf.numPages === 1) {
+                        const page = await pdf.getPage(1);
+                        const viewport = page.getViewport({ scale: 2.0 });
+                        const canvas = document.createElement('canvas');
+                        const context = canvas.getContext('2d');
+
+                        if (context) {
+                            canvas.height = viewport.height;
+                            canvas.width = viewport.width;
+                            const renderTask = page.render({
+                                canvasContext: context,
+                                viewport: viewport,
+                                canvas: canvas as any
+                            });
+                            await renderTask.promise;
+
+                            const mime = targetExt === 'png' ? 'image/png' : 'image/jpeg';
+                            const dataUrl = canvas.toDataURL(mime, 0.9);
+                            saveAs(dataUrl, finalName);
+                            setIsProcessing(false);
+                            return;
+                        }
+                    } else {
+                        // Multi-page: Use ZIP
+                        const JSZip = (await import('jszip')).default;
+                        const zip = new JSZip();
+                        const mime = targetExt === 'png' ? 'image/png' : 'image/jpeg';
+
+                        for (let i = 1; i <= pdf.numPages; i++) {
+                            setProgress(`Sayfa işleniyor: ${i}/${pdf.numPages}`);
+                            const page = await pdf.getPage(i);
+                            const viewport = page.getViewport({ scale: 2.0 });
+                            const canvas = document.createElement('canvas');
+                            const context = canvas.getContext('2d');
+
+                            if (context) {
+                                canvas.height = viewport.height;
+                                canvas.width = viewport.width;
+                                await page.render({ canvasContext: context, viewport, canvas: canvas as any }).promise;
+                                const dataUrl = canvas.toDataURL(mime, 0.9);
+                                const base64 = dataUrl.split(',')[1];
+                                zip.file(`sayfa-${i}.${targetExt}`, base64, { base64: true });
+                            }
+                        }
+
+                        setProgress('ZIP dosyası hazırlanıyor...');
+                        const zipBlob = await zip.generateAsync({ type: 'blob' });
+                        saveAs(zipBlob, `${baseName}-sayfalar.zip`);
+                        setIsProcessing(false);
+                        return;
+                    }
+                }
+
+                // b) SVG to Image
+                if (file.type === 'image/svg+xml' || file.name.toLowerCase().endsWith('.svg')) {
+                    setProgress('Vektörel çizim çözümleniyor...');
+                    const text = await file.text();
+
+                    // Try to get dimensions from viewBox or width/height
+                    const parser = new DOMParser();
+                    const svgDoc = parser.parseFromString(text, 'image/svg+xml');
+                    const svgEl = svgDoc.documentElement;
+                    let width = parseInt(svgEl.getAttribute('width') || '0');
+                    let height = parseInt(svgEl.getAttribute('height') || '0');
+
+                    if (!width || !height) {
+                        const viewBox = svgEl.getAttribute('viewBox');
+                        if (viewBox) {
+                            const params = viewBox.split(/[ ,]/).filter(s => s.length > 0);
+                            if (params.length === 4) {
+                                width = width || parseInt(params[2]);
+                                height = height || parseInt(params[3]);
+                            }
+                        }
+                    }
+
+                    const blob = new Blob([text], { type: 'image/svg+xml' });
+                    const url = URL.createObjectURL(blob);
+
+                    const img = new Image();
+                    img.src = url;
+                    await new Promise((resolve, reject) => {
+                        img.onload = resolve;
+                        img.onerror = () => reject(new Error("SVG yüklenemedi."));
+                    });
+
+                    const canvas = document.createElement('canvas');
+                    canvas.width = width || img.width || 800;
+                    canvas.height = height || img.height || 600;
+
+                    const ctx = canvas.getContext('2d');
+                    if (ctx) {
+                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                        const mime = targetExt === 'png' ? 'image/png' : 'image/jpeg';
+                        canvas.toBlob((b) => {
+                            if (b) saveAs(b, finalName);
+                            URL.revokeObjectURL(url);
+                        }, mime, 0.9);
+                        setIsProcessing(false);
+                        return;
+                    }
+                }
+            }
+
+            // 4. Fallback / Rename Logic
             let targetMime = 'application/octet-stream';
             if (targetExt === 'zip') targetMime = 'application/zip';
             else if (targetExt === 'txt') targetMime = 'text/plain';

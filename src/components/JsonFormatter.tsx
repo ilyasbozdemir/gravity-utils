@@ -44,6 +44,7 @@ export const JsonFormatter: React.FC<JsonFormatterProps> = ({ file: initialFile,
     };
 
     const handleDownload = () => {
+        if (!file) return;
         const blob = new Blob([jsonContent], { type: 'application/json' });
         saveAs(blob, `formatted-${file.name}`);
     };

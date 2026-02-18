@@ -343,39 +343,30 @@ export const ZipInspector: React.FC<ZipInspectorProps> = ({ file: initialFile, o
     const renderFileList = (list: ZipItem[], title?: string) => {
         if (!list || list.length === 0) return null;
         return (
-            <div style={{ marginBottom: title ? '1.5rem' : 0 }}>
+            <div className={title ? "mb-6" : ""}>
                 {title && (
-                    <h4 style={{ margin: '0 0 0.5rem 0', opacity: 0.8, fontSize: '0.9rem', color: '#94a3b8', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '4px' }}>
+                    <h4 className="m-0 mb-2 opacity-80 text-[0.9rem] text-slate-400 border-b border-white/10 pb-1 font-semibold px-4">
                         {title} ({list.length})
                     </h4>
                 )}
                 {list.map((item) => (
                     <div
                         key={item.path}
-                        className="flex-center"
-                        style={{
-                            justifyContent: 'space-between',
-                            padding: '8px 16px',
-                            borderBottom: '1px solid rgba(255,255,255,0.05)',
-                            cursor: item.isDir ? 'default' : 'pointer',
-                            transition: 'background 0.2s'
-                        }}
-                        onMouseEnter={(e) => !item.isDir && (e.currentTarget.style.background = 'rgba(255,255,255,0.05)')}
-                        onMouseLeave={(e) => !item.isDir && (e.currentTarget.style.background = 'transparent')}
+                        className={`flex items-center justify-between px-6 py-3 border-b border-white/5 transition-colors ${item.isDir ? "cursor-default" : "cursor-pointer hover:bg-white/5"}`}
                         onClick={() => !item.isDir && handlePreview(item)}
                         title={item.isDir ? 'Klasör' : 'Önizlemek için tıkla'}
                     >
-                        <div className="flex-center" style={{ gap: '10px', overflow: 'hidden' }}>
+                        <div className="flex items-center gap-3 overflow-hidden">
                             {item.isDir ? (
-                                <Folder size={16} color="#fbbf24" style={{ flexShrink: 0 }} />
+                                <Folder size={16} className="text-amber-400 shrink-0" />
                             ) : (
-                                <FileIcon size={16} color="#94a3b8" style={{ flexShrink: 0 }} />
+                                <FileIcon size={16} className="text-slate-400 shrink-0" />
                             )}
-                            <span style={{ fontFamily: 'monospace', fontSize: '0.9rem', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>
+                            <span className="font-mono text-sm whitespace-nowrap overflow-hidden text-ellipsis">
                                 {item.path}
                             </span>
                         </div>
-                        {!item.isDir && <Eye size={14} style={{ opacity: 0.5, flexShrink: 0 }} />}
+                        {!item.isDir && <Eye size={14} className="opacity-30 shrink-0 group-hover:opacity-100 transition-opacity" />}
                     </div>
                 ))}
             </div>
@@ -383,36 +374,46 @@ export const ZipInspector: React.FC<ZipInspectorProps> = ({ file: initialFile, o
     };
 
     return (
-        <div className="glass-panel" style={{ maxWidth: '800px', margin: '0 auto', padding: '2rem', animation: 'fadeIn 0.5s ease' }}>
-            <div className="flex-center" style={{ justifyContent: 'flex-start', gap: '1rem', marginBottom: '1.5rem' }}>
-                <button onClick={onBack} className="glass-button" title="Geri" aria-label="Geri" style={{ padding: '8px' }}><ArrowLeft size={18} /></button>
-                <div style={{ textAlign: 'left' }}>
-                    <h2 style={{ margin: 0, fontSize: '1.5rem' }}>{file && /\.(docx|xlsx|pptx|odt|ods|odp)$/i.test(file.name) ? 'Belge İçeriği' : 'Arşiv İnceleyici'}</h2>
-                    {file && /\.(docx|xlsx|pptx|odt|ods|odp)$/i.test(file.name) && <span className="text-sm" style={{ opacity: 0.7 }}>Office dosya yapısı ayrıştırıldı</span>}
+        <div className="max-w-[800px] mx-auto p-8 animate-[fadeIn_0.5s_ease] rounded-3xl bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl">
+            <div className="flex items-center justify-start gap-4 mb-6">
+                <button
+                    onClick={onBack}
+                    className="p-2 bg-pink-500/20 border border-pink-500/40 text-white rounded-lg hover:bg-pink-500/40 transition-all shadow-[0_0_15px_rgba(236,72,153,0.2)]"
+                    title="Geri Dön"
+                >
+                    <ArrowLeft size={18} />
+                </button>
+                <div className="text-left">
+                    <h2 className="m-0 text-2xl font-bold tracking-tight">
+                        {file && /\.(docx|xlsx|pptx|odt|ods|odp)$/i.test(file.name) ? 'Belge İçeriği' : 'Arşiv İnceleyici'}
+                    </h2>
+                    {file && /\.(docx|xlsx|pptx|odt|ods|odp)$/i.test(file.name) && (
+                        <p className="text-sm text-pink-400 font-medium">Office dosya yapısı ayrıştırıldı</p>
+                    )}
                 </div>
             </div>
 
-            <p className="text-sm" style={{ textAlign: 'left', marginBottom: '1rem' }}>
+            <p className="text-sm text-slate-400 text-left mb-6 leading-relaxed">
                 {file ? (
                     <>
-                        <strong>{file.name}</strong> dosyasının içeriği görüntüleniyor. Önizlemek için dosyaya tıklayın.
+                        <span className="font-semibold text-slate-200">{file.name}</span> dosyasının içeriği görüntüleniyor. Önizlemek için bir dosyaya tıklayın.
                     </>
                 ) : (
-                    'İncelemek istediğiniz arşivi (zip, docx, vb.) seçin.'
+                    'İncelemek istediğiniz arşivi (zip, docx, vb.) seçin. Dosyaları sunucuya yüklemeden tarayıcınızda görüntüleyin.'
                 )}
             </p>
 
             {!file ? (
                 <div
                     onClick={() => fileInputRef.current?.click()}
-                    className="w-full py-20 border-2 border-dashed border-white/10 rounded-2xl flex flex-col items-center justify-center gap-4 hover:border-pink-500/50 hover:bg-white/5 transition-all cursor-pointer group"
+                    className="w-full py-24 border-2 border-dashed border-white/10 rounded-2xl flex flex-col items-center justify-center gap-4 hover:border-pink-500/50 hover:bg-white/5 transition-all cursor-pointer group"
                 >
-                    <div className="p-4 bg-pink-500/10 rounded-full text-pink-400 group-hover:scale-110 transition-transform">
-                        <Archive size={32} />
+                    <div className="p-5 bg-pink-500/10 rounded-full text-pink-400 group-hover:scale-110 transition-transform shadow-[0_0_20px_rgba(236,72,153,0.1)]">
+                        <Archive size={36} />
                     </div>
-                    <div className="text-center">
-                        <p className="font-semibold text-lg">İncelemek için Arşiv Seçin</p>
-                        <p className="text-sm text-slate-500 mt-1">Zip, Docx, Xlsx ve daha fazlasını destekler</p>
+                    <div className="text-center px-4">
+                        <p className="font-bold text-xl mb-1">İncelemek için Arşiv Seçin</p>
+                        <p className="text-sm text-slate-500">Zip, Docx, Xlsx ve daha fazlasını tarayıcınızda açın</p>
                     </div>
                     <input
                         type="file"
@@ -425,21 +426,36 @@ export const ZipInspector: React.FC<ZipInspectorProps> = ({ file: initialFile, o
                 </div>
             ) : (
                 <>
-                    {loading && <div className="p-4">Arşiv yapısı okunuyor...</div>}
-                    {error && <div className="p-4" style={{ color: '#f87171', background: 'rgba(239, 68, 68, 0.1)', borderRadius: '8px' }}>{error}</div>}
+                    {loading && (
+                        <div className="flex items-center justify-center gap-3 p-12 text-pink-400 animate-pulse">
+                            <Archive size={24} className="animate-bounce" />
+                            <span className="font-medium">Arşiv yapısı çözümleniyor...</span>
+                        </div>
+                    )}
+                    {error && (
+                        <div className="p-4 text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-xl mb-4">
+                            {error}
+                        </div>
+                    )}
 
                     {!loading && !error && (
-                        <div style={{ maxHeight: '600px', overflowY: 'auto', textAlign: 'left', background: 'rgba(0,0,0,0.2)', borderRadius: '8px' }}>
-                            {items.length === 0 && <div className="p-4 text-sm">Arşiv boş veya okunamadı.</div>}
+                        <div className="max-h-[600px] overflow-y-auto text-left bg-black/30 rounded-2xl border border-white/5 custom-scrollbar">
+                            {items.length === 0 && (
+                                <div className="p-12 text-center text-slate-500 italic">
+                                    Arşiv boş veya bu format desteklenmiyor.
+                                </div>
+                            )}
 
                             {groupedItems ? (
-                                <div style={{ padding: '10px' }}>
+                                <div className="py-2">
                                     {renderFileList(groupedItems.media, 'Medya Dosyaları')}
                                     {renderFileList(groupedItems.content, 'Belge İçeriği (XML)')}
                                     {renderFileList(groupedItems.other, 'Yapısal ve Diğer Dosyalar')}
                                 </div>
                             ) : (
-                                renderFileList(items)
+                                <div className="py-2">
+                                    {renderFileList(items)}
+                                </div>
                             )}
                         </div>
                     )}
@@ -447,75 +463,98 @@ export const ZipInspector: React.FC<ZipInspectorProps> = ({ file: initialFile, o
             )}
 
             {preview && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(4px)', position: 'fixed', top: 0, left: 0, width: '100%', height: '100%' }}>
-                    <div className="glass-panel w-full" style={{ width: '90%', maxWidth: '900px', height: '80vh', display: 'flex', flexDirection: 'column', margin: 0, overflow: 'hidden', padding: 0 }}>
-                        {/* Header */}
-                        <div className="flex items-center justify-between" style={{ padding: '1rem', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-                            <h3 style={{ margin: 0, fontSize: '1rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', flex: 1, textAlign: 'left', marginRight: '1rem' }}>
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-[fadeIn_0.2s_ease]">
+                    <div className="bg-slate-900 border border-white/10 w-full max-w-5xl h-[85vh] flex flex-col rounded-3xl shadow-2xl overflow-hidden">
+                        {/* Preview Header */}
+                        <div className="flex items-center justify-between p-4 border-b border-white/10 bg-white/5">
+                            <h3 className="m-0 text-sm font-mono font-medium text-slate-300 truncate flex-1 text-left mr-4">
                                 {preview.item.path}
                             </h3>
-                            <div className="flex-center" style={{ gap: '0.5rem', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-                                <div className="flex-center" style={{ gap: '0.5rem' }}>
-                                    <button onClick={() => handleNavigate('prev')} className="glass-button" style={{ padding: '8px' }} title="Önceki">
-                                        <ChevronLeft size={16} />
+                            <div className="flex items-center gap-2">
+                                <div className="flex items-center bg-white/5 rounded-lg border border-white/5 p-1 gap-1">
+                                    <button
+                                        onClick={() => handleNavigate('prev')}
+                                        className="p-1.5 hover:bg-white/10 text-slate-400 hover:text-white rounded-md transition-colors"
+                                        title="Önceki"
+                                    >
+                                        <ChevronLeft size={18} />
                                     </button>
-                                    <button onClick={() => handleNavigate('next')} className="glass-button" style={{ padding: '8px' }} title="Sonraki">
-                                        <ChevronRight size={16} />
+                                    <button
+                                        onClick={() => handleNavigate('next')}
+                                        className="p-1.5 hover:bg-white/10 text-slate-400 hover:text-white rounded-md transition-colors"
+                                        title="Sonraki"
+                                    >
+                                        <ChevronRight size={18} />
                                     </button>
                                 </div>
-                                <div className="flex-center" style={{ gap: '0.5rem' }}>
+
+                                <div className="h-6 w-[1px] bg-white/10 mx-1"></div>
+
+                                <div className="flex items-center gap-1.5">
                                     {preview.type === 'text' && (
-                                        <button onClick={handleFormat} className="glass-button" style={{ padding: '8px', display: 'flex', alignItems: 'center', gap: '5px' }} title="Formatla (Güzelleştir)">
-                                            <Code size={16} /> <span style={{ fontSize: '0.8rem' }} className="hidden-mobile">Formatla</span>
+                                        <button
+                                            onClick={handleFormat}
+                                            className="px-3 py-1.5 flex items-center gap-2 bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 border border-blue-500/30 rounded-lg text-xs font-medium transition-all"
+                                            title="Kod Formatla"
+                                        >
+                                            <Code size={14} /> <span>Formatla</span>
                                         </button>
                                     )}
-                                    <button onClick={handleCopyBase64} className="glass-button" style={{ padding: '8px', display: 'flex', alignItems: 'center', gap: '5px' }} title="Base64 Kopyala">
-                                        {copying ? <Check size={16} color="#4ade80" /> : <Copy size={16} />}
-                                        <span style={{ fontSize: '0.8rem' }} className="hidden-mobile">{copying ? 'Kopyalandı' : 'Base64'}</span>
+                                    <button
+                                        onClick={handleCopyBase64}
+                                        className="px-3 py-1.5 flex items-center gap-2 bg-white/5 hover:bg-white/10 text-slate-300 border border-white/10 rounded-lg text-xs font-medium transition-all"
+                                        title="Base64 Kopyala"
+                                    >
+                                        {copying ? <Check size={14} className="text-emerald-400" /> : <Copy size={14} />}
+                                        <span>{copying ? 'Kopyalandı' : 'Base64'}</span>
                                     </button>
-                                    <button onClick={() => downloadFile(preview.item)} className="glass-button" style={{ padding: '8px', display: 'flex', alignItems: 'center', gap: '5px' }} title="İndir">
-                                        <Download size={16} /> <span style={{ fontSize: '0.8rem' }} className="hidden-mobile">İndir</span>
+                                    <button
+                                        onClick={() => downloadFile(preview.item)}
+                                        className="px-3 py-1.5 flex items-center gap-2 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 border border-emerald-500/30 rounded-lg text-xs font-medium transition-all"
+                                    >
+                                        <Download size={14} /> <span>İndir</span>
                                     </button>
-                                    <button onClick={closePreview} className="glass-button" style={{ padding: '8px', background: 'rgba(239, 68, 68, 0.2)', borderColor: 'rgba(239, 68, 68, 0.4)' }} title="Kapat">
-                                        <X size={16} />
+                                    <button
+                                        onClick={closePreview}
+                                        className="p-1.5 bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/30 rounded-lg transition-all"
+                                    >
+                                        <X size={18} />
                                     </button>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Content */}
-                        <div style={{ flex: 1, overflow: 'auto', padding: '1.5rem', display: 'flex', justifyContent: 'center', alignItems: 'center', background: 'rgba(0,0,0,0.2)' }}>
+                        {/* Preview Content */}
+                        <div className="flex-1 overflow-hidden relative flex items-center justify-center bg-black/40">
                             {preview.loading ? (
-                                <div className="flex-center animate-spin">
-                                    <Download size={24} />
+                                <div className="flex flex-col items-center gap-3 text-pink-400 animate-pulse">
+                                    <Archive size={40} className="animate-spin" />
+                                    <span className="text-sm font-medium">Yükleniyor...</span>
                                 </div>
                             ) : preview.type === 'image' ? (
-                                <img src={preview.content!} alt="Preview" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', borderRadius: '4px' }} />
+                                <img src={preview.content!} alt="Preview" className="max-w-[95%] max-h-[95%] object-contain rounded shadow-lg" />
                             ) : preview.type === 'video' ? (
-                                <video controls src={preview.content!} style={{ maxWidth: '100%', maxHeight: '100%', borderRadius: '4px' }} />
+                                <video controls src={preview.content!} className="max-w-[95%] max-h-[95%] rounded border border-white/10 shadow-2xl" />
                             ) : preview.type === 'audio' ? (
-                                <audio controls src={preview.content!} style={{ width: '100%', maxWidth: '400px' }} />
+                                <div className="bg-slate-800/50 p-8 rounded-2xl border border-white/10">
+                                    <audio controls src={preview.content!} className="w-[300px]" />
+                                </div>
                             ) : preview.type === 'pdf' ? (
-                                <iframe src={preview.content!} style={{ width: '100%', height: '100%', border: 'none', borderRadius: '4px' }} title="PDF Preview" />
+                                <iframe src={preview.content!} className="w-full h-full border-none" title="PDF Preview" />
                             ) : preview.type === 'text' ? (
-                                <pre style={{
-                                    fontFamily: 'monospace',
-                                    fontSize: '0.9rem',
-                                    whiteSpace: 'pre-wrap',
-                                    textAlign: 'left',
-                                    width: '100%',
-                                    height: '100%',
-                                    overflow: 'auto',
-                                    margin: 0,
-                                    userSelect: 'text',
-                                    color: '#e2e8f0'
-                                }}>
+                                <pre className="w-full h-full p-6 text-slate-300 font-mono text-sm whitespace-pre-wrap text-left overflow-auto custom-scrollbar select-text leading-relaxed">
                                     {preview.content}
                                 </pre>
                             ) : (
-                                <div className="flex-center flex-col" style={{ gap: '1rem', opacity: 0.7 }}>
-                                    <FileIcon size={48} />
-                                    <p>Bu dosya türü için önizleme kullanılamıyor.</p>
+                                <div className="flex flex-col items-center gap-4 text-slate-500">
+                                    <FileIcon size={64} className="opacity-20" />
+                                    <p className="text-sm">Bu dosya türü için önizleme desteklenmiyor.</p>
+                                    <button
+                                        onClick={() => downloadFile(preview.item)}
+                                        className="bg-white/5 border border-white/10 px-4 py-2 rounded-lg text-xs hover:bg-white/10 transition-colors"
+                                    >
+                                        Dosyayı İndirip İnceleyin
+                                    </button>
                                 </div>
                             )}
                         </div>

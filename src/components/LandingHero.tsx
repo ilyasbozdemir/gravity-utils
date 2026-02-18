@@ -14,44 +14,66 @@ interface LandingHeroProps {
 }
 
 export const LandingHero: React.FC<LandingHeroProps> = ({ onFileSelect, onToolSelect }) => {
+    const [searchQuery, setSearchQuery] = React.useState('');
+
     return (
         <div className="px-4 pb-20">
             {/* Hero Section */}
-            <div className="min-h-[70vh] flex flex-col items-center justify-center text-center relative pt-12">
+            <div className="min-h-[60vh] flex flex-col items-center justify-center text-center relative pt-12">
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[radial-gradient(circle,rgba(167,139,250,0.15)_0%,rgba(96,165,250,0.05)_40%,transparent_70%)] -z-10 pointer-events-none"></div>
 
                 <div className="mb-4 px-4 py-2 rounded-full bg-white/5 border border-white/10 inline-flex items-center gap-2 text-sm text-slate-400">
                     <Star size={14} fill="#fbbf24" color="#fbbf24" />
-                    <span>Tüm Araçlar %100 Ücretsiz ve Güvenli</span>
+                    <span>80+ Ücretsiz Araç | %100 Güvenli ve Çevrimdışı</span>
                 </div>
 
                 <h1 className="text-[clamp(2.5rem,6vw,4rem)] font-extrabold leading-[1.1] tracking-tighter mb-6 max-w-[900px] bg-gradient-to-br from-white to-slate-400 bg-clip-text text-transparent">
-                    Dosya İşlemleriniz İçin <br />
-                    <span className="text-blue-400">Hepsi Bir Arada Panel.</span>
+                    Profesyonel <span className="text-blue-400">Dosya Araçları</span> <br />
+                    Elinizin Altında.
                 </h1>
 
-                <p className="text-[clamp(1rem,2vw,1.25rem)] text-slate-400 max-w-[600px] mb-12 leading-relaxed">
-                    Dosyalarınızı sunucuya yüklemeden tarayıcınızda işleyin.
-                    Hızlı, güvenli ve profesyonel sonuçlar.
-                </p>
-
-                <div className="w-full max-w-[650px] relative z-10">
+                <div className="w-full max-w-[700px] relative z-20 mb-12">
                     <div className="p-2 rounded-3xl bg-slate-800/40 backdrop-blur-xl border border-white/10 shadow-2xl">
                         <FileDropper onFileSelect={onFileSelect} />
                     </div>
                 </div>
 
-                <div className="mt-12 flex gap-8 justify-center opacity-60">
-                    <div className="flex items-center gap-2 text-sm"><ShieldCheck size={18} /> Sunucusuz (Client-side)</div>
-                    <div className="flex items-center gap-2 text-sm"><Zap size={18} /> Yerel Hız</div>
+                {/* Quick Search Mockup */}
+                <div className="relative w-full max-w-md mx-auto mb-16 px-4">
+                    <Search className="absolute left-7 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
+                    <input
+                        type="text"
+                        placeholder="Araç ara... (Örn: pdf birleştir, exif temizle)"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-sm focus:outline-none focus:border-blue-500/50 transition-all text-slate-300"
+                    />
                 </div>
             </div>
 
             {/* Categorized Tools Menu */}
-            <div className="w-full max-w-[1200px] mx-auto mt-24">
-                <div className="flex flex-col gap-16">
+            <div className="w-full max-w-[1240px] mx-auto">
+                <div className="flex flex-col gap-20">
 
-                    {/* Category: PDF & Dokument */}
+                    {/* Category: Öne Çıkanlar */}
+                    <section>
+                        <div className="flex items-center justify-between mb-8">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 bg-amber-500/10 rounded-lg text-amber-400"><Zap size={20} /></div>
+                                <h3 className="text-xl font-bold">Popüler Dönüştürmeler</h3>
+                            </div>
+                        </div>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+                            <QuickAction title="Word → PDF" onClick={() => onToolSelect('convert')} icon={<FileText size={16} />} color="blue" />
+                            <QuickAction title="PDF → Word" onClick={() => onToolSelect('convert')} icon={<FileText size={16} />} color="red" />
+                            <QuickAction title="Resim → PDF" onClick={() => onToolSelect('convert')} icon={<ImageIcon size={16} />} color="emerald" />
+                            <QuickAction title="PDF → Resim" onClick={() => onToolSelect('convert')} icon={<ImageIcon size={16} />} color="sky" />
+                            <QuickAction title="PNG → JPG" onClick={() => onToolSelect('convert')} icon={<ImageIcon size={16} />} color="indigo" />
+                            <QuickAction title="PDF Birleştir" onClick={() => onToolSelect('pdf')} icon={<Layers size={16} />} color="orange" />
+                        </div>
+                    </section>
+
+                    {/* Category: PDF & Doküman */}
                     <section>
                         <div className="flex items-center gap-3 mb-8">
                             <div className="p-2 bg-red-500/10 rounded-lg text-red-400"><FileText size={20} /></div>
@@ -60,29 +82,29 @@ export const LandingHero: React.FC<LandingHeroProps> = ({ onFileSelect, onToolSe
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                             <ToolItem
                                 icon={<RefreshCw size={20} />}
-                                title="Dosya Dönüştürücü"
-                                desc="Word, PDF, Resim ve Metin arası çeviriler."
+                                title="Gelişmiş Dönüştürücü"
+                                desc="80+ format desteği ile hızlı çeviri."
                                 color="blue"
                                 onClick={() => onToolSelect('convert')}
                             />
                             <ToolItem
                                 icon={<Layers size={20} />}
-                                title="PDF Birleştir & Düzenle"
-                                desc="Sayfa ekle, çıkar ve yeniden sırala."
+                                title="PDF Yönetimi"
+                                desc="Sayfa birleştir, ayır, sil ve sırala."
                                 color="red"
                                 onClick={() => onToolSelect('pdf')}
                             />
                             <ToolItem
-                                icon={<Lock size={20} />}
-                                title="Dosya Şifreleme"
-                                desc="Askeri düzey AES-256 güvenliği."
-                                color="purple"
-                                onClick={() => onToolSelect('encrypt')}
+                                icon={<FileText size={20} />}
+                                title="PDF'i Düzenlenebilir Yap"
+                                desc="PDF içeriğini Word veya Metne aktarın."
+                                color="amber"
+                                onClick={() => onToolSelect('convert')}
                             />
                             <ToolItem
                                 icon={<Search size={20} />}
                                 title="Metin Analizi"
-                                desc="Kelime sayımı ve metin istatistikleri."
+                                desc="Kelime sayımı, okuma süresi ve fazlası."
                                 color="emerald"
                                 onClick={() => onToolSelect('text')}
                             />
@@ -93,98 +115,105 @@ export const LandingHero: React.FC<LandingHeroProps> = ({ onFileSelect, onToolSe
                     <section>
                         <div className="flex items-center gap-3 mb-8">
                             <div className="p-2 bg-emerald-500/10 rounded-lg text-emerald-400"><ImageIcon size={20} /></div>
-                            <h3 className="text-xl font-bold">Resim & Medya Araçları</h3>
+                            <h3 className="text-xl font-bold">Görsel & Grafik Araçları</h3>
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                             <ToolItem
                                 icon={<Minimize2 size={20} />}
-                                title="Resim Optimizer"
-                                desc="Kalite kaybı olmadan boyutu küçültün."
+                                title="Boyut Küçültücü"
+                                desc="Görsel kalitesini bozmadan optimize edin."
                                 color="emerald"
                                 onClick={() => onToolSelect('optimize')}
                             />
                             <ToolItem
                                 icon={<Smartphone size={20} />}
-                                title="Sosyal Medya Boyut"
-                                desc="Instagram, X, LinkedIn hazır şablonları."
+                                title="Sosyal Medya Hazır"
+                                desc="Instagram, X ve YouTube için tam boyutlar."
                                 color="sky"
                                 onClick={() => onToolSelect('social')}
                             />
                             <ToolItem
                                 icon={<MousePointer2 size={20} />}
-                                title="Favicon Oluşturucu"
-                                desc="Resimden fav ve app icon setleri."
+                                title="Favicon Hazırlayıcı"
+                                desc="Tüm tarayıcılar için favicon paketleri üretin."
                                 color="indigo"
                                 onClick={() => onToolSelect('favicon')}
                             />
                             <ToolItem
-                                icon={<Settings size={20} />}
-                                title="EXIF Temizleyici"
-                                desc="Görsellerden konum ve kamera bilgilerini siler."
-                                color="orange"
-                                onClick={() => onToolSelect('exif')}
+                                icon={<QrCode size={20} />}
+                                title="QR İşlemleri"
+                                desc="QR/Barkod üretin veya görselden okuyun."
+                                color="violet"
+                                onClick={() => onToolSelect('qr')}
                             />
                         </div>
                     </section>
 
-                    {/* Category: Teknik & Geliştirici */}
+                    {/* Category: Güvenlik & Gizlilik */}
                     <section>
                         <div className="flex items-center gap-3 mb-8">
-                            <div className="p-2 bg-blue-500/10 rounded-lg text-blue-400"><Code size={20} /></div>
-                            <h3 className="text-xl font-bold">Veri & Geliştirici Araçları</h3>
+                            <div className="p-2 bg-purple-500/10 rounded-lg text-purple-400"><ShieldCheck size={20} /></div>
+                            <h3 className="text-xl font-bold">Güvenlik & Gizlilik</h3>
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                             <ToolItem
-                                icon={<Archive size={20} />}
-                                title="Arşiv İnceleyici"
-                                desc="Zip dosyalarının içeriğine göz atın."
-                                color="pink"
-                                onClick={() => onToolSelect('inspect')}
+                                icon={<Lock size={20} />}
+                                title="Dosya Şifreleyici"
+                                desc="Şifre ile dosyalarınızı güvende tutun."
+                                color="purple"
+                                onClick={() => onToolSelect('encrypt')}
+                            />
+                            <ToolItem
+                                icon={<Settings size={20} />}
+                                title="Metadata Temizleyici"
+                                desc="Fotoğraflardan gizli EXIF bilgilerini silin."
+                                color="orange"
+                                onClick={() => onToolSelect('exif')}
                             />
                             <ToolItem
                                 icon={<Hash size={20} />}
-                                title="Hash Üretici"
-                                desc="MD5, SHA-1, SHA-256 imza doğrulama."
+                                title="Dosya Doğrulama"
+                                desc="Hash (MD5, SHA2) ile dosya bütünlüğü kontrolü."
                                 color="amber"
                                 onClick={() => onToolSelect('hash')}
                             />
+                        </div>
+                    </section>
+
+                    {/* Category: Teknik / Dev */}
+                    <section>
+                        <div className="flex items-center gap-3 mb-8">
+                            <div className="p-2 bg-blue-500/10 rounded-lg text-blue-400"><Code size={20} /></div>
+                            <h3 className="text-xl font-bold">Geliştirici Araçları</h3>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                             <ToolItem
                                 icon={<Code size={20} />}
                                 title="JSON Formatlayıcı"
-                                desc="Hatalı JSON verilerini düzeltin ve güzelleştirin."
+                                desc="JSON verilerini okunabilir ve düzenli yapın."
                                 color="cyan"
                                 onClick={() => onToolSelect('json')}
                             />
                             <ToolItem
                                 icon={<Share2 size={20} />}
-                                title="Base64 Metin/Resim"
-                                desc="Verileri Base64 formatına encode/decode yapın."
+                                title="Base64 Çevirici"
+                                desc="Resim/Metin ile Base64 arası dönüşüm."
                                 color="violet"
                                 onClick={() => onToolSelect('base64')}
                             />
-                        </div>
-                    </section>
-
-                    {/* Category: Diğer */}
-                    <section className="pb-12">
-                        <div className="flex items-center gap-3 mb-8">
-                            <div className="p-2 bg-orange-500/10 rounded-lg text-orange-400"><Zap size={20} /></div>
-                            <h3 className="text-xl font-bold">Hesaplama & Diğer</h3>
-                        </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                             <ToolItem
-                                icon={<Calculator size={20} />}
-                                title="Birim Çevirici"
-                                desc="Mühendislik ve teknik birim dönüşümleri."
-                                color="orange"
-                                onClick={() => onToolSelect('units')}
+                                icon={<Archive size={20} />}
+                                title="Arşiv Görüntüleyici"
+                                desc="ZIP içeriğini indirmeden analiz edin."
+                                color="pink"
+                                onClick={() => onToolSelect('inspect')}
                             />
                             <ToolItem
-                                icon={<QrCode size={20} />}
-                                title="QR & Barkod"
-                                desc="Hızlı QR kod üretici ve okuyucu."
+                                icon={<Calculator size={20} />}
+                                title="Mühendislik Birimleri"
+                                desc="Koordinat, alan ve finansal hesaplar."
                                 color="emerald"
-                                onClick={() => onToolSelect('qr')}
+                                onClick={() => onToolSelect('units')}
                             />
                         </div>
                     </section>
@@ -216,5 +245,24 @@ const ToolItem = ({ icon, title, desc, color, onClick }: { icon: React.ReactNode
         </div>
         <h4 className="text-sm font-bold mb-1 group-hover:text-white transition-colors">{title}</h4>
         <p className="text-[12px] text-slate-500 leading-snug group-hover:text-slate-400 transition-colors">{desc}</p>
+    </button>
+);
+
+const QuickAction = ({ title, onClick, icon, color }: { title: string, onClick: () => void, icon?: React.ReactNode, color: string }) => (
+    <button
+        onClick={onClick}
+        className="group flex items-center gap-2 p-3 bg-white/[0.02] border border-white/5 rounded-xl hover:bg-white/[0.05] hover:border-white/10 transition-all text-left"
+    >
+        <div className={`p-1.5 rounded-lg transition-transform group-hover:scale-110
+            ${color === 'blue' ? 'bg-blue-500/10 text-blue-400' : ''}
+            ${color === 'red' ? 'bg-red-500/10 text-red-400' : ''}
+            ${color === 'emerald' ? 'bg-emerald-500/10 text-emerald-400' : ''}
+            ${color === 'sky' ? 'bg-sky-500/10 text-sky-400' : ''}
+            ${color === 'indigo' ? 'bg-indigo-500/10 text-indigo-400' : ''}
+            ${color === 'orange' ? 'bg-orange-500/10 text-orange-400' : ''}
+        `}>
+            {icon}
+        </div>
+        <span className="text-xs font-semibold text-slate-400 group-hover:text-slate-200 transition-colors">{title}</span>
     </button>
 );

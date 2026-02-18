@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Share2, Copy, Check, FileText } from 'lucide-react';
+import { Share2, Copy, Check, FileText, ArrowLeft, RefreshCw } from 'lucide-react';
 
 interface Base64ViewerProps {
     file: File | null;
@@ -44,28 +44,42 @@ export const Base64Viewer: React.FC<Base64ViewerProps> = ({ file: initialFile, o
     const previewText = includeScheme ? base64 : base64.split(',')[1];
 
     return (
-        <div className="glass-panel" style={{ maxWidth: '800px', margin: '0 auto', padding: '2rem', animation: 'fadeIn 0.5s ease' }}>
-            <p className="text-sm" style={{ textAlign: 'left', marginBottom: '1rem', opacity: 0.7 }}>
+        <div className="max-w-[800px] mx-auto p-8 animate-[fadeIn_0.5s_ease] bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl shadow-2xl">
+            <div className="flex items-center justify-start gap-4 mb-8">
+                <button
+                    onClick={onBack}
+                    className="p-2 bg-violet-500/20 border border-violet-500/40 text-white rounded-lg hover:bg-violet-500/40 transition-all shadow-[0_0_15px_rgba(139,92,246,0.2)]"
+                    title="Geri Dön"
+                >
+                    <ArrowLeft size={18} />
+                </button>
+                <div className="text-left">
+                    <h2 className="m-0 text-2xl font-bold tracking-tight">Base64 Araçları</h2>
+                    <p className="text-sm text-violet-400 font-medium">Resim ve Metin Dönüşümü</p>
+                </div>
+            </div>
+
+            <p className="text-sm text-slate-400 text-left mb-6 leading-relaxed">
                 {file ? (
                     <>
-                        <strong>{file.name}</strong> dosyası Base64 formatına dönüştürüldü.
+                        <span className="font-semibold text-slate-200">{file.name}</span> dosyası Base64 formatına dönüştürüldü.
                     </>
                 ) : (
-                    'Base64 formatına dönüştürmek istediğiniz dosyayı seçin.'
+                    'Herhangi bir dosyayı (resim, belge, vb.) Base64 metne dönüştürün veya Base64 kodlarını çözün.'
                 )}
             </p>
 
             {!file ? (
                 <div
                     onClick={() => fileInputRef.current?.click()}
-                    className="w-full py-20 border-2 border-dashed border-white/10 rounded-2xl flex flex-col items-center justify-center gap-4 hover:border-violet-500/50 hover:bg-white/5 transition-all cursor-pointer group"
+                    className="w-full py-24 border-2 border-dashed border-white/10 rounded-2xl flex flex-col items-center justify-center gap-4 hover:border-violet-500/50 hover:bg-white/5 transition-all cursor-pointer group"
                 >
-                    <div className="p-4 bg-violet-500/10 rounded-full text-violet-400 group-hover:scale-110 transition-transform">
-                        <Share2 size={32} />
+                    <div className="p-5 bg-violet-500/10 rounded-full text-violet-400 group-hover:scale-110 transition-transform shadow-[0_0_20px_rgba(139,92,246,0.1)]">
+                        <Share2 size={36} />
                     </div>
-                    <div className="text-center">
-                        <p className="font-semibold text-lg">Dönüştürmek için Dosya Seçin</p>
-                        <p className="text-sm text-slate-500 mt-1">Resim, metin veya herhangi bir binary dosya</p>
+                    <div className="text-center px-4">
+                        <p className="font-bold text-xl mb-1">Dönüştürmek için Dosya Seçin</p>
+                        <p className="text-sm text-slate-500">Resim, metin veya herhangi bir binary dosya</p>
                     </div>
                     <input
                         type="file"
@@ -78,84 +92,67 @@ export const Base64Viewer: React.FC<Base64ViewerProps> = ({ file: initialFile, o
             ) : (
                 <>
                     {loading ? (
-                        <div className="p-4 flex flex-col items-center gap-4">
-                            <div className="w-10 h-10 border-4 border-violet-500/30 border-t-violet-500 rounded-full animate-spin"></div>
-                            <span>Kodlanıyor...</span>
+                        <div className="p-12 flex flex-col items-center gap-4 text-violet-400 animate-pulse">
+                            <RefreshCw size={40} className="animate-spin" />
+                            <span className="font-medium">Kodlanıyor...</span>
                         </div>
                     ) : (
-                        <div className="flex-col" style={{ gap: '1rem', alignItems: 'flex-start' }}>
-                            <div className="flex-center" style={{ width: '100%', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
-                                <div className="flex-center" style={{ gap: '10px' }}>
+                        <div className="flex flex-col gap-6 items-start">
+                            <div className="flex items-center justify-between w-full flex-wrap gap-4">
+                                <div className="flex items-center gap-3 bg-white/5 px-4 py-2 rounded-xl border border-white/5">
                                     <input
                                         type="checkbox"
                                         id="scheme"
                                         checked={includeScheme}
                                         onChange={(e) => setIncludeScheme(e.target.checked)}
-                                        style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                                        className="w-4 h-4 rounded border-white/20 bg-black/50 text-violet-500 focus:ring-violet-500/50 cursor-pointer"
                                     />
-                                    <label htmlFor="scheme" style={{ cursor: 'pointer', userSelect: 'none' }}>Data URI Şemasını Dahil Et (data:image/...)</label>
+                                    <label htmlFor="scheme" className="text-sm text-slate-300 cursor-pointer select-none">
+                                        Data URI Şemasını Dahil Et <span className="text-slate-500">(data:image/...)</span>
+                                    </label>
                                 </div>
 
                                 <button
                                     onClick={handleCopy}
-                                    className="glass-button"
-                                    style={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: '8px',
-                                        background: copied ? 'rgba(16, 185, 129, 0.2)' : undefined,
-                                        borderColor: copied ? 'rgba(16, 185, 129, 0.5)' : undefined
-                                    }}
+                                    className={`px-6 py-2.5 flex items-center gap-2 rounded-xl text-sm font-semibold transition-all border shadow-lg ${copied
+                                        ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.2)]'
+                                        : 'bg-violet-500/20 border-violet-500/40 text-violet-100 hover:bg-violet-500/30'
+                                        }`}
                                 >
                                     {copied ? <Check size={18} /> : <Copy size={18} />}
                                     <span>{copied ? 'Kopyalandı!' : 'Kopyala'}</span>
                                 </button>
                             </div>
 
-                            <div style={{
-                                position: 'relative',
-                                width: '100%',
-                                height: '300px',
-                                background: 'rgba(0,0,0,0.3)',
-                                borderRadius: '8px',
-                                border: '1px solid rgba(255,255,255,0.1)',
-                                overflow: 'hidden'
-                            }}>
+                            <div className="relative w-full h-[400px] bg-black/40 rounded-2xl border border-white/10 overflow-hidden group">
                                 <textarea
                                     value={previewText}
                                     readOnly
-                                    title="Base64 Output"
-                                    style={{
-                                        width: '100%',
-                                        height: '100%',
-                                        background: 'transparent',
-                                        color: '#94a3b8',
-                                        border: 'none',
-                                        padding: '1rem',
-                                        resize: 'none',
-                                        fontFamily: 'monospace',
-                                        fontSize: '0.85rem',
-                                        outline: 'none'
-                                    }}
+                                    title="Base64 Çıktısı"
+                                    className="w-full h-full bg-transparent text-slate-300 p-6 resize-none font-mono text-[13px] leading-relaxed outline-none overflow-auto custom-scrollbar select-text"
                                 />
+                                <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <div className="bg-slate-800/80 backdrop-blur px-3 py-1.5 rounded-lg border border-white/10 text-[10px] text-slate-400 font-mono">
+                                        BASE64
+                                    </div>
+                                </div>
                             </div>
 
-                            <div className="text-sm flex items-center justify-between w-full opacity-60">
-                                <div className="flex items-center gap-2">
-                                    <FileText size={14} />
-                                    <span>Karakter Sayısı: {previewText?.length.toLocaleString()}</span>
+                            <div className="flex items-center justify-between w-full px-2">
+                                <div className="flex items-center gap-2 text-xs text-slate-500 font-medium">
+                                    <FileText size={14} className="opacity-50" />
+                                    <span>{previewText?.length.toLocaleString()} Karakter</span>
                                 </div>
                                 <button
                                     onClick={() => { setFile(null); setBase64(''); }}
-                                    className="text-xs text-red-400 hover:text-red-300 transition-colors"
+                                    className="text-xs font-semibold text-red-500/60 hover:text-red-400 transition-colors uppercase tracking-wider"
                                 >
-                                    Dosyayı Temizle
+                                    Temizle
                                 </button>
                             </div>
                         </div>
                     )}
                 </>
             )}
-        </div>
-    );
+            );
 };
