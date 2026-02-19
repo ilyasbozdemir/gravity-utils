@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 
-export type ToolView = 'home' | 'convert' | 'inspect' | 'base64' | 'optimize' | 'hash' | 'json' | 'text' | 'pdf' | 'exif' | 'qr' | 'social' | 'favicon' | 'units' | 'encrypt' | 'uuid' | 'yaml' | 'jwt' | 'url' | 'imagetopdf' | 'case' | 'string' | 'json-xml' | 'date-time' | 'sql-formatter' | 'word-pdf' | 'pdf-word' | 'excel-pdf' | 'pdf-excel' | 'ppt-pdf' | 'pdf-ppt' | 'pdf-image' | 'pdf-split' | 'word-html' | 'pdf-text' | 'web-toolkit' | 'network-toolkit' | 'color-toolkit' | 'regex-tester' | 'csv-viewer' | 'markdown-editor' | 'password-generator' | 'svg-optimizer' | 'cron-builder' | 'timezone-converter';
+export type ToolView = 'home' | 'convert' | 'inspect' | 'base64' | 'optimize' | 'hash' | 'json' | 'text' | 'pdf' | 'exif' | 'qr' | 'social' | 'favicon' | 'units' | 'encrypt' | 'uuid' | 'yaml' | 'jwt' | 'url' | 'imagetopdf' | 'case' | 'string' | 'json-xml' | 'date-time' | 'sql-formatter' | 'word-pdf' | 'pdf-word' | 'excel-pdf' | 'pdf-excel' | 'ppt-pdf' | 'pdf-ppt' | 'pdf-image' | 'pdf-split' | 'word-html' | 'pdf-text' | 'web-toolkit' | 'network-toolkit' | 'color-toolkit' | 'regex-tester' | 'csv-viewer' | 'markdown-editor' | 'password-generator' | 'svg-optimizer' | 'cron-builder' | 'timezone-converter' | 'json-ld';
 
 interface SidebarProps {
     currentView: ToolView;
@@ -87,13 +87,14 @@ const NAV_ITEMS: NavItem[] = [
     { id: 'string', title: 'Metin Müfettişi', icon: <Search size={18} />, category: 'utils' },
     { id: 'date-time', title: 'Zaman Dönüştürücü', icon: <Clock size={18} />, category: 'utils' },
     { id: 'color-toolkit', title: 'Renk Araç Seti', icon: <Layers size={18} />, category: 'utils' },
-    { id: 'csv-viewer', title: 'CSV Görüntüleyici', icon: <Database size={18} />, category: 'utils' },
+    { id: 'csv-viewer', title: 'Tablo Görüntüleyici', icon: <Database size={18} />, category: 'utils' },
     { id: 'markdown-editor', title: 'Markdown Editör', icon: <FileCode size={18} />, category: 'utils' },
     { id: 'timezone-converter', title: 'Zaman Dilimi', icon: <Globe size={18} />, category: 'utils' },
     { id: 'password-generator', title: 'Şifre Üretici', icon: <Lock size={18} />, category: 'security' },
     { id: 'regex-tester', title: 'Regex Test', icon: <Code2 size={18} />, category: 'dev' },
     { id: 'svg-optimizer', title: 'SVG Optimize', icon: <Zap size={18} />, category: 'dev' },
     { id: 'cron-builder', title: 'Cron Builder', icon: <Clock size={18} />, category: 'dev' },
+    { id: 'json-ld', title: 'JSON-LD Editörü', icon: <Code2 size={18} />, category: 'dev' },
 ];
 
 export const Sidebar: React.FC<SidebarProps> = ({ currentView, onViewChange, isOpen, onClose }) => {

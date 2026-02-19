@@ -44,24 +44,24 @@ export const UuidGenerator: React.FC<UuidGeneratorProps> = ({ onBack }) => {
     }, [generateUuids]); // Added generateUuids to dependency array
 
     return (
-        <div className="max-w-[800px] mx-auto p-8 animate-[fadeIn_0.5s_ease] bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl shadow-2xl">
+        <div className="max-w-[800px] mx-auto p-8 animate-[fadeIn_0.5s_ease] bg-white dark:bg-white/5 backdrop-blur-xl border border-slate-200 dark:border-white/10 rounded-3xl shadow-2xl">
             <div className="flex items-center justify-start gap-4 mb-8">
                 <button
                     onClick={onBack}
-                    className="p-2 bg-indigo-500/20 border border-indigo-500/40 text-white rounded-lg hover:bg-indigo-500/40 transition-all shadow-[0_0_15px_rgba(99,102,241,0.2)]"
+                    className="p-2 bg-indigo-500/20 border border-indigo-500/40 text-slate-700 dark:text-white rounded-lg hover:bg-indigo-500/40 transition-all shadow-[0_0_15px_rgba(99,102,241,0.2)]"
                     title="Geri Dön"
                     aria-label="Geri Dön"
                 >
                     <ArrowLeft size={18} />
                 </button>
                 <div className="text-left">
-                    <h2 className="m-0 text-2xl font-bold tracking-tight text-white">UUID Oluşturucu</h2>
+                    <h2 className="m-0 text-2xl font-bold tracking-tight text-slate-800 dark:text-white">UUID Oluşturucu</h2>
                     <p className="text-sm text-indigo-400 font-medium tracking-wide">Benzersiz Kimlik (v4) Üretimi</p>
                 </div>
             </div>
 
             <div className="space-y-6">
-                <div className="flex flex-col sm:flex-row gap-4 items-end bg-black/20 p-6 rounded-2xl border border-white/5">
+                <div className="flex flex-col sm:flex-row gap-4 items-end bg-slate-50 dark:bg-black/20 p-6 rounded-2xl border border-slate-200 dark:border-white/5">
                     <div className="flex-1 space-y-2 w-full">
                         <label htmlFor="uuid-count" className="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-1">Oluşturulacak Miktar</label>
                         <input
@@ -73,7 +73,7 @@ export const UuidGenerator: React.FC<UuidGeneratorProps> = ({ onBack }) => {
                             title="Oluşturulacak UUID miktarı"
                             placeholder="5"
                             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCount(Math.max(1, Math.min(100, parseInt(e.target.value) || 1)))}
-                            className="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-white focus:border-indigo-500/50 outline-none transition-all"
+                            className="w-full bg-white dark:bg-black/40 border border-slate-300 dark:border-white/10 rounded-xl p-3 text-slate-800 dark:text-white focus:border-indigo-500/50 outline-none transition-all"
                             aria-label="Oluşturulacak UUID miktarı"
                         />
                     </div>
@@ -87,7 +87,7 @@ export const UuidGenerator: React.FC<UuidGeneratorProps> = ({ onBack }) => {
                     </button>
                     <button
                         onClick={copyAll}
-                        className="flex items-center gap-2 px-6 py-3 bg-white/5 hover:bg-white/10 text-white rounded-xl font-bold border border-white/10 transition-all whitespace-nowrap"
+                        className="flex items-center gap-2 px-6 py-3 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-700 dark:text-white rounded-xl font-bold border border-slate-300 dark:border-white/10 transition-all whitespace-nowrap"
                         aria-label={copiedIndex === -1 ? "Tümü Kopyalandı" : "Tüm UUID'leri Kopyala"}
                     >
                         {copiedIndex === -1 ? <Check size={18} className="text-emerald-400" /> : <Copy size={18} />}
@@ -99,7 +99,7 @@ export const UuidGenerator: React.FC<UuidGeneratorProps> = ({ onBack }) => {
                     {uuids.map((uuid, index) => (
                         <div
                             key={index}
-                            className="group flex items-center justify-between bg-black/40 p-4 rounded-xl border border-white/5 hover:border-indigo-500/30 transition-all hover:bg-black/60"
+                            className="group flex items-center justify-between bg-slate-50 dark:bg-black/40 p-4 rounded-xl border border-slate-200 dark:border-white/5 hover:border-indigo-500/30 transition-all hover:bg-slate-100 dark:hover:bg-black/60"
                             role="listitem"
                         >
                             <div className="flex items-center gap-4 min-w-0">
@@ -108,7 +108,7 @@ export const UuidGenerator: React.FC<UuidGeneratorProps> = ({ onBack }) => {
                             </div>
                             <button
                                 onClick={() => copyToClipboard(uuid, index)}
-                                className="p-2 text-slate-500 hover:text-white hover:bg-white/5 rounded-lg transition-all"
+                                className="p-2 text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 rounded-lg transition-all"
                                 title="Kopyala"
                                 aria-label={copiedIndex === index ? `UUID ${index + 1} Kopyalandı` : `UUID ${index + 1} 'i Kopyala`}
                             >

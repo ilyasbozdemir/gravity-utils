@@ -29,17 +29,17 @@ export const UrlEncoder: React.FC<UrlEncoderProps> = ({ onBack }) => {
     };
 
     return (
-        <div className="max-w-[800px] mx-auto p-8 animate-[fadeIn_0.5s_ease] bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl shadow-2xl">
+        <div className="max-w-[800px] mx-auto p-8 animate-[fadeIn_0.5s_ease] bg-white dark:bg-white/5 backdrop-blur-xl border border-slate-200 dark:border-white/10 rounded-3xl shadow-2xl">
             <div className="flex items-center justify-start gap-4 mb-8">
                 <button
                     onClick={onBack}
-                    className="p-2 bg-sky-500/20 border border-sky-500/40 text-white rounded-lg hover:bg-sky-500/40 transition-all shadow-[0_0_15px_rgba(14,165,233,0.2)]"
+                    className="p-2 bg-sky-500/20 border border-sky-500/40 text-slate-700 dark:text-white rounded-lg hover:bg-sky-500/40 transition-all shadow-[0_0_15px_rgba(14,165,233,0.2)]"
                     title="Geri Dön"
                 >
                     <ArrowLeft size={18} />
                 </button>
                 <div className="text-left">
-                    <h2 className="m-0 text-2xl font-bold tracking-tight text-white">URL Encoder / Decoder</h2>
+                    <h2 className="m-0 text-2xl font-bold tracking-tight text-slate-800 dark:text-white">URL Encoder / Decoder</h2>
                     <p className="text-sm text-sky-400 font-medium tracking-wide">Web Adresleri için Akıllı Kodlayıcı</p>
                 </div>
             </div>
@@ -51,7 +51,7 @@ export const UrlEncoder: React.FC<UrlEncoderProps> = ({ onBack }) => {
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
                         placeholder="https://example.com/search?q=merhaba dünya"
-                        className="w-full h-[150px] bg-black/40 border border-white/10 rounded-2xl p-5 text-sm font-mono text-slate-200 focus:border-sky-500/50 outline-none transition-all resize-none shadow-inner"
+                        className="w-full h-[150px] bg-slate-50 dark:bg-black/40 border border-slate-200 dark:border-white/10 rounded-2xl p-5 text-sm font-mono text-slate-800 dark:text-slate-200 focus:border-sky-500/50 outline-none transition-all resize-none shadow-inner"
                     />
                 </div>
 
@@ -64,7 +64,7 @@ export const UrlEncoder: React.FC<UrlEncoderProps> = ({ onBack }) => {
                     </button>
                     <button
                         onClick={() => handleAction('decode')}
-                        className="flex-1 py-4 bg-white/5 hover:bg-white/10 text-white rounded-2xl font-bold border border-white/10 flex items-center justify-center gap-2 transition-all shadow-lg"
+                        className="flex-1 py-4 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-700 dark:text-white rounded-2xl font-bold border border-slate-300 dark:border-white/10 flex items-center justify-center gap-2 transition-all shadow-lg"
                     >
                         URL Çöz (Decode)
                     </button>

@@ -42,6 +42,7 @@ const ColorToolkit = dynamic(() => import('@/components/ColorToolkit').then(mod 
 const RegexTester = dynamic(() => import('@/components/RegexTester').then(mod => mod.RegexTester));
 const CsvViewer = dynamic(() => import('@/components/CsvViewer').then(mod => mod.CsvViewer));
 const MarkdownEditor = dynamic(() => import('@/components/MarkdownEditor').then(mod => mod.MarkdownEditor));
+const JsonLdEditor = dynamic(() => import('@/components/JsonLdEditor').then(mod => mod.JsonLdEditor));
 
 export default function Home() {
     const [file, setFile] = useState<File | null>(null);
@@ -190,6 +191,7 @@ export default function Home() {
                             {view === 'regex-tester' && <RegexTester onBack={() => setView('home')} />}
                             {view === 'csv-viewer' && <CsvViewer onBack={() => setView('home')} />}
                             {view === 'markdown-editor' && <MarkdownEditor onBack={() => setView('home')} />}
+                            {view === 'json-ld' && <JsonLdEditor onBack={() => setView('home')} />}
                         </div>
                     )}
 

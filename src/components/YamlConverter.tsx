@@ -52,17 +52,17 @@ export const YamlConverter: React.FC<YamlConverterProps> = ({ onBack }) => {
     };
 
     return (
-        <div className="max-w-[1000px] mx-auto p-8 animate-[fadeIn_0.5s_ease] bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl shadow-2xl">
+        <div className="max-w-[1000px] mx-auto p-8 animate-[fadeIn_0.5s_ease] bg-white dark:bg-white/5 backdrop-blur-xl border border-slate-200 dark:border-white/10 rounded-3xl shadow-2xl">
             <div className="flex items-center justify-start gap-4 mb-8">
                 <button
                     onClick={onBack}
-                    className="p-2 bg-amber-500/20 border border-amber-500/40 text-white rounded-lg hover:bg-amber-500/40 transition-all shadow-[0_0_15px_rgba(245,158,11,0.2)]"
+                    className="p-2 bg-amber-500/20 border border-amber-500/40 text-slate-700 dark:text-white rounded-lg hover:bg-amber-500/40 transition-all shadow-[0_0_15px_rgba(245,158,11,0.2)]"
                     title="Geri Dön"
                 >
                     <ArrowLeft size={18} />
                 </button>
                 <div className="text-left">
-                    <h2 className="m-0 text-2xl font-bold tracking-tight text-white">YAML / JSON Çevirici</h2>
+                    <h2 className="m-0 text-2xl font-bold tracking-tight text-slate-800 dark:text-white">YAML / JSON Çevirici</h2>
                     <p className="text-sm text-amber-400 font-medium tracking-wide">Formatlar Arası Akıllı Dönüşüm</p>
                 </div>
             </div>
@@ -84,7 +84,7 @@ export const YamlConverter: React.FC<YamlConverterProps> = ({ onBack }) => {
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
                         placeholder={mode === 'jsonToYaml' ? '{"key": "value"}' : 'key: value'}
-                        className="w-full h-[400px] bg-black/40 border border-white/10 rounded-2xl p-5 text-sm font-mono text-slate-200 focus:border-amber-500/50 outline-none transition-all resize-none shadow-inner"
+                        className="w-full h-[400px] bg-slate-50 dark:bg-black/40 border border-slate-200 dark:border-white/10 rounded-2xl p-5 text-sm font-mono text-slate-800 dark:text-slate-200 focus:border-amber-500/50 outline-none transition-all resize-none shadow-inner"
                     />
                 </div>
 
@@ -97,7 +97,7 @@ export const YamlConverter: React.FC<YamlConverterProps> = ({ onBack }) => {
                             {output && (
                                 <button
                                     onClick={copyToClipboard}
-                                    className="p-1.5 bg-white/5 hover:bg-white/10 rounded-lg text-slate-400 hover:text-white transition-all border border-white/5"
+                                    className="p-1.5 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition-all border border-slate-200 dark:border-white/5"
                                     title="Kopyala"
                                 >
                                     {copied ? <Check size={14} className="text-emerald-400" /> : <Copy size={14} />}
@@ -106,7 +106,7 @@ export const YamlConverter: React.FC<YamlConverterProps> = ({ onBack }) => {
                         </div>
                     </div>
                     <div className="relative group">
-                        <div className="w-full h-[400px] bg-black/60 border border-white/5 rounded-2xl p-5 text-sm font-mono text-amber-200 overflow-auto whitespace-pre custom-scrollbar">
+                        <div className="w-full h-[400px] bg-slate-50 dark:bg-black/60 border border-slate-200 dark:border-white/5 rounded-2xl p-5 text-sm font-mono text-amber-700 dark:text-amber-200 overflow-auto whitespace-pre custom-scrollbar">
                             {output || (error ? <span className="text-red-400/70 italic">{error}</span> : <span className="text-slate-700 italic">Dönüşüm sonucunu burada görün...</span>)}
                         </div>
                         {error && (
@@ -122,7 +122,7 @@ export const YamlConverter: React.FC<YamlConverterProps> = ({ onBack }) => {
                 <button
                     onClick={convert}
                     disabled={!input.trim()}
-                    className={`px-12 py-4 rounded-2xl font-bold text-lg flex items-center gap-3 transition-all shadow-xl ${input.trim() ? 'bg-amber-500 hover:bg-amber-600 text-white shadow-amber-500/20 active:scale-95' : 'bg-white/5 text-slate-500 border border-white/5 opacity-50 cursor-not-allowed'}`}
+                    className={`px-12 py-4 rounded-2xl font-bold text-lg flex items-center gap-3 transition-all shadow-xl ${input.trim() ? 'bg-amber-500 hover:bg-amber-600 text-white shadow-amber-500/20 active:scale-95' : 'bg-slate-100 dark:bg-white/5 text-slate-400 dark:text-slate-500 border border-slate-200 dark:border-white/5 opacity-50 cursor-not-allowed'}`}
                 >
                     <FileCode size={24} />
                     Dönüştürmeyi Başlat
