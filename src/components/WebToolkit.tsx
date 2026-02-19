@@ -3,10 +3,10 @@
 import React, { useState, useCallback } from 'react';
 import {
     ArrowLeft, Copy, Check, Globe, Code2, Hash,
-    Link2, RefreshCw, Trash2, ChevronRight, AlertCircle
+    Link2, RefreshCw, Trash2, ChevronRight, AlertCircle, Monitor
 } from 'lucide-react';
 
-type ToolTab = 'url' | 'html' | 'base64-text' | 'url-parse';
+type ToolTab = 'url' | 'html' | 'base64-text' | 'url-parse' | 'user-agent';
 
 interface TabConfig {
     id: ToolTab;
@@ -20,6 +20,7 @@ const TABS: TabConfig[] = [
     { id: 'html', label: 'HTML Encode/Decode', icon: <Code2 size={16} />, color: 'orange' },
     { id: 'base64-text', label: 'Base64 Metin', icon: <Hash size={16} />, color: 'purple' },
     { id: 'url-parse', label: 'URL Ayrıştırıcı', icon: <Link2 size={16} />, color: 'green' },
+    { id: 'user-agent', label: 'User Agent', icon: <Monitor size={16} />, color: 'pink' },
 ];
 
 // HTML entity encode/decode maps
@@ -483,6 +484,59 @@ function UrlParseTab() {
     );
 }
 
+// ─── User Agent Tab ───────────────────────────────────────────────────────────
+function UserAgentTab() {
+    const [input, setInput] = useState(typeof navigator !== 'undefined' ? navigator.userAgent : '');
+    const [parsed, setParsed] = useState<any>(null);
+
+    const parseUA = () => {
+        const ua = input.trim();
+        const browser = ua.includes('Firefox/') ? 'Firefox' : ua.includes('Edg/') ? 'Edge' : ua.includes('Chrome/') ? 'Chrome' : ua.includes('Safari/') ? 'Safari' : 'Bilinmiyor';
+        const os = ua.includes('Windows') ? 'Windows' : ua.includes('Macintosh') ? 'macOS' : ua.includes('Android') ? 'Android' : ua.includes('iPhone') || ua.includes('iPad') ? 'iOS' : ua.includes('Linux') ? 'Linux' : 'Bilinmiyor';
+        const isMobile = /Mobile|Android|iP(hone|od|ad)/.test(ua);
+
+        setParsed({ browser, os, isMobile, raw: ua });
+    };
+
+    return (
+        <div className="space-y-6">
+            <div className="space-y-2">
+                <label htmlFor="ua-input" className="text-xs font-bold uppercase text-slate-500 px-1">User Agent Dizisi</label>
+                <div className="flex gap-2">
+                    <textarea id="ua-input" value={input} onChange={e => setInput(e.target.value)}
+                        placeholder="Mozilla/5.0..." title="User Agent"
+                        className="flex-1 h-24 p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl font-mono text-xs focus:outline-none focus:ring-2 focus:ring-pink-500/40 text-slate-800 dark:text-slate-200" />
+                </div>
+                <div className="flex gap-2">
+                    <button onClick={parseUA} className="flex-1 py-3 bg-pink-600 hover:bg-pink-700 text-white rounded-xl font-bold transition-all shadow-lg shadow-pink-500/20">
+                        Ayrıştır (Parse)
+                    </button>
+                    <button onClick={() => setInput(navigator.userAgent)} className="px-4 py-3 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-xl font-bold hover:bg-slate-200 transition-all">
+                        Benimkini Kullan
+                    </button>
+                </div>
+            </div>
+
+            {parsed && (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="p-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl text-center">
+                        <p className="text-[10px] font-black text-slate-400 uppercase mb-1">Tarayıcı</p>
+                        <p className="text-xl font-black text-pink-500">{parsed.browser}</p>
+                    </div>
+                    <div className="p-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl text-center">
+                        <p className="text-[10px] font-black text-slate-400 uppercase mb-1">İşletim Sistemi</p>
+                        <p className="text-xl font-black text-indigo-500">{parsed.os}</p>
+                    </div>
+                    <div className="p-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl text-center">
+                        <p className="text-[10px] font-black text-slate-400 uppercase mb-1">Cihaz Tipi</p>
+                        <p className="text-xl font-black text-emerald-500">{parsed.isMobile ? 'Mobil' : 'Desktop'}</p>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+}
+
 // ─── Main Component ───────────────────────────────────────────────────────────
 export function WebToolkit({ onBack }: { onBack: () => void }) {
     const [activeTab, setActiveTab] = useState<ToolTab>('url');
@@ -492,6 +546,7 @@ export function WebToolkit({ onBack }: { onBack: () => void }) {
         html: 'orange',
         'base64-text': 'purple',
         'url-parse': 'green',
+        'user-agent': 'pink',
     };
 
     const activeColor = tabColorMap[activeTab];
@@ -501,6 +556,7 @@ export function WebToolkit({ onBack }: { onBack: () => void }) {
         orange: 'bg-orange-500 text-white shadow-orange-500/20',
         purple: 'bg-purple-600 text-white shadow-purple-500/20',
         green: 'bg-green-600 text-white shadow-green-500/20',
+        pink: 'bg-pink-600 text-white shadow-pink-500/20',
     };
 
     return (
@@ -549,6 +605,7 @@ export function WebToolkit({ onBack }: { onBack: () => void }) {
                 {activeTab === 'html' && <HtmlTab />}
                 {activeTab === 'base64-text' && <Base64TextTab />}
                 {activeTab === 'url-parse' && <UrlParseTab />}
+                {activeTab === 'user-agent' && <UserAgentTab />}
             </div>
         </div>
     );

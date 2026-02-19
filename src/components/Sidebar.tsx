@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 
-export type ToolView = 'home' | 'convert' | 'inspect' | 'base64' | 'optimize' | 'hash' | 'json' | 'text' | 'pdf' | 'exif' | 'qr' | 'social' | 'favicon' | 'units' | 'encrypt' | 'uuid' | 'yaml' | 'jwt' | 'url' | 'imagetopdf' | 'case' | 'string' | 'json-xml' | 'date-time' | 'sql-formatter' | 'word-pdf' | 'pdf-word' | 'excel-pdf' | 'pdf-excel' | 'ppt-pdf' | 'pdf-ppt' | 'pdf-image' | 'pdf-split' | 'word-html' | 'pdf-text' | 'web-toolkit' | 'network-toolkit' | 'color-toolkit' | 'regex-tester' | 'csv-viewer' | 'markdown-editor' | 'password-generator' | 'svg-optimizer' | 'cron-builder' | 'timezone-converter' | 'json-ld' | 'network-cable' | 'lorem-ipsum' | 'aspect-ratio';
+export type ToolView = 'home' | 'convert' | 'inspect' | 'base64' | 'optimize' | 'hash' | 'json' | 'text' | 'pdf' | 'exif' | 'qr' | 'social' | 'favicon' | 'units' | 'encrypt' | 'uuid' | 'yaml' | 'jwt' | 'url' | 'imagetopdf' | 'case' | 'string' | 'json-xml' | 'date-time' | 'sql-formatter' | 'word-pdf' | 'pdf-word' | 'excel-pdf' | 'pdf-excel' | 'ppt-pdf' | 'pdf-ppt' | 'pdf-image' | 'pdf-split' | 'word-html' | 'pdf-text' | 'web-toolkit' | 'network-toolkit' | 'color-toolkit' | 'regex-tester' | 'csv-viewer' | 'markdown-editor' | 'password-generator' | 'svg-optimizer' | 'cron-builder' | 'timezone-converter' | 'json-ld' | 'network-cable' | 'lorem-ipsum' | 'aspect-ratio' | 'social-guide' | 'http-status' | 'json-csv';
 
 interface SidebarProps {
     currentView: ToolView;
@@ -78,6 +78,9 @@ const NAV_ITEMS: NavItem[] = [
     { id: 'network-cable', title: 'Network Kablo Testi', icon: <Cable size={18} />, category: 'dev', addedAt: '2026-02-19' },
     { id: 'lorem-ipsum', title: 'Lorem Ipsum Üretici', icon: <FileText size={18} />, category: 'utils', addedAt: '2026-02-19' },
     { id: 'aspect-ratio', title: 'Aspect Ratio Hesapla', icon: <Layers size={18} />, category: 'utils', addedAt: '2026-02-19' },
+    { id: 'social-guide', title: 'Sosyal Medya Rehberi', icon: <Share2 size={18} />, category: 'media', addedAt: '2026-02-19' },
+    { id: 'http-status', title: 'HTTP Durum Kodları', icon: <Globe size={18} />, category: 'dev', addedAt: '2026-02-19' },
+    { id: 'json-csv', title: 'JSON ↔ CSV Dönüştür', icon: <FileJson size={18} />, category: 'convert', addedAt: '2026-02-19' },
 ];
 
 function isNew(dateStr?: string) {

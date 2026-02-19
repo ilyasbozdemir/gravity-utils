@@ -46,6 +46,9 @@ const JsonLdEditor = dynamic(() => import('@/components/JsonLdEditor').then(mod 
 const NetworkCableTester = dynamic(() => import('@/components/NetworkCableTester').then(mod => mod.NetworkCableTester));
 const LoremIpsumGenerator = dynamic(() => import('@/components/LoremIpsumGenerator').then(mod => mod.LoremIpsumGenerator));
 const AspectRatioCalculator = dynamic(() => import('@/components/AspectRatioCalculator').then(mod => mod.AspectRatioCalculator));
+const SocialGuide = dynamic(() => import('@/components/SocialGuide').then(mod => mod.SocialGuide));
+const HttpStatusCodes = dynamic(() => import('@/components/HttpStatusCodes').then(mod => mod.HttpStatusCodes));
+const JsonCsvConverter = dynamic(() => import('@/components/JsonCsvConverter').then(mod => mod.JsonCsvConverter));
 
 export default function Home() {
     const [file, setFile] = useState<File | null>(null);
@@ -196,6 +199,9 @@ export default function Home() {
                             {view === 'network-cable' && <NetworkCableTester onBack={() => setView('home')} />}
                             {view === 'lorem-ipsum' && <LoremIpsumGenerator onBack={() => setView('home')} />}
                             {view === 'aspect-ratio' && <AspectRatioCalculator onBack={() => setView('home')} />}
+                            {view === 'social-guide' && <SocialGuide onBack={() => setView('home')} />}
+                            {view === 'http-status' && <HttpStatusCodes onBack={() => setView('home')} />}
+                            {view === 'json-csv' && <JsonCsvConverter onBack={() => setView('home')} />}
                         </div>
                     )}
 

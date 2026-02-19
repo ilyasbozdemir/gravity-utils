@@ -110,15 +110,29 @@ export function NetworkCableTester({ onBack }: { onBack: () => void }) {
     };
 
     const analyzeManualMap = () => {
-        if (Object.keys(manualMap).length < pins) return { label: 'Eksik Veri', desc: 'Tüm pinleri eşleştirin.', color: 'text-slate-400' };
+        const pinCount = pins;
+        if (Object.keys(manualMap).length < pinCount) return { label: 'Eksik Veri', desc: 'Tüm pinleri eşleştirin.', color: 'text-slate-400' };
 
-        const isStraight = Object.entries(manualMap).every(([m, r]) => parseInt(m) === r);
-        if (isStraight) return { label: 'Düz (Straight)', desc: 'Kablo bağlantısı hatasız.', color: 'text-green-500' };
+        const mappedEntries = Object.entries(manualMap).map(([m, r]) => [parseInt(m), r]);
 
-        const isCrossover = manualMap[1] === 3 && manualMap[2] === 6 && manualMap[3] === 1 && manualMap[6] === 2;
-        if (isCrossover) return { label: 'Çapraz (Crossover)', desc: '1-3 ve 2-6 çaprazlanmış.', color: 'text-amber-500' };
+        // 1. Check for Straight
+        const isStraight = mappedEntries.every(([m, r]) => m === r);
+        if (isStraight) return { label: 'Düz (Straight)', desc: 'İki uç da aynı standartta.', color: 'text-green-500' };
 
-        return { label: 'Özel / Hatalı', desc: 'Standart dışı bir dizilim tespit edildi.', color: 'text-red-500' };
+        // 2. Check for Crossover (T568A to T568B)
+        // 1-3, 2-6 mapping
+        const crossoverPairs: Record<number, number> = { 1: 3, 2: 6, 3: 1, 6: 2 };
+        const isCrossover = mappedEntries.every(([m, r]) => {
+            if (crossoverPairs[m]) return r === crossoverPairs[m];
+            return m === r;
+        });
+        if (isCrossover) return { label: 'Çapraz (Crossover)', desc: 'T568A ve T568B arası bağlantı.', color: 'text-amber-500' };
+
+        // 3. Check for Rollover (Console)
+        const isRollover = mappedEntries.every(([m, r]) => r === (pinCount - m + 1));
+        if (isRollover) return { label: 'Ters (Rollover)', desc: 'Console kablosu dizilimi.', color: 'text-blue-500' };
+
+        return { label: 'Özel / Hatalı', desc: 'Standart dışı veya arızalı dizilim.', color: 'text-red-500' };
     };
 
     const verdict = mode === 'diagnostic' ? analyzeManualMap() : null;
@@ -202,6 +216,7 @@ export function NetworkCableTester({ onBack }: { onBack: () => void }) {
                 {/* Main Visual Panel */}
                 <div className="lg:col-span-8 space-y-8">
                     <div className="grid md:grid-cols-2 gap-8 items-center bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-[2.5rem] p-8 lg:p-12 relative overflow-hidden">
+                        <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-px bg-slate-200 dark:bg-slate-800 hidden md:block opacity-50"></div>
                         <div className="absolute inset-0 bg-grid-slate-200/50 [mask-image:linear-gradient(0deg,white,rgba(255,255,255,0.6))] dark:bg-grid-slate-700/20 pointer-events-none"></div>
 
                         {/* Master Unit */}
@@ -218,6 +233,11 @@ export function NetworkCableTester({ onBack }: { onBack: () => void }) {
                                         </button>
                                     ))}
                                 </div>
+                                {mode === 'diagnostic' && (
+                                    <div className="text-[9px] font-bold text-indigo-500 bg-indigo-500/10 px-2 py-1 rounded-full animate-pulse">
+                                        Test edilecek pini seçin
+                                    </div>
+                                )}
                             </div>
                         </div>
 
@@ -235,6 +255,16 @@ export function NetworkCableTester({ onBack }: { onBack: () => void }) {
                                         </button>
                                     ))}
                                 </div>
+                                {mode === 'diagnostic' && activePin && (
+                                    <div className="text-[9px] font-bold text-amber-500 bg-amber-500/10 px-2 py-1 rounded-full animate-bounce">
+                                        {activePin}. Master pin nerede yanıyor?
+                                    </div>
+                                )}
+                                {mode === 'diagnostic' && !activePin && (
+                                    <div className="text-[9px] font-bold opacity-40 px-2 py-1">
+                                        Bekleniyor...
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>
