@@ -405,26 +405,38 @@ export const PdfManager: React.FC<PdfManagerProps> = ({ file, onBack }) => {
                             <p className="text-slate-500 dark:text-slate-400">PDF dosyalarınızı birleştirin, ayırın, sıkıştırın veya filigran ekleyin.</p>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-xl px-8">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-4xl px-8">
                             <div
-                                onClick={() => mergeInputRef.current?.click()}
-                                className="p-6 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl hover:border-red-500 dark:hover:border-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 transition-all cursor-pointer group text-left"
+                                onClick={() => { setActiveTab('merge'); mergeInputRef.current?.click(); }}
+                                className="p-6 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-3xl hover:border-red-500 dark:hover:border-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 transition-all cursor-pointer group text-left"
                             >
-                                <div className="p-3 bg-red-100 dark:bg-red-900/30 rounded-xl text-red-500 w-fit mb-4 group-hover:scale-110 transition-transform">
-                                    <Plus size={24} />
+                                <div className="p-3 bg-red-100 dark:bg-red-900/30 rounded-2xl text-red-500 w-fit mb-4 group-hover:scale-110 transition-transform">
+                                    <Layers size={24} />
                                 </div>
-                                <h4 className="font-bold text-slate-800 dark:text-white mb-1">PDF Dosyası Ekle</h4>
-                                <p className="text-xs text-slate-500 dark:text-slate-400">Düzenlemek için bir veya daha fazla PDF seçin.</p>
+                                <h4 className="font-bold text-slate-800 dark:text-white mb-1 leading-tight">PDF Birleştir & Düzenle</h4>
+                                <p className="text-[11px] text-slate-500 dark:text-slate-400">Çoklu dosyaları birleştirin veya sayfaları sıralayın.</p>
                             </div>
+
                             <div
-                                onClick={() => mergeInputRef.current?.click()}
-                                className="p-6 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl hover:border-blue-500 dark:hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-all cursor-pointer group text-left"
+                                onClick={() => { setActiveTab('split'); mergeInputRef.current?.click(); }}
+                                className="p-6 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-3xl hover:border-blue-500 dark:hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-all cursor-pointer group text-left"
                             >
-                                <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-xl text-blue-500 w-fit mb-4 group-hover:scale-110 transition-transform">
-                                    <ImageIcon size={24} />
+                                <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-2xl text-blue-500 w-fit mb-4 group-hover:scale-110 transition-transform">
+                                    <Scissors size={24} />
                                 </div>
-                                <h4 className="font-bold text-slate-800 dark:text-white mb-1">Resimleri PDF Yap</h4>
-                                <p className="text-xs text-slate-500 dark:text-slate-400">JPG veya PNG resimlerini PDF'e dönüştürün.</p>
+                                <h4 className="font-bold text-slate-800 dark:text-white mb-1 leading-tight">PDF Sayfa Ayırıcı</h4>
+                                <p className="text-[11px] text-slate-500 dark:text-slate-400">Belirli sayfaları seçip yeni PDF olarak kaydedin.</p>
+                            </div>
+
+                            <div
+                                onClick={() => { setActiveTab('compress'); mergeInputRef.current?.click(); }}
+                                className="p-6 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-3xl hover:border-orange-500 dark:hover:border-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/10 transition-all cursor-pointer group text-left"
+                            >
+                                <div className="p-3 bg-orange-100 dark:bg-orange-900/30 rounded-2xl text-orange-500 w-fit mb-4 group-hover:scale-110 transition-transform">
+                                    <Minimize2 size={24} />
+                                </div>
+                                <h4 className="font-bold text-slate-800 dark:text-white mb-1 leading-tight">Boyut Küçült (Compress)</h4>
+                                <p className="text-[11px] text-slate-500 dark:text-slate-400">Dosya boyutunu düşürerek yer kazanın.</p>
                             </div>
                         </div>
 
