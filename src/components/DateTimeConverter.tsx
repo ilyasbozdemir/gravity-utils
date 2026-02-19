@@ -32,6 +32,8 @@ export function DateTimeConverter({ onBack }: { onBack: () => void }) {
             <div className="flex items-center gap-4 mb-8">
                 <button
                     onClick={onBack}
+                    title="Geri Dön"
+                    aria-label="Geri Dön"
                     className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
                 >
                     <ArrowLeft className="w-6 h-6 text-slate-600 dark:text-slate-400" />
@@ -60,6 +62,8 @@ export function DateTimeConverter({ onBack }: { onBack: () => void }) {
                             type="text"
                             value={epochInput}
                             onChange={handleEpochChange}
+                            aria-label="Epoch Zaman Damgası"
+                            placeholder="Zaman damgası girin"
                             className="w-full p-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg font-mono text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-purple-500/50 outline-none"
                         />
                         <div className="text-xs text-slate-400 dark:text-slate-500 flex gap-2">
@@ -76,6 +80,7 @@ export function DateTimeConverter({ onBack }: { onBack: () => void }) {
                             type="datetime-local"
                             value={format(date, "yyyy-MM-dd'T'HH:mm")}
                             onChange={handleDateChange}
+                            aria-label="Tarih Seçici"
                             className="w-full p-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg font-mono text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-purple-500/50 outline-none"
                         />
                     </div>
@@ -92,7 +97,7 @@ export function DateTimeConverter({ onBack }: { onBack: () => void }) {
                             <code className="text-sm font-mono text-purple-600 dark:text-purple-400 truncate">
                                 {date.toISOString()}
                             </code>
-                            <button onClick={() => navigator.clipboard.writeText(date.toISOString())} className="text-slate-400 hover:text-purple-500"><Copy size={16} /></button>
+                            <button onClick={() => navigator.clipboard.writeText(date.toISOString())} title="Kopyala" aria-label="Kopyala" className="text-slate-400 hover:text-purple-500"><Copy size={16} /></button>
                         </div>
                     </div>
 
@@ -102,7 +107,7 @@ export function DateTimeConverter({ onBack }: { onBack: () => void }) {
                             <code className="text-sm font-mono text-blue-600 dark:text-blue-400 truncate">
                                 {date.toUTCString()}
                             </code>
-                            <button onClick={() => navigator.clipboard.writeText(date.toUTCString())} className="text-slate-400 hover:text-blue-500"><Copy size={16} /></button>
+                            <button onClick={() => navigator.clipboard.writeText(date.toUTCString())} title="Kopyala" aria-label="Kopyala" className="text-slate-400 hover:text-blue-500"><Copy size={16} /></button>
                         </div>
                     </div>
 

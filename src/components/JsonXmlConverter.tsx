@@ -20,7 +20,7 @@ export function JsonXmlConverter({ onBack }: { onBack: () => void }) {
                 const xml = js2xml(jsonObj, { compact: true, spaces: 4 });
                 setOutput(xml);
             } else {
-                const json = xml2js(input, { compact: true, spaces: 4 });
+                const json = xml2js(input, { compact: true });
                 setOutput(JSON.stringify(json, null, 4));
             }
         } catch (err) {
@@ -50,6 +50,8 @@ export function JsonXmlConverter({ onBack }: { onBack: () => void }) {
                 <div className="flex items-center gap-4">
                     <button
                         onClick={onBack}
+                        title="Geri Dön"
+                        aria-label="Geri Dön"
                         className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
                     >
                         <ArrowLeft className="w-6 h-6 text-slate-600 dark:text-slate-400" />
@@ -57,11 +59,11 @@ export function JsonXmlConverter({ onBack }: { onBack: () => void }) {
                     <div>
                         <h2 className="text-2xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
                             {mode === 'json2xml' ? <FileJson className="w-6 h-6 text-blue-500" /> : <FileCode className="w-6 h-6 text-orange-500" />}
-                            JSON <> XML Dönüştürücü
-                            </h2>
-                            <p className="text-slate-500 dark:text-slate-400 text-sm">
-                                Verilerinizi formatlar arasında hızlıca dönüştürün
-                            </p>
+                            JSON &lt;&gt; XML Dönüştürücü
+                        </h2>
+                        <p className="text-slate-500 dark:text-slate-400 text-sm">
+                            Verilerinizi formatlar arasında hızlıca dönüştürün
+                        </p>
                     </div>
                 </div>
                 <button

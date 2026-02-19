@@ -43,6 +43,8 @@ export function SqlFormatter({ onBack }: { onBack: () => void }) {
                 <div className="flex items-center gap-4">
                     <button
                         onClick={onBack}
+                        title="Geri Dön"
+                        aria-label="Geri Dön"
                         className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
                     >
                         <ArrowLeft className="w-6 h-6 text-slate-600 dark:text-slate-400" />
@@ -61,6 +63,7 @@ export function SqlFormatter({ onBack }: { onBack: () => void }) {
                 <select
                     value={dialect}
                     onChange={(e) => setDialect(e.target.value as any)}
+                    aria-label="SQL Dili Seçin"
                     className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block p-2.5"
                 >
                     <option value="sql">Standart SQL</option>

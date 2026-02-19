@@ -88,6 +88,8 @@ export const SocialResizer: React.FC<SocialResizerProps> = ({ file: initialFile,
             <div className="flex items-center gap-4 mb-8">
                 <button
                     onClick={onBack}
+                    title="Geri Dön"
+                    aria-label="Geri Dön"
                     className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
                 >
                     <ArrowLeft className="w-6 h-6 text-slate-600 dark:text-slate-400" />
@@ -115,6 +117,7 @@ export const SocialResizer: React.FC<SocialResizerProps> = ({ file: initialFile,
                         type="file"
                         accept="image/*"
                         onChange={handleFileChange}
+                        aria-label="Görsel Yükle"
                         className="hidden"
                     />
                 </div>
@@ -138,8 +141,8 @@ export const SocialResizer: React.FC<SocialResizerProps> = ({ file: initialFile,
                                     key={preset.name}
                                     onClick={() => setSelectedPreset(preset)}
                                     className={`w-full flex items-center gap-3 p-3 rounded-lg text-left transition-all border ${selectedPreset.name === preset.name
-                                            ? 'bg-pink-50 dark:bg-pink-900/20 border-pink-500 text-pink-600 dark:text-pink-400'
-                                            : 'bg-transparent border-transparent hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300'
+                                        ? 'bg-pink-50 dark:bg-pink-900/20 border-pink-500 text-pink-600 dark:text-pink-400'
+                                        : 'bg-transparent border-transparent hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300'
                                         }`}
                                 >
                                     <span className="text-lg">{preset.icon}</span>
@@ -162,6 +165,7 @@ export const SocialResizer: React.FC<SocialResizerProps> = ({ file: initialFile,
                                     min={1}
                                     max={3}
                                     step={0.1}
+                                    aria-label="Yakınlaştır"
                                     aria-labelledby="Zoom"
                                     onChange={(e) => setZoom(Number(e.target.value))}
                                     className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-pink-500"
@@ -177,6 +181,7 @@ export const SocialResizer: React.FC<SocialResizerProps> = ({ file: initialFile,
                                     min={0}
                                     max={360}
                                     step={1}
+                                    aria-label="Döndür"
                                     aria-labelledby="Rotation"
                                     onChange={(e) => setRotation(Number(e.target.value))}
                                     className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-pink-500"
