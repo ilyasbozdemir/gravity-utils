@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import { ArrowLeft, Copy, Check, Palette, RefreshCw, Shuffle, Sun, Moon } from 'lucide-react';
 
 // ─── Color Math ───────────────────────────────────────────────────────────────
@@ -171,14 +171,18 @@ export function ColorToolkit({ onBack }: { onBack: () => void }) {
                         {/* RGB */}
                         <div>
                             <p className="text-xs font-bold uppercase text-slate-500 mb-3">RGB</p>
-                            {[['R', r, setR, 'red'], ['G', g, setG, 'green'], ['B', b, setB, 'blue']].map(([label, val, setter, color]) => (
-                                <div key={label as string} className="flex items-center gap-3 mb-2">
+                            {([
+                                ['R', r, setR] as [string, number, (v: number) => void],
+                                ['G', g, setG] as [string, number, (v: number) => void],
+                                ['B', b, setB] as [string, number, (v: number) => void],
+                            ]).map(([label, val, setter]) => (
+                                <div key={label} className="flex items-center gap-3 mb-2">
                                     <span className="w-4 text-xs font-bold text-slate-500">{label}</span>
-                                    <input type="range" min={0} max={255} value={val as number}
-                                        onChange={e => { const n = parseInt(e.target.value); (setter as (v: number) => void)(n); const nr = label === 'R' ? n : r, ng = label === 'G' ? n : g, nb = label === 'B' ? n : b; syncFromRgb(nr, ng, nb); }}
+                                    <input type="range" min={0} max={255} value={val}
+                                        onChange={e => { const n = parseInt(e.target.value); setter(n); const nr = label === 'R' ? n : r, ng = label === 'G' ? n : g, nb = label === 'B' ? n : b; syncFromRgb(nr, ng, nb); }}
                                         title={`${label} kanalı`} aria-label={`${label} renk kanalı`}
                                         className="flex-1 h-3 rounded-full cursor-pointer accent-purple-500" />
-                                    <span className="w-8 text-right text-sm font-mono text-slate-700 dark:text-slate-300">{val as number}</span>
+                                    <span className="w-8 text-right text-sm font-mono text-slate-700 dark:text-slate-300">{val}</span>
                                 </div>
                             ))}
                             <div className="flex items-center gap-2 mt-2">
@@ -189,14 +193,18 @@ export function ColorToolkit({ onBack }: { onBack: () => void }) {
                         {/* HSL */}
                         <div>
                             <p className="text-xs font-bold uppercase text-slate-500 mb-3">HSL</p>
-                            {[['H', h, setH, 360, '°'], ['S', s, setS, 100, '%'], ['L', l, setL, 100, '%']].map(([label, val, setter, max, unit]) => (
-                                <div key={label as string} className="flex items-center gap-3 mb-2">
+                            {([
+                                ['H', h, setH, 360, '°'] as [string, number, (v: number) => void, number, string],
+                                ['S', s, setS, 100, '%'] as [string, number, (v: number) => void, number, string],
+                                ['L', l, setL, 100, '%'] as [string, number, (v: number) => void, number, string],
+                            ]).map(([label, val, setter, max, unit]) => (
+                                <div key={label} className="flex items-center gap-3 mb-2">
                                     <span className="w-4 text-xs font-bold text-slate-500">{label}</span>
-                                    <input type="range" min={0} max={max as number} value={val as number}
-                                        onChange={e => { const n = parseInt(e.target.value); (setter as (v: number) => void)(n); const nh = label === 'H' ? n : h, ns = label === 'S' ? n : s, nl = label === 'L' ? n : l; syncFromHsl(nh, ns, nl); }}
+                                    <input type="range" min={0} max={max} value={val}
+                                        onChange={e => { const n = parseInt(e.target.value); setter(n); const nh = label === 'H' ? n : h, ns = label === 'S' ? n : s, nl = label === 'L' ? n : l; syncFromHsl(nh, ns, nl); }}
                                         title={`${label} değeri`} aria-label={`HSL ${label} değeri`}
                                         className="flex-1 h-3 rounded-full cursor-pointer accent-purple-500" />
-                                    <span className="w-12 text-right text-sm font-mono text-slate-700 dark:text-slate-300">{val as number}{unit}</span>
+                                    <span className="w-12 text-right text-sm font-mono text-slate-700 dark:text-slate-300">{val}{unit}</span>
                                 </div>
                             ))}
                             <div className="flex items-center gap-2 mt-2">
