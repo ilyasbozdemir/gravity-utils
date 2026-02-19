@@ -371,9 +371,12 @@ function Ipv6Tab() {
                             <p className="text-xs font-bold text-slate-500 uppercase">Adres Formları</p>
                         </div>
                         <div className="px-4">
-                            <InfoRow label="Tam (Genişletilmiş)" value={result.expanded} />
-                            <InfoRow label="Sıkıştırılmış" value={result.compressed} />
-                            <InfoRow label="Subnet" value={result.subnet} />
+                            <InfoRow label="Tam (Genişletilmiş)" value={result.expanded}
+                                tooltip="IPv6 adresinin her biti açıkça gösterilen hali. Tüm sıfırlar (0000) yazılır. Her grup 4 karakterdir." />
+                            <InfoRow label="Sıkıştırılmış" value={result.compressed}
+                                tooltip="Adresin RFC 5952 standardına göre en kısa yazım şekli. Sıfırlar '::' ile kısaltılır." />
+                            <InfoRow label="Subnet" value={result.subnet}
+                                tooltip="Ağ maskesi uygulanmış ağ adresi. Belirtilen prefix (/X) uzunluğuna göre host bitleri sıfırlanmış bölümdür." />
                         </div>
                     </div>
 

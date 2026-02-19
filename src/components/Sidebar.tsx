@@ -138,8 +138,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onViewChange, isO
                             <Zap size={18} className="text-white fill-white" />
                         </div>
                         <div>
-                            <span className="text-lg font-black tracking-tight text-slate-900 dark:text-white uppercase italic">Gravity</span>
-                            <span className="text-lg font-black tracking-tight text-blue-600 uppercase italic ml-1">Utils</span>
+                            <div className="flex items-center">
+                                <span className="text-lg font-black tracking-tight text-slate-900 dark:text-white uppercase italic">Gravity</span>
+                                <span className="text-lg font-black tracking-tight text-blue-600 uppercase italic ml-1">Utils</span>
+                            </div>
+                            <div className="text-[10px] font-bold text-slate-400 dark:text-slate-500 tracking-wider -mt-1 hover:text-blue-500 transition-colors">
+                                ilyasbozdemir.dev
+                            </div>
                         </div>
                     </div>
                     <button
