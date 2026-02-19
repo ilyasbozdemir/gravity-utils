@@ -6,7 +6,7 @@ import {
     ChevronRight, RefreshCw, AlertCircle, Binary, Search
 } from 'lucide-react';
 
-type ToolTab = 'subnet' | 'ip-convert' | 'cidr' | 'lookup';
+type ToolTab = 'subnet' | 'ip-convert' | 'cidr' | 'ipv6';
 
 // ─── Core IP Math ─────────────────────────────────────────────────────────────
 function ipToInt(ip: string): number {
@@ -124,6 +124,279 @@ function InfoRow({ label, value, mono = true, badge }: { label: string; value: s
                 )}
             </div>
             <CopyButton text={value} />
+        </div>
+    );
+}
+
+// ─── IPv6 Helpers ─────────────────────────────────────────────────────────────
+function isValidIpv6(addr: string): boolean {
+    try {
+        // Remove brackets if present
+        const clean = addr.replace(/^\[|\]$/g, '');
+        // Handle :: expansion
+        const halves = clean.split('::');
+        if (halves.length > 2) return false;
+        const allGroups: string[] = [];
+        if (halves.length === 2) {
+            const left = halves[0] ? halves[0].split(':') : [];
+            const right = halves[1] ? halves[1].split(':') : [];
+            // Check for IPv4-mapped suffix in right
+            const last = right[right.length - 1];
+            if (last && last.includes('.')) {
+                // IPv4-mapped: rightmost group is IPv4
+                if (left.length + right.length > 6) return false;
+            } else {
+                if (left.length + right.length > 7) return false;
+            }
+            const fill = 8 - left.length - right.length;
+            allGroups.push(...left, ...Array(fill).fill('0'), ...right);
+        } else {
+            const parts = clean.split(':');
+            // Handle IPv4-mapped
+            const last = parts[parts.length - 1];
+            if (last && last.includes('.')) {
+                if (parts.length !== 7) return false;
+            } else {
+                if (parts.length !== 8) return false;
+            }
+            allGroups.push(...parts);
+        }
+        // Validate each group (ignore IPv4 tail)
+        for (const g of allGroups) {
+            if (g.includes('.')) {
+                // IPv4 part — validate
+                const octets = g.split('.');
+                if (octets.length !== 4) return false;
+                if (!octets.every(o => { const n = parseInt(o, 10); return !isNaN(n) && n >= 0 && n <= 255; })) return false;
+            } else {
+                if (!/^[0-9a-fA-F]{1,4}$/.test(g)) return false;
+            }
+        }
+        return true;
+    } catch { return false; }
+}
+
+function expandIpv6(addr: string): string {
+    const clean = addr.replace(/^\[|\]$/g, '').toLowerCase();
+    const halves = clean.split('::');
+    let groups: string[];
+    if (halves.length === 2) {
+        const left = halves[0] ? halves[0].split(':') : [];
+        const right = halves[1] ? halves[1].split(':') : [];
+        const fill = 8 - left.length - right.length;
+        groups = [...left, ...Array(fill).fill('0'), ...right];
+    } else {
+        groups = clean.split(':');
+    }
+    return groups.map(g => g.padStart(4, '0')).join(':');
+}
+
+function compressIpv6(expanded: string): string {
+    const groups = expanded.split(':');
+    // Find longest run of '0000'
+    let bestStart = -1, bestLen = 0, curStart = -1, curLen = 0;
+    for (let i = 0; i <= groups.length; i++) {
+        if (i < groups.length && groups[i] === '0000') {
+            if (curStart === -1) { curStart = i; curLen = 1; } else curLen++;
+        } else {
+            if (curLen > bestLen) { bestStart = curStart; bestLen = curLen; }
+            curStart = -1; curLen = 0;
+        }
+    }
+    const stripped = groups.map(g => g.replace(/^0+/, '') || '0');
+    if (bestStart === -1 || bestLen < 2) return stripped.join(':');
+    return stripped.slice(0, bestStart).join(':') + '::' + stripped.slice(bestStart + bestLen).join(':');
+}
+
+function ipv6ToBinary(expanded: string): string {
+    return expanded.split(':').map(g => parseInt(g, 16).toString(2).padStart(16, '0')).join(' ');
+}
+
+function getIpv6Type(expanded: string): { type: string; desc: string; color: string } {
+    const g = expanded.split(':').map(g => parseInt(g, 16));
+    if (expanded === '0000:0000:0000:0000:0000:0000:0000:0001') return { type: 'Loopback', desc: '::1 — localhost IPv6 adresi', color: 'purple' };
+    if (expanded === '0000:0000:0000:0000:0000:0000:0000:0000') return { type: 'Unspecified', desc: ':: — belirtilmemiş adres', color: 'slate' };
+    if (g[0] === 0xfe80 || (g[0] >= 0xfe80 && g[0] <= 0xfebf)) return { type: 'Link-Local', desc: 'fe80::/10 — yalnızca yerel bağlantı', color: 'orange' };
+    if (g[0] >= 0xfc00 && g[0] <= 0xfdff) return { type: 'ULA (Özel)', desc: 'fc00::/7 — benzersiz lokal adres (RFC 4193)', color: 'green' };
+    if (g[0] >= 0xff00) return { type: 'Multicast', desc: 'ff00::/8 — çok noktaya yayın', color: 'red' };
+    if (g[0] === 0x2002) return { type: '6to4 Tünel', desc: '2002::/16 — IPv4→IPv6 tünel', color: 'yellow' };
+    if (g[0] === 0x2001 && g[1] === 0x0db8) return { type: 'Dokümantasyon', desc: '2001:db8::/32 — örnek/test adresi (RFC 3849)', color: 'blue' };
+    if (g[0] === 0 && g[1] === 0 && g[2] === 0 && g[3] === 0 && g[4] === 0 && g[5] === 0xffff) return { type: 'IPv4-Mapped', desc: '::ffff:0:0/96 — IPv4 uyumlu', color: 'cyan' };
+    if ((g[0] & 0xe000) === 0x2000) return { type: 'Global Unicast', desc: '2000::/3 — genel internet adresi', color: 'emerald' };
+    return { type: 'Bilinmeyen', desc: 'Standart dışı adres', color: 'slate' };
+}
+
+// ─── IPv6 Tab ──────────────────────────────────────────────────────────────────
+function Ipv6Tab() {
+    const [input, setInput] = useState('2001:db8::1');
+    const [result, setResult] = useState<{
+        expanded: string; compressed: string; binary: string;
+        type: string; desc: string; color: string;
+        subnet: string; netPrefix: string;
+    } | null>(null);
+    const [prefix, setPrefix] = useState(64);
+    const [error, setError] = useState('');
+
+    const analyze = useCallback(() => {
+        setError('');
+        const raw = input.trim();
+        let addr = raw;
+        let pfx = prefix;
+        if (raw.includes('/')) {
+            const [a, p] = raw.split('/');
+            addr = a;
+            pfx = parseInt(p);
+        }
+        if (!isValidIpv6(addr)) {
+            setError('Geçersiz IPv6 adresi. Örnek: 2001:db8::1 veya fe80::1/64');
+            setResult(null);
+            return;
+        }
+        const expanded = expandIpv6(addr);
+        const compressed = compressIpv6(expanded);
+        const binary = ipv6ToBinary(expanded);
+        const typeInfo = getIpv6Type(expanded);
+
+        // Network prefix (zero out host bits)
+        const binStr = binary.replace(/ /g, '');
+        const netBin = binStr.slice(0, pfx).padEnd(128, '0');
+        const netGroups: string[] = [];
+        for (let i = 0; i < 128; i += 16) {
+            netGroups.push(parseInt(netBin.slice(i, i + 16), 2).toString(16).padStart(4, '0'));
+        }
+        const netExpanded = netGroups.join(':');
+        const subnet = compressIpv6(netExpanded) + `/${pfx}`;
+
+        setResult({ expanded, compressed, binary, ...typeInfo, subnet, netPrefix: `/${pfx}` });
+    }, [input, prefix]);
+
+    const EXAMPLES = [
+        { label: 'Loopback', addr: '::1' },
+        { label: 'Link-Local', addr: 'fe80::1/64' },
+        { label: 'ULA', addr: 'fd00::1/48' },
+        { label: 'Global', addr: '2001:db8:1::1/64' },
+        { label: 'Multicast', addr: 'ff02::1' },
+        { label: 'IPv4-Mapped', addr: '::ffff:192.0.2.1' },
+        { label: '6to4', addr: '2002:c000:0201::1' },
+        { label: 'Unspecified', addr: '::' },
+    ];
+
+    const typeColorMap: Record<string, string> = {
+        purple: 'bg-purple-50 dark:bg-purple-900/10 border-purple-200 dark:border-purple-800 text-purple-700 dark:text-purple-300',
+        orange: 'bg-orange-50 dark:bg-orange-900/10 border-orange-200 dark:border-orange-800 text-orange-700 dark:text-orange-300',
+        green: 'bg-green-50 dark:bg-green-900/10 border-green-200 dark:border-green-800 text-green-700 dark:text-green-300',
+        red: 'bg-red-50 dark:bg-red-900/10 border-red-200 dark:border-red-800 text-red-700 dark:text-red-300',
+        blue: 'bg-blue-50 dark:bg-blue-900/10 border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300',
+        emerald: 'bg-emerald-50 dark:bg-emerald-900/10 border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300',
+        slate: 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300',
+        cyan: 'bg-cyan-50 dark:bg-cyan-900/10 border-cyan-200 dark:border-cyan-800 text-cyan-700 dark:text-cyan-300',
+        yellow: 'bg-yellow-50 dark:bg-yellow-900/10 border-yellow-200 dark:border-yellow-800 text-yellow-700 dark:text-yellow-300',
+    };
+
+    return (
+        <div className="space-y-6">
+            <div>
+                <label className="block text-xs font-bold uppercase text-slate-500 mb-2">IPv6 Adresi</label>
+                <div className="flex gap-2">
+                    <input
+                        value={input}
+                        onChange={e => setInput(e.target.value)}
+                        onKeyDown={e => e.key === 'Enter' && analyze()}
+                        placeholder="2001:db8::1 veya fe80::1/64"
+                        aria-label="IPv6 adresi"
+                        className="flex-1 px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl font-mono text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/40 text-slate-800 dark:text-slate-200"
+                    />
+                    <button
+                        onClick={analyze}
+                        className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold transition-all shadow-lg shadow-indigo-500/20 flex items-center gap-2"
+                    >
+                        <Search size={16} /> Analiz Et
+                    </button>
+                </div>
+                {!input.includes('/') && (
+                    <div className="flex items-center gap-3 mt-3">
+                        <label className="text-xs text-slate-500 shrink-0">Prefix /{prefix}</label>
+                        <input type="range" min={0} max={128} value={prefix}
+                            onChange={e => setPrefix(parseInt(e.target.value))}
+                            title={`Prefix /${prefix}`} aria-label={`IPv6 prefix uzunluğu: /${prefix}`}
+                            className="flex-1 accent-indigo-500 cursor-pointer" />
+                        <span className="text-xs font-mono text-slate-500 w-6">{prefix}</span>
+                    </div>
+                )}
+                {error && <p className="text-xs text-red-500 mt-2 flex items-center gap-1"><AlertCircle size={12} />{error}</p>}
+            </div>
+
+            {/* Examples */}
+            <div className="flex flex-wrap gap-2">
+                {EXAMPLES.map(ex => (
+                    <button key={ex.addr} onClick={() => { setInput(ex.addr); }}
+                        className="px-3 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-lg text-xs font-mono transition-all">
+                        {ex.label}
+                    </button>
+                ))}
+            </div>
+
+            {result && (
+                <>
+                    {/* Type badge */}
+                    <div className={`flex items-center gap-3 p-4 rounded-2xl border ${typeColorMap[result.color]}`}>
+                        <span className="text-2xl">🌐</span>
+                        <div>
+                            <p className="font-black text-lg">{result.type}</p>
+                            <p className="text-sm opacity-80">{result.desc}</p>
+                        </div>
+                        <span className="ml-auto font-mono text-sm opacity-60">{result.netPrefix}</span>
+                    </div>
+
+                    {/* Address forms */}
+                    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden">
+                        <div className="px-4 py-3 bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800">
+                            <p className="text-xs font-bold text-slate-500 uppercase">Adres Formları</p>
+                        </div>
+                        <div className="px-4">
+                            <InfoRow label="Tam (Genişletilmiş)" value={result.expanded} />
+                            <InfoRow label="Sıkıştırılmış" value={result.compressed} />
+                            <InfoRow label="Subnet" value={result.subnet} />
+                        </div>
+                    </div>
+
+                    {/* Binary */}
+                    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4">
+                        <p className="text-[10px] font-bold uppercase text-slate-400 mb-3">Binary (128 bit)</p>
+                        <div className="font-mono text-[10px] leading-6 text-slate-600 dark:text-slate-400 break-all">
+                            {result.binary.replace(/ /g, '').split('').map((bit, i) => (
+                                <span key={i}>
+                                    {i > 0 && i % 16 === 0 && <span className="text-slate-300 dark:text-slate-700 mx-0.5">:</span>}
+                                    <span className={bit === '1' ? 'text-indigo-500 font-bold' : 'text-slate-300 dark:text-slate-600'}>{bit}</span>
+                                </span>
+                            ))}
+                        </div>
+                        <div className="mt-2 text-[10px] text-slate-400">İlk {prefix} bit = ağ adresi · Kalan {128 - prefix} bit = cihaz adresi</div>
+                    </div>
+
+                    {/* Quick reference */}
+                    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4">
+                        <p className="text-[10px] font-bold uppercase text-slate-400 mb-3">IPv6 Adres Türleri Rehberi</p>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                            {[
+                                ['::1/128', 'Loopback'],
+                                ['fe80::/10', 'Link-Local (SLAAC)'],
+                                ['fc00::/7', 'ULA — Özel Ağ (RFC 4193)'],
+                                ['ff00::/8', 'Multicast'],
+                                ['2000::/3', 'Global Unicast (İnternet)'],
+                                ['2001:db8::/32', 'Dokümantasyon / Örnek'],
+                                ['::ffff:0:0/96', 'IPv4-Mapped'],
+                                ['2002::/16', '6to4 Tünel'],
+                            ].map(([range, label]) => (
+                                <div key={range} className="flex items-center gap-2">
+                                    <code className="text-indigo-600 dark:text-indigo-400 font-mono w-36 shrink-0">{range}</code>
+                                    <span className="text-slate-500">{label}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </>
+            )}
         </div>
     );
 }
@@ -511,12 +784,14 @@ export function NetworkToolkit({ onBack }: { onBack: () => void }) {
         { id: 'subnet' as ToolTab, label: 'Subnet Hesaplayıcı', icon: <Network size={15} />, color: 'blue' },
         { id: 'ip-convert' as ToolTab, label: 'IP Çevirici', icon: <Binary size={15} />, color: 'green' },
         { id: 'cidr' as ToolTab, label: 'CIDR / Alt Ağ Bölücü', icon: <Hash size={15} />, color: 'purple' },
+        { id: 'ipv6' as ToolTab, label: 'IPv6 Analiz', icon: <ChevronRight size={15} />, color: 'indigo' },
     ];
 
     const tabColor: Record<string, string> = {
         blue: 'bg-blue-600 text-white shadow-blue-500/20',
         green: 'bg-green-600 text-white shadow-green-500/20',
         purple: 'bg-purple-600 text-white shadow-purple-500/20',
+        indigo: 'bg-indigo-600 text-white shadow-indigo-500/20',
     };
 
     const activeTab = TABS.find(t => t.id === tab);
@@ -539,7 +814,7 @@ export function NetworkToolkit({ onBack }: { onBack: () => void }) {
                         Ağ Araç Seti
                     </h2>
                     <p className="text-slate-500 dark:text-slate-400 text-sm">
-                        Subnet hesaplama, IP dönüşümü, CIDR alt ağ bölümleme
+                        Subnet hesaplama, IP dönüşümü, CIDR alt ağ bölümleme, IPv6 analiz
                     </p>
                 </div>
             </div>
@@ -566,6 +841,7 @@ export function NetworkToolkit({ onBack }: { onBack: () => void }) {
                 {tab === 'subnet' && <SubnetTab />}
                 {tab === 'ip-convert' && <IpConvertTab />}
                 {tab === 'cidr' && <CidrTab />}
+                {tab === 'ipv6' && <Ipv6Tab />}
             </div>
 
             {/* Quick reference card */}

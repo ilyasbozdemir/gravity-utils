@@ -34,6 +34,14 @@ const StringInspector = dynamic(() => import('@/components/StringInspector').the
 const OfficeTools = dynamic(() => import('@/components/OfficeTools').then(mod => mod.OfficeTools));
 const WebToolkit = dynamic(() => import('@/components/WebToolkit').then(mod => mod.WebToolkit));
 const NetworkToolkit = dynamic(() => import('@/components/NetworkToolkit').then(mod => mod.NetworkToolkit));
+const PasswordGenerator = dynamic(() => import('@/components/PasswordGenerator').then(mod => mod.PasswordGenerator));
+const SvgOptimizer = dynamic(() => import('@/components/SvgOptimizer').then(mod => mod.SvgOptimizer));
+const CronBuilder = dynamic(() => import('@/components/CronBuilder').then(mod => mod.CronBuilder));
+const TimezoneConverter = dynamic(() => import('@/components/TimezoneConverter').then(mod => mod.TimezoneConverter));
+const ColorToolkit = dynamic(() => import('@/components/ColorToolkit').then(mod => mod.ColorToolkit));
+const RegexTester = dynamic(() => import('@/components/RegexTester').then(mod => mod.RegexTester));
+const CsvViewer = dynamic(() => import('@/components/CsvViewer').then(mod => mod.CsvViewer));
+const MarkdownEditor = dynamic(() => import('@/components/MarkdownEditor').then(mod => mod.MarkdownEditor));
 
 export default function Home() {
     const [file, setFile] = useState<File | null>(null);
@@ -174,6 +182,14 @@ export default function Home() {
                             {view === 'sql-formatter' && <SqlFormatter onBack={() => setView('home')} />}
                             {view === 'web-toolkit' && <WebToolkit onBack={() => setView('home')} />}
                             {view === 'network-toolkit' && <NetworkToolkit onBack={() => setView('home')} />}
+                            {view === 'password-generator' && <PasswordGenerator onBack={() => setView('home')} />}
+                            {view === 'svg-optimizer' && <SvgOptimizer onBack={() => setView('home')} />}
+                            {view === 'cron-builder' && <CronBuilder onBack={() => setView('home')} />}
+                            {view === 'timezone-converter' && <TimezoneConverter onBack={() => setView('home')} />}
+                            {view === 'color-toolkit' && <ColorToolkit onBack={() => setView('home')} />}
+                            {view === 'regex-tester' && <RegexTester onBack={() => setView('home')} />}
+                            {view === 'csv-viewer' && <CsvViewer onBack={() => setView('home')} />}
+                            {view === 'markdown-editor' && <MarkdownEditor onBack={() => setView('home')} />}
                         </div>
                     )}
 
