@@ -97,7 +97,8 @@ function yamlToJson(yaml: string): unknown {
     }
 
     function parseLines(lines: string[], baseIndent: number): [unknown, number] {
-        const result: Record<string, unknown> | unknown[] = {};
+        const obj: Record<string, unknown> = {};
+        const arr: unknown[] = [];
         let isArray = false;
         let i = 0;
 
@@ -112,9 +113,8 @@ function yamlToJson(yaml: string): unknown {
             const trimmed = line.trim();
 
             if (trimmed.startsWith('- ')) {
-                if (!isArray) { isArray = true; (result as unknown[]).length = 0; }
-                const val = trimmed.slice(2).trim();
-                (result as unknown[]).push(parseValue(val));
+                isArray = true;
+                arr.push(parseValue(trimmed.slice(2).trim()));
                 i++;
             } else if (trimmed.includes(':')) {
                 const colonIdx = trimmed.indexOf(':');
@@ -126,16 +126,16 @@ function yamlToJson(yaml: string): unknown {
                     const nextIndent = nextLine.search(/\S/);
                     if (nextIndent > indent) {
                         const [nested, consumed] = parseLines(lines.slice(i + 1), nextIndent);
-                        (result as Record<string, unknown>)[key] = nested;
+                        obj[key] = nested;
                         i += consumed + 1;
                         continue;
                     }
                 }
-                (result as Record<string, unknown>)[key] = parseValue(rest);
+                obj[key] = parseValue(rest);
                 i++;
             } else { i++; }
         }
-        return [isArray ? result : result, i];
+        return [isArray ? arr : obj, i];
     }
 
     const [parsed] = parseLines(lines, 0);
@@ -327,8 +327,8 @@ export function JsonXmlConverter({ onBack }: { onBack: () => void }) {
                                         key={k}
                                         onClick={() => { setMode(k as ConversionMode); setShowModes(false); setOutput(''); setError(null); }}
                                         className={`w-full text-left px-4 py-3 text-sm font-medium transition-colors flex items-center gap-2 ${mode === k
-                                                ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400'
-                                                : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
+                                            ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400'
+                                            : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
                                             }`}
                                     >
                                         {v.label}
