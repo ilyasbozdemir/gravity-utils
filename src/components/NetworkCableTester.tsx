@@ -102,11 +102,13 @@ export function NetworkCableTester({ onBack }: { onBack: () => void }) {
 
     const getRemoteStatus = (idx: number) => {
         if (mode === 'simulation') {
-            return activePin && PRESET_MAPPINGS[type][activePin] === idx;
+            return activePin && PRESET_MAPPINGS[type][activePin] === idx ? 'active' : 'off';
         }
-        // In diagnostic mode, show the mapping for the active pin OR show all recorded mappings if not playing
-        if (activePin) return manualMap[activePin] === idx;
-        return Object.values(manualMap).includes(idx);
+
+        // Diagnostic mode
+        if (activePin && manualMap[activePin] === idx) return 'active';
+        if (Object.values(manualMap).includes(idx)) return 'mapped';
+        return 'off';
     };
 
     const analyzeManualMap = () => {
@@ -247,13 +249,16 @@ export function NetworkCableTester({ onBack }: { onBack: () => void }) {
                             <div className="relative bg-slate-200 dark:bg-slate-800 rounded-[2rem] p-6 border-4 border-slate-300 dark:border-slate-700 shadow-2xl flex flex-col items-center gap-6">
                                 <div className="text-[10px] font-black tracking-[0.3em] uppercase opacity-40">REMOTE</div>
                                 <div className="grid grid-cols-4 gap-4 w-full px-4">
-                                    {Array.from({ length: pins }).map((_, i) => (
-                                        <button key={i} onClick={() => handleRemoteClick(i + 1)}
-                                            className={`flex flex-col items-center gap-2 group/pin ${mode === 'diagnostic' && activePin ? 'cursor-pointer' : 'cursor-default'}`}>
-                                            <div className={`w-4 h-4 rounded-full border-2 transition-all duration-300 ${getRemoteStatus(i + 1) ? 'bg-green-500 border-green-400 shadow-[0_0_15px_rgba(34,197,94,0.6)] scale-125' : 'bg-slate-400/20 border-slate-400/30'}`}></div>
-                                            <span className="text-[10px] font-mono font-bold opacity-60">{i + 1}</span>
-                                        </button>
-                                    ))}
+                                    {Array.from({ length: pins }).map((_, i) => {
+                                        const status = getRemoteStatus(i + 1);
+                                        return (
+                                            <button key={i} onClick={() => handleRemoteClick(i + 1)}
+                                                className={`flex flex-col items-center gap-2 group/pin ${mode === 'diagnostic' && activePin ? 'cursor-pointer' : 'cursor-default'}`}>
+                                                <div className={`w-4 h-4 rounded-full border-2 transition-all duration-300 ${status === 'active' ? 'bg-green-500 border-green-400 shadow-[0_0_15px_rgba(34,197,94,0.6)] scale-125' : status === 'mapped' ? 'bg-indigo-500/60 border-indigo-400/40' : 'bg-slate-400/20 border-slate-400/30'}`}></div>
+                                                <span className="text-[10px] font-mono font-bold opacity-60">{i + 1}</span>
+                                            </button>
+                                        );
+                                    })}
                                 </div>
                                 {mode === 'diagnostic' && activePin && (
                                     <div className="text-[9px] font-bold text-amber-500 bg-amber-500/10 px-2 py-1 rounded-full animate-bounce">
@@ -268,6 +273,22 @@ export function NetworkCableTester({ onBack }: { onBack: () => void }) {
                             </div>
                         </div>
                     </div>
+
+                    {/* Diagnostic Mapping Table */}
+                    {mode === 'diagnostic' && Object.keys(manualMap).length > 0 && (
+                        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 animate-in slide-in-from-bottom-2">
+                            <h4 className="text-[10px] font-black uppercase text-slate-400 mb-3 tracking-widest px-1">Mevcut Bağlantılar</h4>
+                            <div className="flex flex-wrap gap-2">
+                                {Object.entries(manualMap).map(([m, r]) => (
+                                    <div key={m} className={`px-3 py-1.5 rounded-lg border text-[11px] font-bold flex items-center gap-2 ${parseInt(m) === r ? 'bg-green-50 dark:bg-green-500/10 border-green-200 dark:border-green-800 text-green-700 dark:text-green-400' : 'bg-amber-50 dark:bg-amber-500/10 border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-400'}`}>
+                                        <span>M{m}</span>
+                                        <div className="w-2 h-px bg-current opacity-30"></div>
+                                        <span>R{r}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
 
                     {/* Controls & Diagnosis Footer */}
                     <div className="grid md:grid-cols-2 gap-4">
