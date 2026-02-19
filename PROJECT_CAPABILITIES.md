@@ -105,4 +105,38 @@ Proje, aşağıdaki kategoriler altında toplanmış geniş bir araç yelpazesin
 
 ---
 
+<<<<<<< HEAD
+=======
+## 🎨 UI/UX ve Tasarım Bileşenleri
+
+*   **Sidebar (Kenar Çubuğu):**
+    *   `src/components/Sidebar.tsx`
+    *   Kategorize edilmiş menü yapısı.
+    *   Arama fonksiyonu (Araçları filtreleme).
+    *   Mobil uyumlu (Hamburger menü, overlay).
+*   **Tema Yönetimi:**
+    *   `src/context/ThemeContext.tsx`
+    *   Global tema state yönetimi.
+    *   LocalStorage ile tercih kaydetme.
+*   **Landing Hero:**
+    *   `src/components/LandingHero.tsx`
+    *   Ana sayfa karşılama ekranı.
+    *   Öne çıkan araçlara hızlı erişim.
+*   **Action Panel:**
+    *   `src/components/ActionPanel.tsx`
+    *   Dosya yüklendiğinde kullanıcının ne yapmak istediğini seçtiği ara katman.
+
+## 📦 Kullanılan Önemli Kütüphaneler
+
+*   `lucide-react`: İkon seti.
+*   `pdf-lib`: PDF oluşturma ve düzenleme.
+*   `pdfjs-dist`: PDF okuma ve render etme.
+*   `jszip`: Arşiv dosyalarını işleme.
+*   `js-yaml`: YAML/JSON işlemleri.
+*   `file-saver`: Dosya indirme işlemleri.
+*   `framer-motion` veya CSS Animasyonları: Geçiş efektleri.
+
+---
+
+>>>>>>> c86cfe207d4ad800119debb27f3d676457d5d078
 Bu belge, sistemi Next.js veya başka bir mimariye taşırken hangi bileşenlerin ve fonksiyonların taşınması gerektiğine dair eksiksiz bir yol haritası sunar.
