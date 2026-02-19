@@ -480,8 +480,8 @@ export function JsonLdEditor({ onBack }: { onBack: () => void }) {
                     {Object.entries(SCHEMAS).map(([type, meta]) => (
                         <button key={type} onClick={() => applyTemplate(type)}
                             className={`flex flex-col items-center gap-1 py-2.5 px-1 rounded-xl border-2 text-center transition-all ${selectedType === type
-                                    ? 'border-violet-500 bg-violet-50 dark:bg-violet-900/20 shadow-md shadow-violet-500/10'
-                                    : 'border-slate-200 dark:border-slate-800 hover:border-violet-300 hover:bg-violet-50/50 dark:hover:bg-violet-900/10 bg-white dark:bg-slate-900'
+                                ? 'border-violet-500 bg-violet-50 dark:bg-violet-900/20 shadow-md shadow-violet-500/10'
+                                : 'border-slate-200 dark:border-slate-800 hover:border-violet-300 hover:bg-violet-50/50 dark:hover:bg-violet-900/10 bg-white dark:bg-slate-900'
                                 }`}>
                             <span className="text-lg">{meta.emoji}</span>
                             <span className={`text-[9px] font-bold leading-tight mt-0.5 ${selectedType === type ? 'text-violet-700 dark:text-violet-400' : 'text-slate-500 dark:text-slate-400'
@@ -553,7 +553,7 @@ export function JsonLdEditor({ onBack }: { onBack: () => void }) {
                 </div>
 
                 {/* Right: Validation + Tips — 2/5 width */}
-                <div className="xl:col-span-2 flex flex-col gap-4">
+                <div className="xl:col-span-2 flex flex-col gap-4 sticky top-6 self-start max-h-[calc(100vh-120px)] overflow-y-auto no-scrollbar">
 
                     {/* Score + validation */}
                     <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm">
