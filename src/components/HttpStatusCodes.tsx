@@ -4,25 +4,54 @@ import React, { useState } from 'react';
 import { ArrowLeft, Search, Globe, Info, CheckCircle2, AlertCircle, AlertTriangle, XCircle } from 'lucide-react';
 
 const STATUS_CODES = [
-    { code: 100, phrase: 'Continue', category: 'Informational', desc: 'İstemci isteğe devam etmelidir.' },
-    { code: 101, phrase: 'Switching Protocols', category: 'Informational', desc: 'Sunucu protokol değiştirmeyi kabul etti.' },
+    // 1xx: Informational
+    { code: 100, phrase: 'Continue', category: 'Informational', desc: 'İstemci isteğe devam etmelidir (Ara yanıt).' },
+    { code: 101, phrase: 'Switching Protocols', category: 'Informational', desc: 'Sunucu protokol değiştirmeyi kabul etti (Örn: WebSocket).' },
+    { code: 102, phrase: 'Processing', category: 'Informational', desc: 'İstek alındı ancak henüz tamamlanmadı (WebDAV).' },
+    { code: 103, phrase: 'Early Hints', category: 'Informational', desc: 'Sunucu, kaynak yüklemesini hızlandırmak için ön ipuçları gönderiyor.' },
+
+    // 2xx: Success
     { code: 200, phrase: 'OK', category: 'Success', desc: 'İstek başarıyla tamamlandı.' },
     { code: 201, phrase: 'Created', category: 'Success', desc: 'İstek başarılı oldu ve yeni bir kaynak oluşturuldu.' },
     { code: 202, phrase: 'Accepted', category: 'Success', desc: 'İstek işlenmek üzere kabul edildi, ancak henüz tamamlanmadı.' },
+    { code: 203, phrase: 'Non-Authoritative Information', category: 'Success', desc: 'Yanıt başka bir kaynaktan değiştirilerek dönüldü.' },
     { code: 204, phrase: 'No Content', category: 'Success', desc: 'İstek başarılı ancak dönecek içerik yok.' },
+    { code: 206, phrase: 'Partial Content', category: 'Success', desc: 'İstemci tarafından istenen kaynağın sadece bir kısmı dönüldü.' },
+
+    // 3xx: Redirection
+    { code: 300, phrase: 'Multiple Choices', category: 'Redirection', desc: 'İstek için birden fazla seçenek mevcut.' },
     { code: 301, phrase: 'Moved Permanently', category: 'Redirection', desc: 'Kaynak kalıcı olarak başka bir URI\'ye taşındı.' },
-    { code: 302, phrase: 'Found', category: 'Redirection', desc: 'Kaynak geçici olarak başka bir URI\'de bulunuyor.' },
+    { code: 302, phrase: 'Found', category: 'Redirection', desc: 'Kaynak geçici olarak başka bir URI\'de bulunuyor (Eski: Moved Temporarily).' },
+    { code: 303, phrase: 'See Other', category: 'Redirection', desc: 'Yanıt başka bir URI üzerinden GET ile alınabilir.' },
     { code: 304, phrase: 'Not Modified', category: 'Redirection', desc: 'Kaynak son istekten beri değişmedi (Önbellek dostu).' },
-    { code: 400, phrase: 'Bad Request', category: 'Client Error', desc: 'Geçersiz istek (Sunucu isteği anlayamadı).' },
+    { code: 307, phrase: 'Temporary Redirect', category: 'Redirection', desc: 'Geçici yönlendirme (İstek metodu değişmemelidir).' },
+    { code: 308, phrase: 'Permanent Redirect', category: 'Redirection', desc: 'Kalıcı yönlendirme (İstek metodu değişmemelidir).' },
+
+    // 4xx: Client Error
+    { code: 400, phrase: 'Bad Request', category: 'Client Error', desc: 'Geçersiz istek (Sunucu isteği anlayamadı veya sözdizimi hatalı).' },
     { code: 401, phrase: 'Unauthorized', category: 'Client Error', desc: 'Kimlik doğrulama gerekiyor.' },
-    { code: 403, phrase: 'Forbidden', category: 'Client Error', desc: 'Erişim yasaklandı (Yetki yetersiz).' },
+    { code: 402, phrase: 'Payment Required', category: 'Client Error', desc: 'Ödeme gerekli (Gelecekte kullanım için ayrılmıştır).' },
+    { code: 403, phrase: 'Forbidden', category: 'Client Error', desc: 'Erişim yasaklandı (Yetki yetersiz veya sunucu reddetti).' },
     { code: 404, phrase: 'Not Found', category: 'Client Error', desc: 'Kaynak bulunamadı.' },
-    { code: 405, phrase: 'Method Not Allowed', category: 'Client Error', desc: 'Bu HTTP metodu (POST/GET vb.) desteklenmiyor.' },
-    { code: 429, phrase: 'Too Many Requests', category: 'Client Error', desc: 'Çok fazla istek gönderildi (Hız sınırlaması).' },
+    { code: 405, phrase: 'Method Not Allowed', category: 'Client Error', desc: 'Bu HTTP metodu (POST/GET vb.) kaynak için desteklenmiyor.' },
+    { code: 406, phrase: 'Not Acceptable', category: 'Client Error', desc: 'İstenen format sunucu tarafından desteklenmiyor.' },
+    { code: 408, phrase: 'Request Timeout', category: 'Client Error', desc: 'Sunucu istek beklerken zaman aşımına uğradı.' },
+    { code: 409, phrase: 'Conflict', category: 'Client Error', desc: 'İstek mevcut bir kaynakla çakışıyor.' },
+    { code: 410, phrase: 'Gone', category: 'Client Error', desc: 'Kaynak artık mevcut değil ve kalıcı olarak kaldırıldı.' },
+    { code: 413, phrase: 'Payload Too Large', category: 'Client Error', desc: 'İstek gövdesi sunucunun işleyebileceğinden çok büyük.' },
+    { code: 415, phrase: 'Unsupported Media Type', category: 'Client Error', desc: 'Medya formatı sunucu tarafından desteklenmiyor.' },
+    { code: 418, phrase: "I'm a teapot", category: 'Client Error', desc: 'Ben bir çaydanlığım (1 Nisan şakası RFC2324).' },
+    { code: 422, phrase: 'Unprocessable Entity', category: 'Client Error', desc: 'İstek iyi oluşturulmuş ancak anlamsal hatalar içeriyor.' },
+    { code: 429, phrase: 'Too Many Requests', category: 'Client Error', desc: 'Çok fazla istek gönderildi (Rate Limiting).' },
+
+    // 5xx: Server Error
     { code: 500, phrase: 'Internal Server Error', category: 'Server Error', desc: 'Sunucuda beklenmedik bir hata oluştu.' },
+    { code: 501, phrase: 'Not Implemented', category: 'Server Error', desc: 'Sunucu isteği yerine getirmek için gerekli özelliğe sahip değil.' },
     { code: 502, phrase: 'Bad Gateway', category: 'Server Error', desc: 'Geçersiz yanıt (Proxy veya Gateway hatası).' },
     { code: 503, phrase: 'Service Unavailable', category: 'Server Error', desc: 'Hizmet şu an kullanılamıyor (Aşırı yük veya bakım).' },
-    { code: 504, phrase: 'Gateway Timeout', category: 'Server Error', desc: 'Zaman aşımı (Proxy yanıt alamadı).' },
+    { code: 504, phrase: 'Gateway Timeout', category: 'Server Error', desc: 'Zaman aşımı (Proxy üst sunucudan yanıt alamadı).' },
+    { code: 505, phrase: 'HTTP Version Not Supported', category: 'Server Error', desc: 'Sunucu bu HTTP sürümünü desteklemiyor.' },
+    { code: 511, phrase: 'Network Authentication Required', category: 'Server Error', desc: 'Ağa erişmek için kimlik doğrulaması gerekiyor.' },
 ];
 
 export function HttpStatusCodes({ onBack }: { onBack: () => void }) {
