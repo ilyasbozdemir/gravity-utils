@@ -385,25 +385,25 @@ export const FileConverter: React.FC<FileConverterProps> = ({ file: initialFile,
     };
 
     return (
-        <div className="max-w-[800px] mx-auto p-8 animate-[fadeIn_0.5s_ease] bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl shadow-2xl">
+        <div className="max-w-[800px] mx-auto p-8 animate-[fadeIn_0.5s_ease] bg-white dark:bg-white/5 backdrop-blur-xl border border-slate-200 dark:border-white/10 rounded-3xl shadow-xl dark:shadow-2xl transition-colors duration-300">
             <div className="flex items-center justify-start gap-4 mb-8">
                 <button
                     onClick={onBack}
-                    className="p-2 bg-blue-500/20 border border-blue-500/40 text-white rounded-lg hover:bg-blue-500/40 transition-all shadow-[0_0_15px_rgba(59,130,246,0.2)]"
+                    className="p-2 bg-blue-50 border border-blue-200 text-blue-600 hover:bg-blue-100 dark:bg-blue-500/20 dark:border-blue-500/40 dark:text-white dark:hover:bg-blue-500/40 rounded-lg transition-all shadow-sm dark:shadow-[0_0_15px_rgba(59,130,246,0.2)]"
                     title="Geri Dön"
                 >
                     <ArrowLeft size={18} />
                 </button>
                 <div className="text-left">
-                    <h2 className="m-0 text-2xl font-bold tracking-tight text-white">Dosya Dönüştürücü</h2>
-                    <p className="text-sm text-blue-400 font-medium tracking-wide">Format Değiştir ve Yeniden Adlandır</p>
+                    <h2 className="m-0 text-2xl font-bold tracking-tight text-slate-800 dark:text-white">Dosya Dönüştürücü</h2>
+                    <p className="text-sm text-blue-600 dark:text-blue-400 font-medium tracking-wide">Format Değiştir ve Yeniden Adlandır</p>
                 </div>
             </div>
 
-            <p className="text-sm text-slate-400 text-left mb-8 leading-relaxed">
+            <p className="text-sm text-slate-600 dark:text-slate-400 text-left mb-8 leading-relaxed">
                 {file ? (
                     <>
-                        <span className="font-semibold text-slate-200">{file.name}</span> dosyası için hedef format seçin. Akıllı sistemimiz dosya tipine göre en uygun seçenekleri sunar.
+                        <span className="font-semibold text-slate-800 dark:text-slate-200">{file.name}</span> dosyası için hedef format seçin. Akıllı sistemimiz dosya tipine göre en uygun seçenekleri sunar.
                     </>
                 ) : (
                     'Herhangi bir dosya formatını bir başkasına dönüştürün veya sadece uzantısını değiştirin. Tamamen yerel ve güvenli.'
@@ -414,13 +414,13 @@ export const FileConverter: React.FC<FileConverterProps> = ({ file: initialFile,
                 {!file ? (
                     <div
                         onClick={() => fileInputRef.current?.click()}
-                        className="w-full py-24 border-2 border-dashed border-white/10 rounded-2xl flex flex-col items-center justify-center gap-4 hover:border-blue-500/50 hover:bg-white/5 transition-all cursor-pointer group shadow-inner"
+                        className="w-full py-24 border-2 border-dashed border-slate-300 dark:border-white/10 rounded-2xl flex flex-col items-center justify-center gap-4 hover:border-blue-500/50 hover:bg-slate-50 dark:hover:bg-white/5 transition-all cursor-pointer group shadow-inner"
                     >
-                        <div className="p-5 bg-blue-500/10 rounded-full text-blue-400 group-hover:scale-110 transition-transform shadow-[0_0_20px_rgba(59,130,246,0.1)]">
+                        <div className="p-5 bg-blue-100 dark:bg-blue-500/10 rounded-full text-blue-600 dark:text-blue-400 group-hover:scale-110 transition-transform shadow-[0_0_20px_rgba(59,130,246,0.1)]">
                             <RefreshCw size={36} />
                         </div>
                         <div className="text-center px-4">
-                            <p className="font-bold text-xl mb-1 text-slate-200">Dosya Seçin</p>
+                            <p className="font-bold text-xl mb-1 text-slate-700 dark:text-slate-200">Dosya Seçin</p>
                             <p className="text-sm text-slate-500">Dönüştürmek istediğiniz dosyayı sürükleyin veya seçin</p>
                         </div>
                         <input
@@ -434,13 +434,13 @@ export const FileConverter: React.FC<FileConverterProps> = ({ file: initialFile,
                 ) : (
                     <div className="flex flex-col gap-8">
                         {/* File Info Card */}
-                        <div className="p-6 bg-black/40 border border-white/10 rounded-2xl flex items-center justify-between group">
+                        <div className="p-6 bg-slate-50 dark:bg-black/40 border border-slate-200 dark:border-white/10 rounded-2xl flex items-center justify-between group">
                             <div className="flex items-center gap-4 text-left">
-                                <div className="p-3 bg-blue-500/10 rounded-xl text-blue-400">
+                                <div className="p-3 bg-blue-100 dark:bg-blue-500/10 rounded-xl text-blue-600 dark:text-blue-400">
                                     <RefreshCw size={24} />
                                 </div>
                                 <div className="min-w-0">
-                                    <p className="text-sm font-bold text-slate-100 truncate max-w-[200px] md:max-w-md">{file.name}</p>
+                                    <p className="text-sm font-bold text-slate-700 dark:text-slate-100 truncate max-w-[200px] md:max-w-md">{file.name}</p>
                                     <p className="text-[10px] text-slate-500 font-mono tracking-tighter uppercase">
                                         {file.size > 1024 * 1024 ? `${(file.size / (1024 * 1024)).toFixed(2)} MB` : `${(file.size / 1024).toFixed(1)} KB`} • {file.type || 'Bilinmeyen Tip'}
                                     </p>
@@ -448,7 +448,7 @@ export const FileConverter: React.FC<FileConverterProps> = ({ file: initialFile,
                             </div>
                             <button
                                 onClick={() => { setFile(null); setFormats([]); setSelectedFormat(null); }}
-                                className="px-3 py-1.5 text-[10px] font-bold text-slate-500 hover:text-red-400 uppercase tracking-widest transition-colors"
+                                className="px-3 py-1.5 text-[10px] font-bold text-slate-400 hover:text-red-500 uppercase tracking-widest transition-colors"
                             >
                                 Değiştir
                             </button>
@@ -456,11 +456,11 @@ export const FileConverter: React.FC<FileConverterProps> = ({ file: initialFile,
 
                         {/* Processing Status */}
                         {isProcessing && (
-                            <div className="p-6 bg-blue-500/10 border border-blue-500/20 rounded-2xl flex flex-col items-center gap-4 animate-pulse">
-                                <RefreshCw size={32} className="animate-spin text-blue-400" />
+                            <div className="p-6 bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20 rounded-2xl flex flex-col items-center gap-4 animate-pulse">
+                                <RefreshCw size={32} className="animate-spin text-blue-500 dark:text-blue-400" />
                                 <div className="text-center">
-                                    <p className="text-sm font-bold text-blue-100 tracking-wide uppercase">{progress}</p>
-                                    <p className="text-[10px] text-blue-300/60 mt-1 uppercase tracking-widest">Lütfen bekleyin...</p>
+                                    <p className="text-sm font-bold text-blue-700 dark:text-blue-100 tracking-wide uppercase">{progress}</p>
+                                    <p className="text-[10px] text-blue-400 dark:text-blue-300/60 mt-1 uppercase tracking-widest">Lütfen bekleyin...</p>
                                 </div>
                             </div>
                         )}
@@ -476,17 +476,17 @@ export const FileConverter: React.FC<FileConverterProps> = ({ file: initialFile,
                                             key={fmt.ext}
                                             onClick={() => { setSelectedFormat(fmt); setCustomExt(''); }}
                                             className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all border flex items-center gap-2 group ${selectedFormat?.ext === fmt.ext
-                                                ? 'bg-blue-500/20 border-blue-500/40 text-blue-100 shadow-lg shadow-blue-500/10'
-                                                : 'bg-white/5 border-white/5 text-slate-400 hover:bg-white/10 hover:text-slate-200'
+                                                ? 'bg-blue-100 border-blue-300 text-blue-800 shadow-md dark:bg-blue-500/20 dark:border-blue-500/40 dark:text-blue-100 dark:shadow-blue-500/10'
+                                                : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-800 dark:bg-white/5 dark:border-white/5 dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-slate-200'
                                                 }`}
                                         >
-                                            <span className={`w-1.5 h-1.5 rounded-full ${selectedFormat?.ext === fmt.ext ? 'bg-blue-400 animate-pulse' : 'bg-slate-600'}`} />
+                                            <span className={`w-1.5 h-1.5 rounded-full ${selectedFormat?.ext === fmt.ext ? 'bg-blue-500 dark:bg-blue-400 animate-pulse' : 'bg-slate-400 dark:bg-slate-600'}`} />
                                             {fmt.label}
-                                            <span className="text-[10px] opacity-40 font-mono tracking-tighter">.{fmt.ext}</span>
+                                            <span className="text-[10px] opacity-60 font-mono tracking-tighter">.{fmt.ext}</span>
                                         </button>
                                     ))}
                                     {formats.length === 0 && (
-                                        <div className="w-full p-4 bg-white/5 rounded-xl border border-white/5 text-[11px] text-slate-500 italic text-left">
+                                        <div className="w-full p-4 bg-slate-50 dark:bg-white/5 rounded-xl border border-slate-200 dark:border-white/5 text-[11px] text-slate-500 italic text-left">
                                             Bu dosya tipi için otomatik öneri bulunamadı. Lütfen manuel uzantı girin.
                                         </div>
                                     )}
@@ -505,9 +505,9 @@ export const FileConverter: React.FC<FileConverterProps> = ({ file: initialFile,
                                             setSelectedFormat(null);
                                         }}
                                         placeholder="ör: rar, zip, txt, apk..."
-                                        className="w-full bg-black/40 border border-white/10 rounded-xl py-4 px-5 text-sm font-mono text-blue-200 placeholder:text-slate-700 focus:outline-none focus:border-blue-500/30 transition-all leading-none"
+                                        className="w-full bg-white dark:bg-black/40 border border-slate-200 dark:border-white/10 rounded-xl py-4 px-5 text-sm font-mono text-slate-800 dark:text-blue-200 placeholder:text-slate-400 dark:placeholder:text-slate-700 focus:outline-none focus:border-blue-500/50 dark:focus:border-blue-500/30 transition-all leading-none shadow-sm"
                                     />
-                                    <div className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-bold text-slate-600 tracking-widest uppercase pointer-events-none group-focus-within:text-blue-500/50 transition-colors">
+                                    <div className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-bold text-slate-400 dark:text-slate-600 tracking-widest uppercase pointer-events-none group-focus-within:text-blue-500 transition-colors">
                                         CUSTOM EXT
                                     </div>
                                 </div>
@@ -515,11 +515,11 @@ export const FileConverter: React.FC<FileConverterProps> = ({ file: initialFile,
                         </div>
 
                         {/* Conversion Information */}
-                        <div className="p-4 bg-amber-500/5 border border-amber-500/10 rounded-2xl flex gap-4 text-left group">
-                            <AlertCircle size={20} className="text-amber-500 shrink-0 mt-0.5 opacity-60 group-hover:opacity-100 transition-opacity" />
+                        <div className="p-4 bg-amber-50 dark:bg-amber-500/5 border border-amber-200 dark:border-amber-500/10 rounded-2xl flex gap-4 text-left group">
+                            <AlertCircle size={20} className="text-amber-500 shrink-0 mt-0.5 opacity-80 group-hover:opacity-100 transition-opacity" />
                             <div className="space-y-1">
-                                <p className="text-[11px] font-bold text-amber-200/80 uppercase tracking-wider">Biliyor musunuz?</p>
-                                <p className="text-[11px] text-slate-500 leading-relaxed font-medium">
+                                <p className="text-[11px] font-bold text-amber-700 dark:text-amber-200/80 uppercase tracking-wider">Biliyor musunuz?</p>
+                                <p className="text-[11px] text-slate-600 dark:text-slate-500 leading-relaxed font-medium">
                                     "Yeniden Adlandırma" modu dosya içeriğini bozmadan sadece ismini değiştirir.
                                     Karmaşık dönüşümler (PDF &rarr; Word gibi) bulut yerine doğrudan tarayıcınızda yapılır.
                                 </p>
@@ -529,8 +529,8 @@ export const FileConverter: React.FC<FileConverterProps> = ({ file: initialFile,
                         {/* Final Action Button */}
                         <button
                             className={`w-full py-4 rounded-2xl flex items-center justify-center gap-3 font-bold transition-all border shadow-xl ${(selectedFormat || (customExt && customExt.length > 0)) && !isProcessing
-                                ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-100 hover:bg-emerald-500/30 hover:-translate-y-0.5 shadow-emerald-500/10'
-                                : 'bg-white/5 border-white/5 text-slate-500 cursor-not-allowed opacity-50'
+                                ? 'bg-emerald-500 text-white border-emerald-600 hover:bg-emerald-600 dark:bg-emerald-500/20 dark:border-emerald-500/40 dark:text-emerald-100 dark:hover:bg-emerald-500/30 hover:-translate-y-0.5 shadow-emerald-500/20 dark:shadow-emerald-500/10'
+                                : 'bg-slate-100 border-slate-200 text-slate-400 dark:bg-white/5 dark:border-white/5 dark:text-slate-500 cursor-not-allowed'
                                 }`}
                             disabled={(!selectedFormat && !customExt) || isProcessing}
                             onClick={handleConvert}
@@ -542,8 +542,8 @@ export const FileConverter: React.FC<FileConverterProps> = ({ file: initialFile,
                     </div>
                 )}
 
-                <div className="pt-8 border-t border-white/5 flex flex-col items-center gap-3">
-                    <p className="text-[10px] text-slate-600 font-bold uppercase tracking-[0.2em]">Dosya-Dosya Akıllı Sistem v2.0</p>
+                <div className="pt-8 border-t border-slate-200 dark:border-white/5 flex flex-col items-center gap-3">
+                    <p className="text-[10px] text-slate-400 dark:text-slate-600 font-bold uppercase tracking-[0.2em]">Dosya-Dosya Akıllı Sistem v2.0</p>
                 </div>
             </div>
 

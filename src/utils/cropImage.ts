@@ -28,7 +28,7 @@ export const createImage = (url: string): Promise<HTMLImageElement> =>
   /**
    * This function was adapted from the one in the ReadMe of https://github.com/DominicTobias/react-image-crop
    */
-  export default async function getCroppedImg(
+  export async function getCroppedImg(
     imageSrc: string,
     pixelCrop: { x: number; y: number; width: number; height: number },
     rotation = 0,

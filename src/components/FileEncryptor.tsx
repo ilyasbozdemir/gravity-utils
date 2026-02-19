@@ -124,27 +124,27 @@ export const FileEncryptor: React.FC<FileEncryptorProps> = ({ file: initialFile,
     };
 
     return (
-        <div className="max-w-[800px] mx-auto p-8 animate-[fadeIn_0.5s_ease] bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl shadow-2xl">
+        <div className="max-w-[800px] mx-auto p-8 animate-[fadeIn_0.5s_ease] bg-white dark:bg-white/5 backdrop-blur-xl border border-slate-200 dark:border-white/10 rounded-3xl shadow-xl dark:shadow-2xl transition-colors duration-300">
             <div className="flex items-center justify-start gap-4 mb-8">
                 <button
                     onClick={onBack}
-                    className={`p-2 border rounded-lg transition-all shadow-lg ${mode === 'encrypt'
-                        ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-100 hover:bg-emerald-500/30'
-                        : 'bg-indigo-500/20 border-indigo-500/40 text-indigo-100 hover:bg-indigo-500/30'
+                    className={`p-2 border rounded-lg transition-all shadow-sm ${mode === 'encrypt'
+                        ? 'bg-emerald-50 border-emerald-200 text-emerald-600 hover:bg-emerald-100 dark:bg-emerald-500/20 dark:border-emerald-500/40 dark:text-emerald-100 dark:hover:bg-emerald-500/30'
+                        : 'bg-indigo-50 border-indigo-200 text-indigo-600 hover:bg-indigo-100 dark:bg-indigo-500/20 dark:border-indigo-500/40 dark:text-indigo-100 dark:hover:bg-indigo-500/30'
                         }`}
                     title="Geri Dön"
                 >
                     <ArrowLeft size={18} />
                 </button>
                 <div className="text-left">
-                    <h2 className="m-0 text-2xl font-bold tracking-tight text-white">Güvenli Şifreleme</h2>
-                    <p className={`text-sm font-medium tracking-wide ${mode === 'encrypt' ? 'text-emerald-400' : 'text-indigo-400'}`}>
+                    <h2 className="m-0 text-2xl font-bold tracking-tight text-slate-800 dark:text-white">Güvenli Şifreleme</h2>
+                    <p className={`text-sm font-medium tracking-wide ${mode === 'encrypt' ? 'text-emerald-600 dark:text-emerald-400' : 'text-indigo-600 dark:text-indigo-400'}`}>
                         {mode === 'encrypt' ? 'Askeri Düzey AES-256 Koruma' : 'Güvenli Veri Erişimi'}
                     </p>
                 </div>
             </div>
 
-            <p className="text-sm text-slate-400 text-left mb-8 leading-relaxed">
+            <p className="text-sm text-slate-600 dark:text-slate-400 text-left mb-8 leading-relaxed">
                 Dosyalarınızı tamamen tarayıcınızda şifreleyin. Şifreniz veya verileriniz asla sunucularımıza ulaşmaz.
                 <span className="block mt-2 text-[10px] text-slate-500 uppercase tracking-widest font-bold">
                     <ShieldCheck className="inline-block mr-1 mb-0.5" size={12} /> Yerel ve Güvenli İşlem
@@ -154,13 +154,13 @@ export const FileEncryptor: React.FC<FileEncryptorProps> = ({ file: initialFile,
             {!file ? (
                 <div
                     onClick={() => fileInputRef.current?.click()}
-                    className="w-full py-24 border-2 border-dashed border-white/10 rounded-2xl flex flex-col items-center justify-center gap-4 hover:border-emerald-500/50 hover:bg-white/5 transition-all cursor-pointer group shadow-inner"
+                    className="w-full py-24 border-2 border-dashed border-slate-300 dark:border-white/10 rounded-2xl flex flex-col items-center justify-center gap-4 hover:border-emerald-500/50 hover:bg-slate-50 dark:hover:bg-white/5 transition-all cursor-pointer group shadow-inner"
                 >
-                    <div className="p-5 bg-emerald-500/10 rounded-full text-emerald-400 group-hover:scale-110 transition-transform shadow-[0_0_20px_rgba(16,185,129,0.1)]">
+                    <div className="p-5 bg-emerald-100 dark:bg-emerald-500/10 rounded-full text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform shadow-[0_0_20px_rgba(16,185,129,0.1)]">
                         <Lock size={36} />
                     </div>
                     <div className="text-center px-4">
-                        <p className="font-bold text-xl mb-1 text-slate-200">Dosya Seçin</p>
+                        <p className="font-bold text-xl mb-1 text-slate-700 dark:text-slate-200">Dosya Seçin</p>
                         <p className="text-sm text-slate-500">Şifrelemek veya çözmek istediğiniz dosyayı seçin</p>
                     </div>
                     <input
@@ -173,13 +173,13 @@ export const FileEncryptor: React.FC<FileEncryptorProps> = ({ file: initialFile,
                 </div>
             ) : (
                 <div className="space-y-8">
-                    <div className="p-6 bg-black/40 border border-white/10 rounded-2xl flex items-center justify-between group">
+                    <div className="p-6 bg-slate-50 dark:bg-black/40 border border-slate-200 dark:border-white/10 rounded-2xl flex items-center justify-between group">
                         <div className="flex items-center gap-4 text-left">
-                            <div className={`p-3 rounded-xl ${mode === 'encrypt' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-indigo-500/10 text-indigo-400'}`}>
+                            <div className={`p-3 rounded-xl ${mode === 'encrypt' ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400' : 'bg-indigo-100 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400'}`}>
                                 <Lock size={24} />
                             </div>
                             <div>
-                                <p className="text-sm font-bold text-slate-200 truncate max-w-[200px] md:max-w-md">{file.name}</p>
+                                <p className="text-sm font-bold text-slate-700 dark:text-slate-200 truncate max-w-[200px] md:max-w-md">{file.name}</p>
                                 <p className="text-[10px] text-slate-500 font-mono tracking-tighter capitalize">
                                     {file.type || 'unknown type'} • {(file.size / 1024 / 1024).toFixed(2)} MB
                                 </p>
@@ -187,19 +187,19 @@ export const FileEncryptor: React.FC<FileEncryptorProps> = ({ file: initialFile,
                         </div>
                         <button
                             onClick={() => { setFile(null); setPassword(''); }}
-                            className="p-2 text-slate-500 hover:text-red-400 transition-colors"
+                            className="p-2 text-slate-400 hover:text-red-500 transition-colors"
                             title="Dosyayı Kaldır"
                         >
                             <RefreshCw size={18} />
                         </button>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-2 bg-white/5 p-1 rounded-2xl border border-white/5">
+                    <div className="grid grid-cols-2 gap-2 bg-slate-100 dark:bg-white/5 p-1 rounded-2xl border border-slate-200 dark:border-white/5">
                         <button
                             onClick={() => setMode('encrypt')}
                             className={`py-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${mode === 'encrypt'
-                                ? 'bg-emerald-500/20 text-emerald-200 border border-emerald-500/30 shadow-lg'
-                                : 'text-slate-500 hover:text-slate-300'
+                                ? 'bg-white text-emerald-600 border border-slate-200 shadow-sm dark:bg-emerald-500/20 dark:text-emerald-200 dark:border-emerald-500/30 dark:shadow-lg'
+                                : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
                                 }`}
                             title="Şifreleme Modu"
                         >
@@ -208,8 +208,8 @@ export const FileEncryptor: React.FC<FileEncryptorProps> = ({ file: initialFile,
                         <button
                             onClick={() => setMode('decrypt')}
                             className={`py-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${mode === 'decrypt'
-                                ? 'bg-indigo-500/20 text-indigo-200 border border-indigo-500/30 shadow-lg'
-                                : 'text-slate-500 hover:text-slate-300'
+                                ? 'bg-white text-indigo-600 border border-slate-200 shadow-sm dark:bg-indigo-500/20 dark:text-indigo-200 dark:border-indigo-500/30 dark:shadow-lg'
+                                : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
                                 }`}
                             title="Şifre Çözme Modu"
                         >
@@ -221,7 +221,7 @@ export const FileEncryptor: React.FC<FileEncryptorProps> = ({ file: initialFile,
                         <div className="space-y-2 text-left">
                             <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-1">Anahtar Şifre</label>
                             <div className="relative group">
-                                <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-slate-500">
+                                <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-slate-400">
                                     <Key size={18} />
                                 </div>
                                 <input
@@ -230,12 +230,12 @@ export const FileEncryptor: React.FC<FileEncryptorProps> = ({ file: initialFile,
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     title="Şifre"
-                                    className="w-full bg-black/40 border border-white/10 rounded-xl py-4 pl-12 pr-12 text-sm text-slate-200 placeholder:text-slate-600 focus:outline-none focus:border-white/20 transition-all font-mono"
+                                    className="w-full bg-white dark:bg-black/40 border border-slate-200 dark:border-white/10 rounded-xl py-4 pl-12 pr-12 text-sm text-slate-800 dark:text-slate-200 placeholder:text-slate-400 dark:placeholder:text-slate-600 focus:outline-none focus:border-indigo-500/50 dark:focus:border-white/20 transition-all font-mono shadow-sm"
                                 />
                                 <button
                                     onClick={() => setShowPassword(!showPassword)}
                                     title={showPassword ? "Gizle" : "Göster"}
-                                    className="absolute inset-y-0 right-4 flex items-center text-slate-500 hover:text-slate-300 transition-colors"
+                                    className="absolute inset-y-0 right-4 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
                                 >
                                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                                 </button>
@@ -243,7 +243,7 @@ export const FileEncryptor: React.FC<FileEncryptorProps> = ({ file: initialFile,
                         </div>
 
                         {error && (
-                            <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-xs text-red-400 font-medium animate-[fadeIn_0.3s_ease]">
+                            <div className="p-3 bg-red-50 border border-red-100 text-red-600 dark:bg-red-500/10 dark:border-red-500/20 dark:text-red-400 rounded-xl text-xs font-medium animate-[fadeIn_0.3s_ease]">
                                 {error}
                             </div>
                         )}
@@ -252,10 +252,10 @@ export const FileEncryptor: React.FC<FileEncryptorProps> = ({ file: initialFile,
                             onClick={handleProcess}
                             disabled={processing || !password}
                             className={`w-full py-4 rounded-xl font-bold text-white transition-all flex items-center justify-center gap-3 shadow-xl ${processing
-                                ? 'bg-white/5 text-slate-500 cursor-not-allowed'
+                                ? 'bg-slate-100 text-slate-400 dark:bg-white/5 dark:text-slate-500 cursor-not-allowed'
                                 : mode === 'encrypt'
-                                    ? 'bg-emerald-500 hover:bg-emerald-400 shadow-emerald-500/10 active:scale-95'
-                                    : 'bg-indigo-500 hover:bg-indigo-400 shadow-indigo-500/10 active:scale-95'
+                                    ? 'bg-emerald-500 hover:bg-emerald-600 shadow-emerald-500/20 active:scale-95'
+                                    : 'bg-indigo-500 hover:bg-indigo-600 shadow-indigo-500/20 active:scale-95'
                                 }`}
                             title={mode === 'encrypt' ? 'Şifrele ve İndir' : 'Çöz ve İndir'}
                         >
@@ -264,9 +264,9 @@ export const FileEncryptor: React.FC<FileEncryptorProps> = ({ file: initialFile,
                         </button>
                     </div>
 
-                    <div className="pt-8 border-t border-white/5 flex flex-col items-center gap-3">
-                        <p className="text-[10px] text-slate-500 text-center leading-relaxed max-w-[300px]">
-                            <span className="font-bold text-red-400/60 uppercase">DİKKAT:</span> Şifrenizi unutursanız verilere asla erişemezsiniz. Kurtarma seçeneği yoktur.
+                    <div className="pt-8 border-t border-slate-100 dark:border-white/5 flex flex-col items-center gap-3">
+                        <p className="text-[10px] text-slate-400 dark:text-slate-500 text-center leading-relaxed max-w-[300px]">
+                            <span className="font-bold text-red-500 dark:text-red-400/60 uppercase">DİKKAT:</span> Şifrenizi unutursanız verilere asla erişemezsiniz. Kurtarma seçeneği yoktur.
                         </p>
                     </div>
                 </div>
