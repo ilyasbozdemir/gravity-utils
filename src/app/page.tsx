@@ -101,7 +101,7 @@ export default function Home() {
                 {(file || view !== 'home') && (
                     <header className="hidden lg:flex px-8 py-5 border-b border-slate-200 dark:border-white/5 items-center justify-between bg-white/80 dark:bg-[#06070a]/80 backdrop-blur-xl sticky top-0 z-30 transition-colors duration-300">
                         <div className="flex items-center gap-4">
-                            <h2 className="text-sm font-bold text-slate-400 uppercase tracking-widest">
+                            <h2 className="text-sm font-bold text-slate-700 dark:text-slate-400 uppercase tracking-widest">
                                 {/* Title logic simplified */}
                                 Application Tool
                             </h2>
@@ -109,7 +109,7 @@ export default function Home() {
                         {file && (
                             <button
                                 onClick={clearFile}
-                                className="text-xs font-bold text-slate-500 hover:text-white bg-white/5 px-4 py-2 rounded-lg border border-white/5 transition-all"
+                                className="text-xs font-bold text-slate-600 dark:text-slate-500 hover:text-slate-900 dark:hover:text-white bg-slate-100 dark:bg-white/5 px-4 py-2 rounded-lg border border-slate-200 dark:border-white/5 transition-all"
                             >
                                 Dosyayı Kaldır
                             </button>
