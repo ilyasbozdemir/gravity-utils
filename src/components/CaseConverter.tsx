@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Copy, Check, Type } from 'lucide-react';
+import { ArrowLeft, Copy, Check, Type, CaseSensitive } from 'lucide-react';
 
 interface CaseConverterProps {
     onBack: () => void;
@@ -19,8 +19,8 @@ export const CaseConverter: React.FC<CaseConverterProps> = ({ onBack }) => {
                 result = input.toLocaleLowerCase('tr-TR');
                 break;
             case 'title':
-                result = input.split(' ')
-                    .map(word => word.charAt(0).toLocaleUpperCase('tr-TR') + word.slice(1).toLocaleLowerCase('tr-TR'))
+                result = input.toLowerCase().split(' ')
+                    .map(word => word.charAt(0).toLocaleUpperCase('tr-TR') + word.slice(1))
                     .join(' ');
                 break;
             case 'sentence':
@@ -37,53 +37,103 @@ export const CaseConverter: React.FC<CaseConverterProps> = ({ onBack }) => {
     };
 
     return (
-        <div className="max-w-[800px] mx-auto p-8 animate-[fadeIn_0.5s_ease] bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl shadow-2xl">
-            <div className="flex items-center justify-start gap-4 mb-8">
+        <div className="max-w-4xl mx-auto p-4 md:p-8 animate-in fade-in zoom-in duration-300">
+            {/* Header */}
+            <div className="flex items-center gap-4 mb-8">
                 <button
                     onClick={onBack}
-                    className="p-2 bg-pink-500/20 border border-pink-500/40 text-white rounded-lg hover:bg-pink-500/40 transition-all"
                     title="Geri Dön"
+                    aria-label="Geri Dön"
+                    className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
                 >
-                    <ArrowLeft size={18} />
+                    <ArrowLeft className="w-6 h-6 text-slate-600 dark:text-slate-400" />
                 </button>
-                <div className="text-left">
-                    <h2 className="m-0 text-2xl font-bold tracking-tight text-white">Büyük/Küçük Harf Çevirici</h2>
-                    <p className="text-sm text-pink-400 font-medium tracking-wide">Metin Formatlama Araçları</p>
+                <div>
+                    <h2 className="text-2xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                        <CaseSensitive className="w-6 h-6 text-pink-500" />
+                        Büyük/Küçük Harf Çevirici
+                    </h2>
+                    <p className="text-slate-500 dark:text-slate-400 text-sm">
+                        Metinlerinizin harf boyutlarını hızlıca dönüştürün
+                    </p>
                 </div>
             </div>
 
-            <div className="space-y-6">
-                <div className="space-y-3">
-                    <div className="flex items-center justify-between px-1">
-                        <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Metin Girişi</label>
+            <div className="grid gap-6">
+                {/* Text Area */}
+                <div className="relative group">
+                    <div className="absolute top-0 right-0 p-2 flex items-center gap-2">
                         {input && (
-                            <button onClick={copyToClipboard} className="text-xs text-pink-400 hover:text-pink-300 transition-colors flex items-center gap-1 font-bold">
-                                {copied ? <><Check size={12} /> Kopyalandı</> : <><Copy size={12} /> Kopyala</>}
+                            <button
+                                onClick={() => {
+                                    navigator.clipboard.writeText(input);
+                                    setCopied(true);
+                                    setTimeout(() => setCopied(false), 2000);
+                                }}
+                                className="p-2 bg-white/80 dark:bg-black/50 backdrop-blur rounded-lg text-xs font-medium text-slate-600 dark:text-slate-300 hover:text-pink-500 hover:bg-pink-50 dark:hover:bg-pink-900/20 border border-slate-200 dark:border-slate-700 transition-all flex items-center gap-2"
+                            >
+                                {copied ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
+                                {copied ? 'Kopyalandı' : 'Kopyala'}
                             </button>
                         )}
                     </div>
                     <textarea
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
-                        placeholder="Dönüştürmek istediğiniz metni buraya yapıştırın..."
-                        className="w-full h-[250px] bg-black/40 border border-white/10 rounded-2xl p-6 text-sm text-slate-200 focus:border-pink-500/50 outline-none transition-all resize-none shadow-inner"
+                        placeholder="Dönüştürmek istediğiniz metni buraya yapıştırın veya yazın..."
+                        className="w-full h-64 p-6 bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-2xl focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all outline-none resize-none text-slate-700 dark:text-slate-200 placeholder:text-slate-400 dark:placeholder:text-slate-500 shadow-sm leading-relaxed"
                     />
                 </div>
 
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                    <button onClick={() => transform('upper')} className="py-3 bg-white/5 hover:bg-white/10 text-white rounded-xl text-xs font-bold border border-white/5 transition-all active:scale-95 uppercase tracking-tighter">BÜYÜK HARF</button>
-                    <button onClick={() => transform('lower')} className="py-3 bg-white/5 hover:bg-white/10 text-white rounded-xl text-xs font-bold border border-white/5 transition-all active:scale-95 lowercase tracking-tighter">küçük harf</button>
-                    <button onClick={() => transform('title')} className="py-3 bg-white/5 hover:bg-white/10 text-white rounded-xl text-xs font-bold border border-white/5 transition-all active:scale-95 tracking-tighter">Başlık Düzeni</button>
-                    <button onClick={() => transform('sentence')} className="py-3 bg-white/5 hover:bg-white/10 text-white rounded-xl text-xs font-bold border border-white/5 transition-all active:scale-95 tracking-tighter">Cümle Düzeni</button>
+                {/* Controls */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <button
+                        onClick={() => transform('upper')}
+                        className="p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-pink-500 dark:hover:border-pink-500 hover:bg-pink-50 dark:hover:bg-pink-900/20 rounded-xl transition-all group flex flex-col items-center gap-2"
+                    >
+                        <span className="text-lg font-bold text-slate-700 dark:text-slate-200 group-hover:text-pink-600 dark:group-hover:text-pink-400 uppercase">ABC</span>
+                        <span className="text-xs font-medium text-slate-500 dark:text-slate-400">BÜYÜK HARF</span>
+                    </button>
+
+                    <button
+                        onClick={() => transform('lower')}
+                        className="p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-pink-500 dark:hover:border-pink-500 hover:bg-pink-50 dark:hover:bg-pink-900/20 rounded-xl transition-all group flex flex-col items-center gap-2"
+                    >
+                        <span className="text-lg font-bold text-slate-700 dark:text-slate-200 group-hover:text-pink-600 dark:group-hover:text-pink-400 lowercase">abc</span>
+                        <span className="text-xs font-medium text-slate-500 dark:text-slate-400">küçük harf</span>
+                    </button>
+
+                    <button
+                        onClick={() => transform('title')}
+                        className="p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-pink-500 dark:hover:border-pink-500 hover:bg-pink-50 dark:hover:bg-pink-900/20 rounded-xl transition-all group flex flex-col items-center gap-2"
+                    >
+                        <span className="text-lg font-bold text-slate-700 dark:text-slate-200 group-hover:text-pink-600 dark:group-hover:text-pink-400 capitalize">Abc Def</span>
+                        <span className="text-xs font-medium text-slate-500 dark:text-slate-400">Başlık Düzeni</span>
+                    </button>
+
+                    <button
+                        onClick={() => transform('sentence')}
+                        className="p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-pink-500 dark:hover:border-pink-500 hover:bg-pink-50 dark:hover:bg-pink-900/20 rounded-xl transition-all group flex flex-col items-center gap-2"
+                    >
+                        <span className="text-lg font-bold text-slate-700 dark:text-slate-200 group-hover:text-pink-600 dark:group-hover:text-pink-400">Abc def.</span>
+                        <span className="text-xs font-medium text-slate-500 dark:text-slate-400">Cümle Düzeni</span>
+                    </button>
                 </div>
 
-                <div className="p-4 bg-pink-500/5 border border-pink-500/10 rounded-2xl flex items-center gap-3">
-                    <Type size={18} className="text-pink-500 opacity-60" />
-                    <p className="text-[11px] text-slate-500 font-medium italic">
-                        Türkçe karakter duyarlı (İ, ı, Ğ, ğ) dönüşüm desteği ile hatasız çeviri yapar.
-                    </p>
+                {/* Info Box */}
+                <div className="p-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl flex items-start gap-3">
+                    <div className="p-2 bg-pink-100 dark:bg-pink-900/30 rounded-lg text-pink-600 dark:text-pink-400">
+                        <Type size={16} />
+                    </div>
+                    <div>
+                        <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1">Türkçe Karakter Desteği</h4>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                            Bu araç Türkçe'ye özgü karakterleri (İ, ı, Ğ, ğ, Ş, ş) doğru şekilde işler. Standart dönüşümlerin aksine "i" harfi büyütüldüğünde "İ", "I" harfi küçültüldüğünde "ı" olur.
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>
     );
 };
+

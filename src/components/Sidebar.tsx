@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 
-export type ToolView = 'home' | 'convert' | 'inspect' | 'base64' | 'optimize' | 'hash' | 'json' | 'text' | 'pdf' | 'exif' | 'qr' | 'social' | 'favicon' | 'units' | 'encrypt' | 'uuid' | 'yaml' | 'jwt' | 'url' | 'imagetopdf' | 'case' | 'string' | 'json-xml' | 'date-time' | 'sql-formatter' | 'word-pdf' | 'pdf-word' | 'excel-pdf' | 'pdf-excel' | 'ppt-pdf' | 'pdf-ppt' | 'pdf-image';
+export type ToolView = 'home' | 'convert' | 'inspect' | 'base64' | 'optimize' | 'hash' | 'json' | 'text' | 'pdf' | 'exif' | 'qr' | 'social' | 'favicon' | 'units' | 'encrypt' | 'uuid' | 'yaml' | 'jwt' | 'url' | 'imagetopdf' | 'case' | 'string' | 'json-xml' | 'date-time' | 'sql-formatter' | 'word-pdf' | 'pdf-word' | 'excel-pdf' | 'pdf-excel' | 'ppt-pdf' | 'pdf-ppt' | 'pdf-image' | 'pdf-split' | 'word-html' | 'pdf-text';
 
 interface SidebarProps {
     currentView: ToolView;
@@ -40,6 +40,9 @@ const NAV_ITEMS: NavItem[] = [
     // Office Tools
     { id: 'word-pdf', title: 'Word → PDF', icon: <FileText size={18} />, category: 'office' },
     { id: 'pdf-word', title: 'PDF → Word', icon: <FileText size={18} />, category: 'office' },
+    { id: 'word-html', title: 'Word → HTML', icon: <Globe size={18} />, category: 'office' },
+    { id: 'pdf-split', title: 'PDF Ayırıcı (Split)', icon: <Layers size={18} />, category: 'office' },
+    { id: 'pdf-text', title: 'PDF → Metin', icon: <FileText size={18} />, category: 'office' },
     { id: 'excel-pdf', title: 'Excel → PDF', icon: <Layers size={18} />, category: 'office' },
     { id: 'pdf-excel', title: 'PDF → Excel', icon: <Layers size={18} />, category: 'office' },
     { id: 'ppt-pdf', title: 'PowerPoint → PDF', icon: <ImageIcon size={18} />, category: 'office' },
