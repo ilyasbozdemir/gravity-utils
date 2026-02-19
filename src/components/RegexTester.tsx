@@ -55,7 +55,13 @@ export function RegexTester({ onBack }: { onBack: () => void }) {
     const [copied, setCopied] = useState(false);
     const [activeMatch, setActiveMatch] = useState<number | null>(null);
 
-    const flagOptions = ['g', 'i', 'm', 's', 'u'];
+    const flagOptions = [
+        { key: 'g', label: 'Global (g)', desc: 'Tüm eşleşmeleri bul (ilk eşleşmeden sonra durma)' },
+        { key: 'i', label: 'Ignore Case (i)', desc: 'Büyük/küçük harf duyarsız eşleşme' },
+        { key: 'm', label: 'Multiline (m)', desc: '^ ve $ işaretlerinin her satır için çalışmasını sağlar' },
+        { key: 's', label: 'Dotall (s)', desc: ". (nokta) işaretinin yeni satır karakterleriyle de eşleşmesini sağlar" },
+        { key: 'u', label: 'Unicode (u)', desc: 'Tam unicode desteğini etkinleştirir' },
+    ];
 
     const toggleFlag = (f: string) => {
         setFlags(prev => prev.includes(f) ? prev.replace(f, '') : prev + f);
@@ -103,13 +109,16 @@ export function RegexTester({ onBack }: { onBack: () => void }) {
 
             {/* Pattern input */}
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 mb-4 shadow-sm">
-                <p className="text-xs font-bold uppercase text-slate-500 mb-2">Regex Kalıbı</p>
+                <label htmlFor="regex-pattern" className="text-xs font-bold uppercase text-slate-500 mb-2 block">Regex Kalıbı</label>
                 <div className="flex items-center gap-2">
                     <span className="text-2xl text-slate-400 font-mono">/</span>
                     <input
+                        id="regex-pattern"
                         value={pattern}
                         onChange={e => setPattern(e.target.value)}
                         placeholder="örn: \d+ veya [a-z]+"
+                        title="Regex Kalıbı"
+                        aria-label="Regex Kalıbı"
                         spellCheck={false}
                         className={`flex-1 px-4 py-3 bg-slate-50 dark:bg-slate-800 border rounded-xl font-mono text-base focus:outline-none focus:ring-2 text-slate-800 dark:text-slate-200 transition-colors ${error ? 'border-red-400 focus:ring-red-500/30' : 'border-slate-200 dark:border-slate-700 focus:ring-orange-500/30'}`}
                     />
@@ -117,10 +126,14 @@ export function RegexTester({ onBack }: { onBack: () => void }) {
                     {/* Flags */}
                     <div className="flex gap-1">
                         {flagOptions.map(f => (
-                            <button key={f} onClick={() => toggleFlag(f)}
-                                title={`Flag: ${f}`} aria-label={`${f} flag'ini ${flags.includes(f) ? 'kaldır' : 'ekle'}`}
-                                className={`w-8 h-8 rounded-lg text-xs font-mono font-bold transition-all ${flags.includes(f) ? 'bg-orange-500 text-white shadow-sm' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700'}`}>
-                                {f}
+                            <button key={f.key} onClick={() => toggleFlag(f.key)}
+                                title={f.desc} aria-label={f.label}
+                                className={`group relative w-8 h-8 rounded-lg text-xs font-mono font-bold transition-all ${flags.includes(f.key) ? 'bg-orange-500 text-white shadow-sm' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700'}`}>
+                                {f.key}
+                                {/* Desktop Tooltip Hint */}
+                                <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-slate-900 text-white text-[10px] rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 transition-opacity">
+                                    {f.label}: {f.desc}
+                                </span>
                             </button>
                         ))}
                     </div>
@@ -165,15 +178,19 @@ export function RegexTester({ onBack }: { onBack: () => void }) {
                 {/* Test text */}
                 <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm">
                     <div className="flex justify-between items-center mb-2">
-                        <p className="text-xs font-bold uppercase text-slate-500">Test Metni</p>
+                        <label htmlFor="regex-test-text" className="text-xs font-bold uppercase text-slate-500">Test Metni</label>
                         <button onClick={() => setText('')}
                             className="text-xs text-slate-400 hover:text-red-500 transition-colors">
                             Temizle
                         </button>
                     </div>
                     <textarea
+                        id="regex-test-text"
                         value={text}
                         onChange={e => setText(e.target.value)}
+                        placeholder="Test etmek istediğiniz metni buraya girin..."
+                        title="Test Metni"
+                        aria-label="Test Metni"
                         spellCheck={false}
                         className="w-full h-64 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 font-mono text-sm resize-none focus:outline-none focus:ring-2 focus:ring-orange-500/30 text-slate-700 dark:text-slate-300"
                     />

@@ -43,6 +43,7 @@ const RegexTester = dynamic(() => import('@/components/RegexTester').then(mod =>
 const CsvViewer = dynamic(() => import('@/components/CsvViewer').then(mod => mod.CsvViewer));
 const MarkdownEditor = dynamic(() => import('@/components/MarkdownEditor').then(mod => mod.MarkdownEditor));
 const JsonLdEditor = dynamic(() => import('@/components/JsonLdEditor').then(mod => mod.JsonLdEditor));
+const NetworkCableTester = dynamic(() => import('@/components/NetworkCableTester').then(mod => mod.NetworkCableTester));
 
 export default function Home() {
     const [file, setFile] = useState<File | null>(null);
@@ -190,6 +191,7 @@ export default function Home() {
                             {view === 'csv-viewer' && <CsvViewer onBack={() => setView('home')} />}
                             {view === 'markdown-editor' && <MarkdownEditor onBack={() => setView('home')} />}
                             {view === 'json-ld' && <JsonLdEditor onBack={() => setView('home')} />}
+                            {view === 'network-cable' && <NetworkCableTester onBack={() => setView('home')} />}
                         </div>
                     )}
 
