@@ -1,52 +1,40 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import { ArrowLeft, Download, Copy, Check, FileText } from 'lucide-react';
 
 // ─── Simple Markdown → HTML ───────────────────────────────────────────────────
 function mdToHtml(md: string): string {
     let html = md
-        // Headings
         .replace(/^######\s(.+)/gm, '<h6>$1</h6>')
         .replace(/^#####\s(.+)/gm, '<h5>$1</h5>')
         .replace(/^####\s(.+)/gm, '<h4>$1</h4>')
         .replace(/^###\s(.+)/gm, '<h3>$1</h3>')
         .replace(/^##\s(.+)/gm, '<h2>$1</h2>')
         .replace(/^#\s(.+)/gm, '<h1>$1</h1>')
-        // Bold & italic
         .replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>')
         .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
         .replace(/\*(.+?)\*/g, '<em>$1</em>')
         .replace(/__(.+?)__/g, '<strong>$1</strong>')
         .replace(/_(.+?)_/g, '<em>$1</em>')
-        // Strikethrough
         .replace(/~~(.+?)~~/g, '<del>$1</del>')
-        // Inline code
         .replace(/`([^`\n]+)`/g, '<code>$1</code>')
-        // Links & images
         .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" />')
         .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')
-        // Blockquote
         .replace(/^>\s(.+)/gm, '<blockquote>$1</blockquote>')
-        // HR
         .replace(/^---$/gm, '<hr />')
-        // Code block
         .replace(/```(\w*)\n([\s\S]*?)```/g, '<pre><code class="language-$1">$2</code></pre>')
-        // Unordered list
         .replace(/^[\-\*]\s(.+)/gm, '<li>$1</li>')
-        // Ordered list
         .replace(/^\d+\.\s(.+)/gm, '<li>$1</li>')
-        // Blank line → paragraph
         .replace(/\n\n/g, '</p><p>')
-        // Line break
         .replace(/\n/g, '<br />');
 
-    // Wrap adjacent <li> with <ul>
-    html = html.replace(/(<li>.*?<\/li>(\s*<br \/>)?)+/g, (match) => `<ul>${match.replace(/<br \/>/g, '')}</ul>`);
+    html = html.replace(/(<li>.*?<\/li>(\s*<br \/>)?)+/g, (m) => `<ul>${m.replace(/<br \/>/g, '')}</ul>`);
     html = `<p>${html}</p>`;
     return html;
 }
 
+// ─── Templates ────────────────────────────────────────────────────────────────
 const TEMPLATES = [
     {
         label: 'Readme',
@@ -88,7 +76,7 @@ Pull request'ler memnuniyetle kabul edilir!
         label: 'Blog Yazısı',
         content: `# Makale Başlığı
 
-*Yazar Adı · 19 Şubat 2026 · 5 dakika okuma*
+*Yazar Adı · Tarih · 5 dakika okuma*
 
 ---
 
@@ -112,16 +100,89 @@ Paragraf içeriği burada yer alır. _İtalik metin_ ve **kalın metin** kullana
 
 Makalenizin sonuç paragrafı burada yer alır.`
     },
-    {
-        label: 'Boş',
-        content: '',
-    },
+    { label: 'Boş', content: '' },
 ];
 
+// ─── Toolbar item types ───────────────────────────────────────────────────────
+type ToolbarAction =
+    | { type: 'wrap'; before: string; after: string; label: string; cls?: string; placeholder: string }
+    | { type: 'line'; prefix: string; label: string; cls?: string }
+    | { type: 'block'; insert: string; label: string; cls?: string };
+
+const TOOLBAR: ToolbarAction[] = [
+    { type: 'line', prefix: '# ', label: 'H1', cls: 'font-black text-base' },
+    { type: 'line', prefix: '## ', label: 'H2', cls: 'font-black' },
+    { type: 'line', prefix: '### ', label: 'H3', cls: 'font-bold' },
+    { type: 'wrap', before: '**', after: '**', label: 'B', cls: 'font-bold', placeholder: 'kalın metin' },
+    { type: 'wrap', before: '*', after: '*', label: 'I', cls: 'italic', placeholder: 'italik metin' },
+    { type: 'wrap', before: '~~', after: '~~', label: 'S', cls: 'line-through', placeholder: 'üstü çizili' },
+    { type: 'wrap', before: '`', after: '`', label: 'Code', cls: 'font-mono text-xs', placeholder: 'kod' },
+    { type: 'line', prefix: '> ', label: 'Quote' },
+    { type: 'line', prefix: '- ', label: '• List' },
+    { type: 'block', insert: '\n---\n', label: '—' },
+    { type: 'block', insert: '[bağlantı metni](https://example.com)', label: '🔗' },
+    { type: 'block', insert: '![resim açıklama](https://example.com/image.png)', label: '🖼️' },
+];
+
+// ─── Apply a toolbar action to textarea ──────────────────────────────────────
+function applyAction(
+    action: ToolbarAction,
+    ta: HTMLTextAreaElement,
+    setValue: (v: string) => void
+) {
+    const start = ta.selectionStart;
+    const end = ta.selectionEnd;
+    const val = ta.value;
+    const selected = val.slice(start, end);
+
+    let newVal: string;
+    let newCursorStart: number;
+    let newCursorEnd: number;
+
+    if (action.type === 'wrap') {
+        const inner = selected || action.placeholder;
+        const before = action.before;
+        const after = action.after;
+        newVal = val.slice(0, start) + before + inner + after + val.slice(end);
+        newCursorStart = start + before.length;
+        newCursorEnd = newCursorStart + inner.length;
+    } else if (action.type === 'line') {
+        // Find the start of the current line
+        const lineStart = val.lastIndexOf('\n', start - 1) + 1;
+        const lineEnd = val.indexOf('\n', start);
+        const line = val.slice(lineStart, lineEnd === -1 ? undefined : lineEnd);
+
+        // Toggle: if line already starts with prefix, remove it
+        if (line.startsWith(action.prefix)) {
+            const stripped = line.slice(action.prefix.length);
+            newVal = val.slice(0, lineStart) + stripped + val.slice(lineEnd === -1 ? val.length : lineEnd);
+            newCursorStart = start - action.prefix.length;
+        } else {
+            newVal = val.slice(0, lineStart) + action.prefix + val.slice(lineStart);
+            newCursorStart = start + action.prefix.length;
+        }
+        newCursorEnd = newCursorStart;
+    } else {
+        // block insert
+        newVal = val.slice(0, start) + action.insert + val.slice(end);
+        newCursorStart = start + action.insert.length;
+        newCursorEnd = newCursorStart;
+    }
+
+    setValue(newVal);
+    // Restore focus + selection after react re-render
+    requestAnimationFrame(() => {
+        ta.focus();
+        ta.setSelectionRange(newCursorStart, newCursorEnd);
+    });
+}
+
+// ─── Component ────────────────────────────────────────────────────────────────
 export function MarkdownEditor({ onBack }: { onBack: () => void }) {
     const [md, setMd] = useState(TEMPLATES[0].content);
     const [view, setView] = useState<'split' | 'edit' | 'preview'>('split');
     const [copied, setCopied] = useState(false);
+    const taRef = useRef<HTMLTextAreaElement>(null);
 
     const html = useMemo(() => mdToHtml(md), [md]);
 
@@ -135,10 +196,16 @@ export function MarkdownEditor({ onBack }: { onBack: () => void }) {
         const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; a.click();
     };
 
+    const handleToolbar = (action: ToolbarAction) => {
+        const ta = taRef.current;
+        if (!ta) return;
+        applyAction(action, ta, setMd);
+    };
+
     return (
         <div className="max-w-7xl mx-auto p-6 animate-in fade-in zoom-in duration-300">
             {/* Header */}
-            <div className="flex items-center gap-4 mb-6">
+            <div className="flex items-center gap-4 mb-5">
                 <button onClick={onBack} title="Geri Dön" aria-label="Geri Dön"
                     className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">
                     <ArrowLeft className="w-6 h-6 text-slate-600 dark:text-slate-400" />
@@ -183,30 +250,28 @@ export function MarkdownEditor({ onBack }: { onBack: () => void }) {
                 </div>
             </div>
 
-            {/* Templates */}
-            <div className="flex items-center gap-2 mb-4">
-                <span className="text-xs font-bold uppercase text-slate-400">Şablon:</span>
+            {/* Toolbar Row: Templates + Formatting */}
+            <div className="flex flex-wrap items-center gap-1.5 mb-3 p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl">
+                {/* Template label */}
+                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 pr-1">Şablon:</span>
                 {TEMPLATES.map(t => (
                     <button key={t.label} onClick={() => setMd(t.content)}
-                        className="px-3 py-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 hover:border-teal-400 text-xs font-medium text-slate-600 dark:text-slate-400 rounded-lg transition-all">
+                        className="px-2.5 py-1 bg-slate-100 dark:bg-slate-800 hover:bg-teal-50 dark:hover:bg-teal-900/30 hover:border-teal-400 border border-slate-200 dark:border-slate-700 text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-teal-600 dark:hover:text-teal-400 rounded-lg transition-all">
                         {t.label}
                     </button>
                 ))}
-            </div>
 
-            {/* Toolbar */}
-            <div className="flex flex-wrap gap-1 mb-3">
-                {[
-                    ['# ', 'H1', 'font-black'], ['## ', 'H2', 'font-black'], ['### ', 'H3', 'font-black'],
-                    ['**', 'B', 'font-bold'], ['*', 'I', 'italic'], ['~~', 'S', 'line-through'],
-                    ['`', 'Code', 'font-mono text-xs'], ['> ', 'Quote', ''], ['- ', '• List', ''],
-                    ['---', '—', ''], ['[text](url)', '🔗', ''], ['![alt](url)', '🖼️', ''],
-                ].map(([insert, label, cls]) => (
-                    <button key={label}
-                        onClick={() => setMd(prev => prev + (label === 'B' || label === 'I' || label === 'S' || label === 'Code' ? `${insert}metin${insert}` : insert))}
-                        title={label} aria-label={`${label} ekle`}
-                        className={`px-2.5 py-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 hover:border-teal-400 hover:text-teal-600 dark:hover:text-teal-400 rounded-lg text-xs text-slate-600 dark:text-slate-400 transition-all ${cls}`}>
-                        {label}
+                {/* Separator */}
+                <div className="w-px h-5 bg-slate-200 dark:bg-slate-700 mx-1" />
+
+                {/* Formatting buttons */}
+                {TOOLBAR.map(action => (
+                    <button key={action.label}
+                        onClick={() => handleToolbar(action)}
+                        title={`${action.label} ekle`}
+                        aria-label={`${action.label} ekle`}
+                        className={`px-2.5 py-1 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-teal-400 hover:text-teal-600 dark:hover:text-teal-400 hover:bg-teal-50 dark:hover:bg-teal-900/20 rounded-lg text-xs text-slate-600 dark:text-slate-400 transition-all ${action.cls ?? ''}`}>
+                        {action.label}
                     </button>
                 ))}
             </div>
@@ -217,9 +282,12 @@ export function MarkdownEditor({ onBack }: { onBack: () => void }) {
                     <div className={view === 'split' ? '' : 'w-full'}>
                         <p className="text-[10px] font-bold uppercase text-slate-400 mb-2 px-1">Markdown</p>
                         <textarea
+                            ref={taRef}
                             value={md}
                             onChange={e => setMd(e.target.value)}
                             spellCheck={false}
+                            title="Markdown editör"
+                            placeholder="Yazmaya başlayın veya bir şablon seçin..."
                             className="w-full h-[65vh] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 font-mono text-sm resize-none focus:outline-none focus:ring-2 focus:ring-teal-500/30 text-slate-800 dark:text-slate-200 leading-relaxed shadow-sm"
                         />
                     </div>
