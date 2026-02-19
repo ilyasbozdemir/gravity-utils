@@ -44,6 +44,8 @@ const CsvViewer = dynamic(() => import('@/components/CsvViewer').then(mod => mod
 const MarkdownEditor = dynamic(() => import('@/components/MarkdownEditor').then(mod => mod.MarkdownEditor));
 const JsonLdEditor = dynamic(() => import('@/components/JsonLdEditor').then(mod => mod.JsonLdEditor));
 const NetworkCableTester = dynamic(() => import('@/components/NetworkCableTester').then(mod => mod.NetworkCableTester));
+const LoremIpsumGenerator = dynamic(() => import('@/components/LoremIpsumGenerator').then(mod => mod.LoremIpsumGenerator));
+const AspectRatioCalculator = dynamic(() => import('@/components/AspectRatioCalculator').then(mod => mod.AspectRatioCalculator));
 
 export default function Home() {
     const [file, setFile] = useState<File | null>(null);
@@ -192,6 +194,8 @@ export default function Home() {
                             {view === 'markdown-editor' && <MarkdownEditor onBack={() => setView('home')} />}
                             {view === 'json-ld' && <JsonLdEditor onBack={() => setView('home')} />}
                             {view === 'network-cable' && <NetworkCableTester onBack={() => setView('home')} />}
+                            {view === 'lorem-ipsum' && <LoremIpsumGenerator onBack={() => setView('home')} />}
+                            {view === 'aspect-ratio' && <AspectRatioCalculator onBack={() => setView('home')} />}
                         </div>
                     )}
 

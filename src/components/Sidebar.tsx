@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 
-export type ToolView = 'home' | 'convert' | 'inspect' | 'base64' | 'optimize' | 'hash' | 'json' | 'text' | 'pdf' | 'exif' | 'qr' | 'social' | 'favicon' | 'units' | 'encrypt' | 'uuid' | 'yaml' | 'jwt' | 'url' | 'imagetopdf' | 'case' | 'string' | 'json-xml' | 'date-time' | 'sql-formatter' | 'word-pdf' | 'pdf-word' | 'excel-pdf' | 'pdf-excel' | 'ppt-pdf' | 'pdf-ppt' | 'pdf-image' | 'pdf-split' | 'word-html' | 'pdf-text' | 'web-toolkit' | 'network-toolkit' | 'color-toolkit' | 'regex-tester' | 'csv-viewer' | 'markdown-editor' | 'password-generator' | 'svg-optimizer' | 'cron-builder' | 'timezone-converter' | 'json-ld' | 'network-cable';
+export type ToolView = 'home' | 'convert' | 'inspect' | 'base64' | 'optimize' | 'hash' | 'json' | 'text' | 'pdf' | 'exif' | 'qr' | 'social' | 'favicon' | 'units' | 'encrypt' | 'uuid' | 'yaml' | 'jwt' | 'url' | 'imagetopdf' | 'case' | 'string' | 'json-xml' | 'date-time' | 'sql-formatter' | 'word-pdf' | 'pdf-word' | 'excel-pdf' | 'pdf-excel' | 'ppt-pdf' | 'pdf-ppt' | 'pdf-image' | 'pdf-split' | 'word-html' | 'pdf-text' | 'web-toolkit' | 'network-toolkit' | 'color-toolkit' | 'regex-tester' | 'csv-viewer' | 'markdown-editor' | 'password-generator' | 'svg-optimizer' | 'cron-builder' | 'timezone-converter' | 'json-ld' | 'network-cable' | 'lorem-ipsum' | 'aspect-ratio';
 
 interface SidebarProps {
     currentView: ToolView;
@@ -28,6 +28,7 @@ interface NavItem {
     title: string;
     icon: React.ReactNode;
     category: string;
+    addedAt?: string; // ISO format: YYYY-MM-DD
 }
 
 const CATEGORIES = [
@@ -74,30 +75,18 @@ const NAV_ITEMS: NavItem[] = [
     { id: 'json-xml', title: 'JSON / XML / YAML', icon: <FileCode size={18} />, category: 'dev' },
     { id: 'sql-formatter', title: 'SQL Formatlayıcı', icon: <Database size={18} />, category: 'dev' },
     { id: 'web-toolkit', title: 'Web Araç Seti', icon: <Globe size={18} />, category: 'dev' },
-    { id: 'network-toolkit', title: 'Ağ / IP Araçları', icon: <Network size={18} />, category: 'dev' },
-    { id: 'network-cable', title: 'Network Kablo Testi', icon: <Cable size={18} />, category: 'dev' },
-
-    // Security
-    { id: 'encrypt', title: 'Dosya Şifreleyici', icon: <Lock size={18} />, category: 'security' },
-    { id: 'hash', title: 'Hash Oluşturucu', icon: <Hash size={18} />, category: 'security' },
-    { id: 'exif', title: 'Exif Temizleyici', icon: <Settings size={18} />, category: 'security' },
-
-    // Utils
-    { id: 'units', title: 'Birim Çevirici', icon: <Calculator size={18} />, category: 'utils' },
-    { id: 'text', title: 'Dosya Analizi', icon: <FileText size={18} />, category: 'utils' },
-    { id: 'case', title: 'Büyük/Küçük Harf', icon: <CaseSensitive size={18} />, category: 'utils' },
-    { id: 'string', title: 'Metin Müfettişi', icon: <Search size={18} />, category: 'utils' },
-    { id: 'date-time', title: 'Zaman Dönüştürücü', icon: <Clock size={18} />, category: 'utils' },
-    { id: 'color-toolkit', title: 'Renk Araç Seti', icon: <Layers size={18} />, category: 'utils' },
-    { id: 'csv-viewer', title: 'Tablo Görüntüleyici', icon: <Database size={18} />, category: 'utils' },
-    { id: 'markdown-editor', title: 'Markdown Editör', icon: <FileCode size={18} />, category: 'utils' },
-    { id: 'timezone-converter', title: 'Zaman Dilimi', icon: <Globe size={18} />, category: 'utils' },
-    { id: 'password-generator', title: 'Şifre Üretici', icon: <Lock size={18} />, category: 'security' },
-    { id: 'regex-tester', title: 'Regex Test', icon: <Code2 size={18} />, category: 'dev' },
-    { id: 'svg-optimizer', title: 'SVG Optimize', icon: <Zap size={18} />, category: 'dev' },
-    { id: 'cron-builder', title: 'Cron Builder', icon: <Clock size={18} />, category: 'dev' },
-    { id: 'json-ld', title: 'JSON-LD Editörü', icon: <Code2 size={18} />, category: 'dev' },
+    { id: 'network-cable', title: 'Network Kablo Testi', icon: <Cable size={18} />, category: 'dev', addedAt: '2026-02-19' },
+    { id: 'lorem-ipsum', title: 'Lorem Ipsum Üretici', icon: <FileText size={18} />, category: 'utils', addedAt: '2026-02-19' },
+    { id: 'aspect-ratio', title: 'Aspect Ratio Hesapla', icon: <Layers size={18} />, category: 'utils', addedAt: '2026-02-19' },
 ];
+
+function isNew(dateStr?: string) {
+    if (!dateStr) return false;
+    const addedAt = new Date(dateStr).getTime();
+    const now = new Date().getTime();
+    const weekInMs = 7 * 24 * 60 * 60 * 1000;
+    return (now - addedAt) < weekInMs;
+}
 
 export const Sidebar: React.FC<SidebarProps> = ({ currentView, onViewChange, isOpen, onClose }) => {
     const { theme, toggleTheme } = useTheme();
@@ -206,7 +195,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onViewChange, isO
                                             <span className={`transition-colors ${currentView === item.id ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400 dark:text-slate-500 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`}>
                                                 {item.icon}
                                             </span>
-                                            {item.title}
+                                            <span className="flex-1 text-left">{item.title}</span>
+                                            {isNew(item.addedAt) && (
+                                                <span className="px-1.5 py-0.5 bg-blue-500 text-white text-[8px] font-black rounded-md leading-none animate-pulse">
+                                                    NEW
+                                                </span>
+                                            )}
                                         </button>
                                     ))}
                                 </div>
