@@ -69,7 +69,7 @@ function toJSON(headers: string[], rows: string[][]): string {
     ), null, 2);
 }
 
-function downloadBlob(content: string | Uint8Array, name: string, mime: string) {
+function downloadBlob(content: BlobPart, name: string, mime: string) {
     const blob = new Blob([content], { type: mime });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
