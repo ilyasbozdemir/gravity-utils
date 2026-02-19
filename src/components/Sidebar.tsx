@@ -3,11 +3,15 @@ import {
     Search, FileText, ImageIcon, ShieldCheck, Zap,
     Code, Globe, Hash, Calculator, Layers, Settings,
     Smartphone, QrCode, Lock, Share2, Archive, FileJson,
-    X, Home, Type, Sun, Moon
+    X, Home, Type, Sun, Moon,
+    FileCode,
+    Database,
+    CaseSensitive,
+    Clock
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 
-export type ToolView = 'home' | 'convert' | 'inspect' | 'base64' | 'optimize' | 'hash' | 'json' | 'text' | 'pdf' | 'exif' | 'qr' | 'social' | 'favicon' | 'units' | 'encrypt' | 'uuid' | 'yaml' | 'jwt' | 'url' | 'imagetopdf' | 'case' | 'string' | 'word-pdf' | 'pdf-word' | 'excel-pdf' | 'pdf-excel' | 'ppt-pdf' | 'pdf-ppt' | 'pdf-image';
+export type ToolView = 'home' | 'convert' | 'inspect' | 'base64' | 'optimize' | 'hash' | 'json' | 'text' | 'pdf' | 'exif' | 'qr' | 'social' | 'favicon' | 'units' | 'encrypt' | 'uuid' | 'yaml' | 'jwt' | 'url' | 'imagetopdf' | 'case' | 'string' | 'json-xml' | 'date-time' | 'sql-formatter' | 'word-pdf' | 'pdf-word' | 'excel-pdf' | 'pdf-excel' | 'ppt-pdf' | 'pdf-ppt' | 'pdf-image';
 
 interface SidebarProps {
     currentView: ToolView;
@@ -61,6 +65,8 @@ const NAV_ITEMS: NavItem[] = [
     { id: 'base64', title: 'Base64 Çevirici', icon: <Share2 size={18} />, category: 'dev' },
     { id: 'url', title: 'URL Encoder', icon: <Globe size={18} />, category: 'dev' },
     { id: 'uuid', title: 'UUID Oluşturucu', icon: <Zap size={18} />, category: 'dev' },
+    { id: 'json-xml', title: 'JSON <> XML', icon: <FileCode size={18} />, category: 'dev' },
+    { id: 'sql-formatter', title: 'SQL Formatlayıcı', icon: <Database size={18} />, category: 'dev' },
 
     // Security
     { id: 'encrypt', title: 'Dosya Şifreleyici', icon: <Lock size={18} />, category: 'security' },
@@ -70,8 +76,9 @@ const NAV_ITEMS: NavItem[] = [
     // Utils
     { id: 'units', title: 'Birim Çevirici', icon: <Calculator size={18} />, category: 'utils' },
     { id: 'text', title: 'Dosya Analizi', icon: <FileText size={18} />, category: 'utils' },
-    { id: 'case', title: 'Harf Çevirici', icon: <Type size={18} />, category: 'utils' },
+    { id: 'case', title: 'Büyük/Küçük Harf', icon: <CaseSensitive size={18} />, category: 'utils' },
     { id: 'string', title: 'Metin Müfettişi', icon: <Search size={18} />, category: 'utils' },
+    { id: 'date-time', title: 'Zaman Dönüştürücü', icon: <Clock size={18} />, category: 'utils' },
 ];
 
 export const Sidebar: React.FC<SidebarProps> = ({ currentView, onViewChange, isOpen, onClose }) => {
