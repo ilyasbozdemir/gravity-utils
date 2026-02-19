@@ -109,10 +109,27 @@ function CopyButton({ text }: { text: string }) {
     );
 }
 
-function InfoRow({ label, value, mono = true, badge }: { label: string; value: string; mono?: boolean; badge?: string }) {
+function InfoRow({ label, value, mono = true, badge, tooltip }: {
+    label: string; value: string; mono?: boolean; badge?: string; tooltip?: string;
+}) {
     return (
         <div className="flex items-center gap-3 py-2.5 border-b border-slate-100 dark:border-slate-800 last:border-0">
-            <span className="text-[10px] font-bold uppercase text-slate-400 w-28 shrink-0">{label}</span>
+            <div className="flex items-center gap-1 w-28 shrink-0">
+                <span className="text-[10px] font-bold uppercase text-slate-400">{label}</span>
+                {tooltip && (
+                    <span className="relative group/tip cursor-help">
+                        <span className="text-slate-300 dark:text-slate-600 hover:text-blue-400 text-[10px] font-bold leading-none select-none">?</span>
+                        <span className="pointer-events-none absolute left-0 bottom-full mb-2 w-56 z-50
+                            bg-slate-900 dark:bg-slate-800 text-slate-100 text-[11px] leading-relaxed
+                            rounded-xl px-3 py-2 shadow-xl border border-slate-700
+                            opacity-0 group-hover/tip:opacity-100 translate-y-1 group-hover/tip:translate-y-0
+                            transition-all duration-200 whitespace-normal">
+                            {tooltip}
+                            <span className="absolute left-3 top-full w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-slate-900 dark:border-t-slate-800" />
+                        </span>
+                    </span>
+                )}
+            </div>
             <div className="flex-1 flex items-center gap-2 min-w-0">
                 <span className={`text-sm text-slate-700 dark:text-slate-200 break-all ${mono ? 'font-mono' : 'font-semibold'}`}>
                     {value}
@@ -515,13 +532,20 @@ function SubnetTab() {
                             <p className="text-xs font-bold text-slate-500 uppercase">Subnet Detayları</p>
                         </div>
                         <div className="px-4">
-                            <InfoRow label="Ağ Adresi" value={info.network} badge="Network" />
-                            <InfoRow label="Broadcast" value={info.broadcast} badge="Broadcast" />
-                            <InfoRow label="İlk Host" value={info.firstHost} />
-                            <InfoRow label="Son Host" value={info.lastHost} />
-                            <InfoRow label="Subnet Maskesi" value={info.subnetMask} />
-                            <InfoRow label="Wildcard Mask" value={info.wildcardMask} />
-                            <InfoRow label="CIDR" value={`${info.network}/${info.prefix}`} />
+                            <InfoRow label="Ağ Adresi" value={info.network} badge="Network"
+                                tooltip="Bu alt ağın başlangıç adresidir. Host bit'leri sıfırlanmış halidir. Paketlerin yönlendirildiği ağ kimliğidir." />
+                            <InfoRow label="Broadcast" value={info.broadcast} badge="Broadcast"
+                                tooltip="Alt ağdaki tüm cihazlara aynı anda mesaj göndermek için kullanılan özel adres. Host bit'leri 1 olan son adrestir." />
+                            <InfoRow label="İlk Host" value={info.firstHost}
+                                tooltip="Kullanılabilir ilk host adresi. Ağ adresinden bir sonraki IP'dir. Bu adres bir cihaza atanabilir." />
+                            <InfoRow label="Son Host" value={info.lastHost}
+                                tooltip="Kullanılabilir son host adresi. Broadcast adresinden bir önceki IP'dir. Bu adres de bir cihaza atanabilir." />
+                            <InfoRow label="Subnet Maskesi" value={info.subnetMask}
+                                tooltip="Hangi bitlerin ağ (1), hangilerinin host (0) kısmına ait olduğunu gösterir. Örn: 255.255.255.0 = ilk 24 bit ağ, son 8 bit host." />
+                            <InfoRow label="Wildcard Mask" value={info.wildcardMask}
+                                tooltip="Subnet maskesinin tersidir. ACL ve OSPF gibi ağ protokollerinde hangi bitlerin 'her değeri kabul et' olduğunu belirtmek için kullanılır." />
+                            <InfoRow label="CIDR" value={`${info.network}/${info.prefix}`}
+                                tooltip={`CIDR (Classless Inter-Domain Routing) notasyonu. /${info.prefix} ifadesi, IP adresinin ilk ${info.prefix} bitinin ağ adresi olduğunu gösterir.`} />
                         </div>
                     </div>
 
@@ -609,10 +633,14 @@ function IpConvertTab() {
                         <p className="text-xs font-bold text-slate-500 uppercase">Dönüşüm Sonuçları</p>
                     </div>
                     <div className="px-4">
-                        <InfoRow label="Onlu (Decimal)" value={result.decimal} />
-                        <InfoRow label="Hexadecimal" value={result.hex} />
-                        <InfoRow label="Binary" value={result.binary} />
-                        <InfoRow label="Octal" value={result.octal} />
+                        <InfoRow label="Onlu (Decimal)" value={result.decimal}
+                            tooltip="IP adresinin 32 bitlik tam sayı karşılığı. IPv4 adresleri aslında 0–4294967295 arasındaki sayılardır." />
+                        <InfoRow label="Hexadecimal" value={result.hex}
+                            tooltip="IP'nin 16'lık tabandaki gösterimi. Her iki hex karakter bir oktete (byte) karşılık gelir. 0xC0A80101 = 192.168.1.1" />
+                        <InfoRow label="Binary" value={result.binary}
+                            tooltip="IP'nin 2'lik tabandaki 32-bit gösterimi. 4 oktete bölünmüş halde gösterilir. Subnet maskesi ile AND işlemi yapılarak ağ adresi bulunur." />
+                        <InfoRow label="Octal" value={result.octal}
+                            tooltip="IP'nin 8'lik tabandaki gösterimi. Çok nadir kullanılır; bazı ping/curl komutlarında farklı parse davranışları tetikleyebilir." />
                     </div>
                 </div>
             )}
