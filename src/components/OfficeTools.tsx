@@ -2,6 +2,13 @@ import React, { useState, useRef } from 'react';
 import { ArrowLeft, FileText, Upload, X, AlertCircle, Download, FileSpreadsheet, Presentation, Image as ImageIcon, FileType } from 'lucide-react';
 import { PDFDocument } from 'pdf-lib';
 import * as pdfjsLib from 'pdfjs-dist';
+import { saveAs } from 'file-saver';
+import { Document, Packer, Paragraph, TextRun, ImageRun, type ISectionOptions } from 'docx';
+import fontkit from '@pdf-lib/fontkit';
+import { renderAsync } from 'docx-preview';
+import html2canvas from 'html2canvas';
+import { loadTurkishFont } from '../utils/fontLoader';
+import jsPDF from 'jspdf';
 
 // Configure PDF.js worker
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.js`;
@@ -19,6 +26,7 @@ interface FileState {
     progress: number;
     result?: string | Blob;
     errorMsg?: string;
+    resultName?: string;
 }
 
 const TOOL_CONFIG = {
@@ -36,6 +44,7 @@ export const OfficeTools: React.FC<OfficeToolsProps> = ({ mode, onBack }) => {
     const config = TOOL_CONFIG[mode];
     const [files, setFiles] = useState<FileState[]>([]);
     const inputRef = useRef<HTMLInputElement>(null);
+    const renderContainerRef = useRef<HTMLDivElement>(null);
 
     const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files) {
@@ -49,17 +58,15 @@ export const OfficeTools: React.FC<OfficeToolsProps> = ({ mode, onBack }) => {
     };
 
     const processFile = async (item: FileState, index: number) => {
-        setFiles(prev => prev.map((f, i) => i === index ? { ...f, status: 'converting', progress: 10 } : f));
+        setFiles(prev => prev.map((f, i) => i === index ? { ...f, status: 'converting', progress: 5 } : f));
 
         try {
-            // Simulated delay for UX
-            await new Promise(r => setTimeout(r, 1000));
-            setFiles(prev => prev.map((f, i) => i === index ? { ...f, progress: 40 } : f));
-
             let result: Blob | string | undefined;
+            let resultName = item.file.name;
 
+            // --- IMAGE TO PDF ---
             if (mode === 'imagetopdf') {
-                // Real Implementation: Image to PDF
+                setFiles(prev => prev.map((f, i) => i === index ? { ...f, progress: 30 } : f));
                 const pdfDoc = await PDFDocument.create();
                 const imageBytes = await item.file.arrayBuffer();
                 let image;
@@ -71,8 +78,11 @@ export const OfficeTools: React.FC<OfficeToolsProps> = ({ mode, onBack }) => {
                 page.drawImage(image, { x: 0, y: 0, width: image.width, height: image.height });
                 const pdfBytes = await pdfDoc.save();
                 result = new Blob([pdfBytes as unknown as BlobPart], { type: 'application/pdf' });
-            } else if (mode === 'pdf-image') {
-                // Real Implementation: PDF to Image (First page preview)
+                resultName = item.file.name.replace(/\.[^/.]+$/, "") + ".pdf";
+            }
+            // --- PDF TO IMAGE ---
+            else if (mode === 'pdf-image') {
+                setFiles(prev => prev.map((f, i) => i === index ? { ...f, progress: 30 } : f));
                 const arrayBuffer = await item.file.arrayBuffer();
                 const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
                 const page = await pdf.getPage(1);
@@ -88,46 +98,168 @@ export const OfficeTools: React.FC<OfficeToolsProps> = ({ mode, onBack }) => {
                 };
                 await page.render(renderContext as any).promise;
                 result = canvas.toDataURL('image/jpeg');
-            } else {
-                // Simulation for formats that require server-side heavy lifting
-                // In a real app this would call an API
+                resultName = item.file.name.replace(/\.[^/.]+$/, "") + ".jpg";
+            }
+            // --- WORD TO PDF ---
+            else if (mode === 'word-pdf') {
+                if (renderContainerRef.current) {
+                    setFiles(prev => prev.map((f, i) => i === index ? { ...f, progress: 20 } : f));
+                    const container = renderContainerRef.current;
+                    container.innerHTML = '';
+                    const arrayBuffer = await item.file.arrayBuffer();
+
+                    // Render docx to HTML
+                    await renderAsync(arrayBuffer, container, undefined, {
+                        className: "docx",
+                        inWrapper: true,
+                        ignoreLastRenderedPageBreak: false,
+                        useBase64URL: true // Ensure images are base64
+                    });
+
+                    // Wait for images
+                    await new Promise(r => setTimeout(r, 1000));
+                    setFiles(prev => prev.map((f, i) => i === index ? { ...f, progress: 60 } : f));
+
+                    // Convert HTML to Canvas
+                    const canvas = await html2canvas(container, {
+                        scale: 1.5,
+                        useCORS: true,
+                        logging: false
+                    });
+
+                    const imgData = canvas.toDataURL('image/jpeg', 0.95);
+                    const pdf = new jsPDF('p', 'mm', 'a4');
+                    const imgProps = pdf.getImageProperties(imgData);
+                    const pdfWidth = pdf.internal.pageSize.getWidth();
+                    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+
+                    let heightLeft = pdfHeight;
+                    let position = 0;
+                    const pageHeight = pdf.internal.pageSize.getHeight();
+
+                    // Handle multi-page
+                    pdf.addImage(imgData, 'JPEG', 0, position, pdfWidth, pdfHeight);
+                    heightLeft -= pageHeight;
+                    while (heightLeft >= 0) {
+                        position = heightLeft - pdfHeight;
+                        pdf.addPage();
+                        pdf.addImage(imgData, 'JPEG', 0, position, pdfWidth, pdfHeight);
+                        heightLeft -= pageHeight;
+                    }
+
+                    result = pdf.output('blob');
+                    resultName = item.file.name.replace(/\.[^/.]+$/, "") + ".pdf";
+                    container.innerHTML = ''; // Clean up
+                } else {
+                    throw new Error("Render container not found");
+                }
+            }
+            // --- PDF TO WORD ---
+            else if (mode === 'pdf-word') {
+                setFiles(prev => prev.map((f, i) => i === index ? { ...f, progress: 20 } : f));
+                const arrayBuffer = await item.file.arrayBuffer();
+                const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
+                const pdf = await loadingTask.promise;
+                const pageImages: string[] = [];
+
+                for (let i = 1; i <= pdf.numPages; i++) {
+                    const page = await pdf.getPage(i);
+                    const viewport = page.getViewport({ scale: 1.5 });
+                    const canvas = document.createElement('canvas');
+                    const context = canvas.getContext('2d');
+                    if (context) {
+                        canvas.height = viewport.height;
+                        canvas.width = viewport.width;
+                        await page.render({
+                            canvasContext: context as unknown as CanvasRenderingContext2D,
+                            viewport: viewport,
+                            canvas: canvas
+                        } as unknown as Parameters<typeof page.render>[0]).promise;
+                        pageImages.push(canvas.toDataURL('image/jpeg', 0.8));
+                    }
+                    setFiles(prev => prev.map((f, idx) => idx === index ? { ...f, progress: 20 + Math.round((i / pdf.numPages) * 60) } : f));
+                }
+
+                const sections: ISectionOptions[] = [];
+                for (const imgData of pageImages) {
+                    const res = await fetch(imgData);
+                    const imgArrayBuffer = await res.arrayBuffer();
+                    sections.push({
+                        properties: { page: { margin: { top: 0, bottom: 0, left: 0, right: 0 } } },
+                        children: [
+                            new Paragraph({
+                                children: [
+                                    new ImageRun({
+                                        data: imgArrayBuffer,
+                                        transformation: { width: 595, height: 841 }, // A4 approx
+                                        type: 'jpg'
+                                    }),
+                                ],
+                            }),
+                        ],
+                    });
+                }
+
+                const wordDoc = new Document({ sections });
+                result = await Packer.toBlob(wordDoc);
+                resultName = item.file.name.replace(/\.[^/.]+$/, "") + ".docx";
+            }
+            // --- OTHERS (Excel, PPT - Mock with Font Support) ---
+            else {
+                // Simulate delay
                 await new Promise(r => setTimeout(r, 1500));
+                setFiles(prev => prev.map((f, i) => i === index ? { ...f, progress: 80 } : f));
 
                 if (mode.endsWith('-pdf')) {
-                    // Mock PDF result
+                    // Create basic PDF with Turkish font support
                     const pdfDoc = await PDFDocument.create();
+                    pdfDoc.registerFontkit(fontkit);
+                    const fontBytes = await loadTurkishFont(); // Load Roboto
+                    const customFont = await pdfDoc.embedFont(fontBytes);
+
                     const page = pdfDoc.addPage();
-                    page.drawText(`Bu ${item.file.name} dosyasının PDF çıktısıdır.\n\nGerçek dönüşüm için sunucu tarafı gereklidir.`, { x: 50, y: 700, size: 12 });
+                    page.drawText(`Bu ${item.file.name} dosyasının PDF çıktısıdır.\n\nNOT: Excel ve PowerPoint dönüşümleri, karmaşık yapıları nedeniyle\ntam olarak sunucu tarafında işlenmelidir. \nBu bir önizleme/mock çıktısıdır.\n\nTürkçe karakter test: ĞÜŞİÖÇ ğüşiöç`, {
+                        x: 50,
+                        y: 700,
+                        size: 12,
+                        font: customFont
+                    });
                     const pdfBytes = await pdfDoc.save();
                     result = new Blob([pdfBytes as unknown as BlobPart], { type: 'application/pdf' });
+                    resultName = item.file.name.replace(/\.[^/.]+$/, "") + ".pdf";
                 } else {
-                    // Mock text result
                     result = new Blob([`Mock dönüşüm sonucu: ${item.file.name}`], { type: 'text/plain' });
+                    resultName = item.file.name + ".txt";
                 }
             }
 
-            setFiles(prev => prev.map((f, i) => i === index ? { ...f, status: 'success', progress: 100, result } : f));
+            setFiles(prev => prev.map((f, i) => i === index ? {
+                ...f,
+                status: 'success',
+                progress: 100,
+                result,
+                resultName
+            } : f));
 
         } catch (error) {
+            console.error(error);
             setFiles(prev => prev.map((f, i) => i === index ? { ...f, status: 'error', errorMsg: (error as Error).message } : f));
         }
     };
 
     const downloadFile = (item: FileState) => {
         if (!item.result) return;
-        const link = document.createElement('a');
-        if (typeof item.result === 'string') {
-            link.href = item.result;
-            link.download = `converted-${item.file.name.split('.')[0]}.jpg`; // Simplified extension logic
-        } else {
-            link.href = URL.createObjectURL(item.result);
-            link.download = `converted-${item.file.name}.pdf`; // Simplified
-        }
-        link.click();
+        saveAs(item.result, item.resultName || `converted-${item.file.name}`);
     };
 
     return (
         <div className="max-w-[1000px] mx-auto p-8 animate-fadeIn">
+            {/* Hidden container for DOCX rendering */}
+            <div
+                ref={renderContainerRef}
+                className="fixed -left-[9999px] top-0 w-[800px] bg-white text-black pointer-events-none overflow-hidden font-sans"
+            ></div>
+
             {/* Header */}
             <div className="flex items-center gap-4 mb-8">
                 <button onClick={onBack} title="Geri Dön" className="p-2 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-colors">

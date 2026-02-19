@@ -27,6 +27,9 @@ const YamlConverter = dynamic(() => import('@/components/YamlConverter').then(mo
 const JwtDebugger = dynamic(() => import('@/components/JwtDebugger').then(mod => mod.JwtDebugger));
 const UrlEncoder = dynamic(() => import('@/components/UrlEncoder').then(mod => mod.UrlEncoder));
 const CaseConverter = dynamic(() => import('@/components/CaseConverter').then(mod => mod.CaseConverter));
+const JsonXmlConverter = dynamic(() => import('@/components/JsonXmlConverter').then(mod => mod.JsonXmlConverter));
+const DateTimeConverter = dynamic(() => import('@/components/DateTimeConverter').then(mod => mod.DateTimeConverter));
+const SqlFormatter = dynamic(() => import('@/components/SqlFormatter').then(mod => mod.SqlFormatter));
 const StringInspector = dynamic(() => import('@/components/StringInspector').then(mod => mod.StringInspector));
 const OfficeTools = dynamic(() => import('@/components/OfficeTools').then(mod => mod.OfficeTools));
 
