@@ -58,8 +58,9 @@ export function AspectRatioCalculator({ onBack }: { onBack: () => void }) {
                                 className="w-full p-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl font-mono text-xl font-bold text-indigo-600 outline-none focus:ring-2 focus:ring-indigo-500/30" />
                         </div>
                         <div className="space-y-2">
-                            <label className="text-[10px] font-bold text-slate-500 uppercase px-1">Yükseklik (px)</label>
-                            <input type="number" value={height} onChange={e => setHeight(parseInt(e.target.value) || 0)}
+                            <label htmlFor="source-height" className="text-[10px] font-bold text-slate-500 uppercase px-1">Yükseklik (px)</label>
+                            <input id="source-height" type="number" value={height} onChange={e => setHeight(parseInt(e.target.value) || 0)}
+                                title="Orijinal Yükseklik"
                                 className="w-full p-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl font-mono text-xl font-bold text-indigo-600 outline-none focus:ring-2 focus:ring-indigo-500/30" />
                         </div>
                     </div>
@@ -84,8 +85,9 @@ export function AspectRatioCalculator({ onBack }: { onBack: () => void }) {
                     <p className="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em]">Ölçekli Boyut Hesaplayıcı</p>
                     <div className="space-y-6">
                         <div className="space-y-2">
-                            <label className="text-[10px] font-bold text-slate-500 uppercase px-1">Yeni Genişlik</label>
-                            <input type="number" value={targetWidth} onChange={e => updateTargetHeight(parseInt(e.target.value) || 0)}
+                            <label htmlFor="target-width" className="text-[10px] font-bold text-slate-500 uppercase px-1">Yeni Genişlik</label>
+                            <input id="target-width" type="number" value={targetWidth} onChange={e => updateTargetHeight(parseInt(e.target.value) || 0)}
+                                title="Yeni Genişlik"
                                 className="w-full p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl font-mono text-xl font-bold text-slate-800 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500/30" />
                         </div>
                         <div className="flex justify-center">
@@ -94,8 +96,9 @@ export function AspectRatioCalculator({ onBack }: { onBack: () => void }) {
                             </div>
                         </div>
                         <div className="space-y-2">
-                            <label className="text-[10px] font-bold text-slate-500 uppercase px-1">Yeni Yükseklik</label>
-                            <input type="number" value={targetHeight} onChange={e => updateTargetWidth(parseInt(e.target.value) || 0)}
+                            <label htmlFor="target-height" className="text-[10px] font-bold text-slate-500 uppercase px-1">Yeni Yükseklik</label>
+                            <input id="target-height" type="number" value={targetHeight} onChange={e => updateTargetWidth(parseInt(e.target.value) || 0)}
+                                title="Yeni Yükseklik"
                                 className="w-full p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl font-mono text-xl font-bold text-slate-800 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500/30" />
                         </div>
                     </div>
