@@ -178,8 +178,8 @@ function genV3(namespaceUuid: string, name: string): string {
 
 async function genV5(namespaceUuid: string, name: string): Promise<string> {
     const data = buildNamespaceInput(namespaceUuid, name);
-    const hashBuffer = await crypto.subtle.digest('SHA-1', data);
-    const hash = new Uint8Array(hashBuffer).slice(0, 16);
+    const hashBuffer = await crypto.subtle.digest('SHA-1', data.buffer as ArrayBuffer);
+    const hash = new Uint8Array(hashBuffer).slice(0, 16) as Uint8Array;
     hash[6] = (hash[6] & 0x0f) | 0x50; // version 5
     hash[8] = (hash[8] & 0x3f) | 0x80; // variant
     const h = Array.from(hash).map(b => b.toString(16).padStart(2, '0')).join('');
