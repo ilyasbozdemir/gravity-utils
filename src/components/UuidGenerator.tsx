@@ -72,14 +72,18 @@ function genV4(): string {
 }
 
 function genV1(): string {
-    // Gregorian offset: 100-nanosecond intervals between 1582-10-15 and Unix epoch
-    const GREG_OFFSET = 122192928000000000n;
-    const nowMs = BigInt(Date.now());
-    const time = nowMs * 10000n + GREG_OFFSET;
+    // Gregorian offset in milliseconds: ms between 1582-10-15 and 1970-01-01
+    const GREG_OFFSET_MS = 12219292800000;
+    const nowMs = Date.now() + GREG_OFFSET_MS;
+    // Convert ms → 100-nanosecond intervals using two 32-bit halves
+    const lo100ns = (nowMs % 0x100000000) * 10000;
+    const hi100ns = Math.floor(nowMs / 0x100000000) * 10000 + Math.floor(lo100ns / 0x100000000);
+    const lo32 = lo100ns >>> 0;
+    const hi32 = hi100ns >>> 0;
 
-    const timeLow = (time & 0xFFFFFFFFn).toString(16).padStart(8, '0');
-    const timeMid = ((time >> 32n) & 0xFFFFn).toString(16).padStart(4, '0');
-    const timeHigh = ((time >> 48n) & 0x0FFFn).toString(16).padStart(3, '0');
+    const timeLow = lo32.toString(16).padStart(8, '0');
+    const timeMid = (hi32 & 0xFFFF).toString(16).padStart(4, '0');
+    const timeHigh = ((hi32 >> 16) & 0x0FFF).toString(16).padStart(3, '0');
 
     const clockSeq = (Math.floor(Math.random() * 0x3FFF) | 0x8000).toString(16).padStart(4, '0');
     const node = Array.from(crypto.getRandomValues(new Uint8Array(6)))
