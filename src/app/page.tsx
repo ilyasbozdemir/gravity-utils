@@ -58,7 +58,36 @@ export default function Home() {
 
     useEffect(() => {
         setIsClient(true);
+        // Initial routing check
+        const hash = window.location.hash.replace('#/', '');
+        if (hash) {
+            setView(hash as ViewType);
+        }
+
+        // Listen for hash changes (browser back/forward)
+        const handleHashChange = () => {
+            const currentHash = window.location.hash.replace('#/', '');
+            if (currentHash) {
+                setView(currentHash as ViewType);
+            } else {
+                setView('home');
+            }
+        };
+
+        window.addEventListener('hashchange', handleHashChange);
+        return () => window.removeEventListener('hashchange', handleHashChange);
     }, []);
+
+    // Sync state to hash
+    useEffect(() => {
+        if (!isClient) return;
+        if (view === 'home' && window.location.hash === '') return;
+
+        const currentHash = window.location.hash.replace('#/', '');
+        if (currentHash !== view) {
+            window.location.hash = view === 'home' ? '' : `/${view}`;
+        }
+    }, [view, isClient]);
 
     const handleFileSelect = (f: File) => {
         setFile(f);

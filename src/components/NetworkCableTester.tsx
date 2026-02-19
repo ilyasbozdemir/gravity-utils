@@ -217,16 +217,46 @@ export function NetworkCableTester({ onBack }: { onBack: () => void }) {
 
                 {/* Main Visual Panel */}
                 <div className="lg:col-span-8 space-y-8">
-                    <div className="grid md:grid-cols-2 gap-8 items-center bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-[2.5rem] p-8 lg:p-12 relative overflow-hidden">
+                    {/* Mobile/Tablet Friendly Quick Map Pad */}
+                    {mode === 'diagnostic' && activePin && (
+                        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-xl animate-in fade-in slide-in-from-top-4">
+                            <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-6">
+                                <div>
+                                    <h4 className="text-sm font-black text-slate-800 dark:text-white flex items-center gap-2">
+                                        <div className="w-6 h-6 rounded-full bg-indigo-500 text-white flex items-center justify-center text-[10px]">{activePin}</div>
+                                        Master Pin Eşleştirme
+                                    </h4>
+                                    <p className="text-[10px] text-slate-500 font-medium">Bu pindeki akım remote tarafta hangi numarada yanıyor?</p>
+                                </div>
+                                <button onClick={() => setActivePin(null)} className="text-[10px] font-bold text-slate-400 hover:text-slate-600 px-3 py-1">İptal</button>
+                            </div>
+                            <div className="grid grid-cols-4 sm:grid-cols-8 gap-2">
+                                {Array.from({ length: pins }).map((_, i) => (
+                                    <button
+                                        key={i}
+                                        onClick={() => handleRemoteClick(i + 1)}
+                                        className={`h-12 rounded-xl border-2 font-black text-sm transition-all flex items-center justify-center
+                                            ${manualMap[activePin!] === i + 1
+                                                ? 'bg-green-500 border-green-400 text-white shadow-lg shadow-green-500/20'
+                                                : 'bg-slate-50 dark:bg-slate-800 border-slate-100 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 hover:border-indigo-200'}`}
+                                    >
+                                        {i + 1}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    <div className="grid md:grid-cols-2 gap-6 lg:gap-12 items-center bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-[2rem] lg:rounded-[2.5rem] p-6 lg:p-12 relative overflow-hidden">
                         <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-px bg-slate-200 dark:bg-slate-800 hidden md:block opacity-50"></div>
                         <div className="absolute inset-0 bg-grid-slate-200/50 [mask-image:linear-gradient(0deg,white,rgba(255,255,255,0.6))] dark:bg-grid-slate-700/20 pointer-events-none"></div>
 
                         {/* Master Unit */}
-                        <div className="relative group">
+                        <div className="relative group scale-95 md:scale-100">
                             <div className="absolute -inset-1 bg-gradient-to-b from-indigo-500 to-blue-600 rounded-[2rem] blur opacity-25 group-hover:opacity-40 transition duration-1000"></div>
-                            <div className="relative bg-slate-200 dark:bg-slate-800 rounded-[2rem] p-6 border-4 border-slate-300 dark:border-slate-700 shadow-2xl flex flex-col items-center gap-6">
+                            <div className="relative bg-slate-200 dark:bg-slate-800 rounded-[2rem] p-5 lg:p-6 border-4 border-slate-300 dark:border-slate-700 shadow-2xl flex flex-col items-center gap-6">
                                 <div className="text-[10px] font-black tracking-[0.3em] uppercase opacity-40">MASTER</div>
-                                <div className="grid grid-cols-4 gap-4 w-full px-4">
+                                <div className="grid grid-cols-4 gap-3 lg:gap-4 w-full px-2">
                                     {Array.from({ length: pins }).map((_, i) => (
                                         <button key={i} onClick={() => mode === 'diagnostic' && setActivePin(i + 1)}
                                             className={`flex flex-col items-center gap-2 group/pin ${mode === 'diagnostic' ? 'cursor-pointer' : 'cursor-default'}`}>
@@ -235,8 +265,8 @@ export function NetworkCableTester({ onBack }: { onBack: () => void }) {
                                         </button>
                                     ))}
                                 </div>
-                                {mode === 'diagnostic' && (
-                                    <div className="text-[9px] font-bold text-indigo-500 bg-indigo-500/10 px-2 py-1 rounded-full animate-pulse">
+                                {mode === 'diagnostic' && !activePin && (
+                                    <div className="text-[8px] lg:text-[9px] font-bold text-indigo-500 bg-indigo-500/10 px-2 py-1 rounded-full animate-pulse">
                                         Test edilecek pini seçin
                                     </div>
                                 )}
@@ -244,11 +274,11 @@ export function NetworkCableTester({ onBack }: { onBack: () => void }) {
                         </div>
 
                         {/* Remote Unit */}
-                        <div className="relative group">
+                        <div className="relative group scale-95 md:scale-100">
                             <div className="absolute -inset-1 bg-gradient-to-b from-orange-500 to-amber-600 rounded-[2rem] blur opacity-25 group-hover:opacity-40 transition duration-1000"></div>
-                            <div className="relative bg-slate-200 dark:bg-slate-800 rounded-[2rem] p-6 border-4 border-slate-300 dark:border-slate-700 shadow-2xl flex flex-col items-center gap-6">
+                            <div className="relative bg-slate-200 dark:bg-slate-800 rounded-[2rem] p-5 lg:p-6 border-4 border-slate-300 dark:border-slate-700 shadow-2xl flex flex-col items-center gap-6">
                                 <div className="text-[10px] font-black tracking-[0.3em] uppercase opacity-40">REMOTE</div>
-                                <div className="grid grid-cols-4 gap-4 w-full px-4">
+                                <div className="grid grid-cols-4 gap-3 lg:gap-4 w-full px-2">
                                     {Array.from({ length: pins }).map((_, i) => {
                                         const status = getRemoteStatus(i + 1);
                                         return (
@@ -261,13 +291,8 @@ export function NetworkCableTester({ onBack }: { onBack: () => void }) {
                                     })}
                                 </div>
                                 {mode === 'diagnostic' && activePin && (
-                                    <div className="text-[9px] font-bold text-amber-500 bg-amber-500/10 px-2 py-1 rounded-full animate-bounce">
-                                        {activePin}. Master pin nerede yanıyor?
-                                    </div>
-                                )}
-                                {mode === 'diagnostic' && !activePin && (
-                                    <div className="text-[9px] font-bold opacity-40 px-2 py-1">
-                                        Bekleniyor...
+                                    <div className="text-[8px] lg:text-[9px] font-bold text-amber-500 bg-amber-500/10 px-2 py-1 rounded-full animate-bounce">
+                                        PIN {activePin} Yanıyor mu?
                                     </div>
                                 )}
                             </div>
