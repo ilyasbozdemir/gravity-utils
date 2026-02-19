@@ -262,17 +262,20 @@ export const OfficeTools: React.FC<OfficeToolsProps> = ({ mode, onBack }) => {
 
             {/* Header */}
             <div className="flex items-center gap-4 mb-8">
-                <button onClick={onBack} title="Geri Dön" className="p-2 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-colors">
-                    <ArrowLeft size={20} className="text-slate-500 dark:text-slate-400" />
+                <button
+                    onClick={onBack}
+                    title="Geri Dön"
+                    aria-label="Geri Dön"
+                    className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                >
+                    <ArrowLeft className="w-6 h-6 text-slate-600 dark:text-slate-400" />
                 </button>
-                <div className={`p-3 rounded-xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 shadow-sm ${config.color}`}>
-                    {config.icon}
-                </div>
                 <div>
-                    <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-400">
+                    <h2 className="text-2xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                        <span className={config.color}>{config.icon}</span>
                         {config.title}
-                    </h1>
-                    <p className="text-sm text-slate-500 dark:text-slate-400">
+                    </h2>
+                    <p className="text-slate-500 dark:text-slate-400 text-sm">
                         Güvenli, hızlı ve ücretsiz dosya dönüştürme aracı.
                     </p>
                 </div>
@@ -281,14 +284,14 @@ export const OfficeTools: React.FC<OfficeToolsProps> = ({ mode, onBack }) => {
             {/* Dropper */}
             <div
                 onClick={() => inputRef.current?.click()}
-                className="border-2 border-dashed border-slate-300 dark:border-white/20 hover:border-blue-500 dark:hover:border-blue-500 bg-slate-50 dark:bg-white/5 rounded-3xl p-12 text-center cursor-pointer transition-all group mb-8"
+                className="border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-2xl p-12 text-center hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer mb-8"
             >
-                <div className="w-16 h-16 bg-white dark:bg-white/10 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg group-hover:scale-110 transition-transform">
-                    <Upload size={32} className="text-slate-400 dark:text-slate-300 group-hover:text-blue-500" />
+                <div className="w-16 h-16 bg-blue-50 dark:bg-blue-900/20 text-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Upload size={32} />
                 </div>
-                <h3 className="text-lg font-bold text-slate-700 dark:text-slate-200 mb-2">Dosyayı Buraya Sürükleyin</h3>
-                <p className="text-slate-500 text-sm">veya seçmek için tıklayın</p>
-                <div className="mt-4 inline-flex items-center gap-2 px-3 py-1 bg-slate-200 dark:bg-white/10 rounded-full text-xs font-mono text-slate-600 dark:text-slate-400">
+                <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-200">Dosyayı Buraya Sürükleyin</h3>
+                <p className="text-slate-500 dark:text-slate-400 mt-2 text-sm">veya seçmek için tıklayın</p>
+                <div className="mt-4 inline-flex items-center gap-2 px-3 py-1 bg-slate-100 dark:bg-slate-800 rounded-full text-xs font-mono text-slate-500 dark:text-slate-400">
                     <FileType size={12} />
                     {config.accept.replace(/,/g, ' ')}
                 </div>
@@ -307,19 +310,19 @@ export const OfficeTools: React.FC<OfficeToolsProps> = ({ mode, onBack }) => {
             {/* File List */}
             <div className="space-y-4">
                 {files.map((item, index) => (
-                    <div key={index} className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-4 flex items-center gap-4 transition-all hover:bg-slate-50 dark:hover:bg-white/[0.07]">
-                        <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-white/10 flex items-center justify-center shrink-0">
+                    <div key={index} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 flex items-center gap-4 transition-all hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                        <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0 text-slate-500 dark:text-slate-400">
                             {config.icon}
                         </div>
 
                         <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between mb-1">
                                 <p className="font-medium text-slate-700 dark:text-slate-200 truncate">{item.file.name}</p>
-                                <span className="text-xs text-slate-500 font-mono">{(item.file.size / 1024 / 1024).toFixed(2)} MB</span>
+                                <span className="text-xs text-slate-500 dark:text-slate-400 font-mono">{(item.file.size / 1024 / 1024).toFixed(2)} MB</span>
                             </div>
 
                             {/* Progress Bar */}
-                            <div className="w-full bg-slate-100 dark:bg-white/10 rounded-full h-1.5 overflow-hidden">
+                            <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden">
                                 <div
                                     className={`h-full transition-all duration-300 ${item.status === 'error' ? 'bg-red-500' : 'bg-blue-500'}`}
                                     style={{ width: `${item.progress}%` }}
@@ -332,7 +335,7 @@ export const OfficeTools: React.FC<OfficeToolsProps> = ({ mode, onBack }) => {
                             {item.status === 'idle' && (
                                 <button
                                     onClick={() => processFile(item, index)}
-                                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors shadow-lg shadow-blue-500/20"
+                                    className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium rounded-lg transition-colors shadow-lg shadow-blue-500/20"
                                 >
                                     Dönüştür
                                 </button>
@@ -352,7 +355,7 @@ export const OfficeTools: React.FC<OfficeToolsProps> = ({ mode, onBack }) => {
                             {item.status === 'error' && (
                                 <div className="group relative">
                                     <AlertCircle size={20} className="text-red-500 cursor-help" />
-                                    <div className="absolute right-0 top-full mt-2 w-48 bg-black/80 backdrop-blur text-white text-xs p-2 rounded hidden group-hover:block z-20">
+                                    <div className="absolute right-0 top-full mt-2 w-48 bg-slate-900 text-white text-xs p-2 rounded hidden group-hover:block z-20 shadow-lg">
                                         {item.errorMsg}
                                     </div>
                                 </div>

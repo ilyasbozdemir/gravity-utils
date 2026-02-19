@@ -68,12 +68,12 @@ export const ActionPanel: React.FC<ActionPanelProps> = ({ file, onClear, onActio
             onClick={() => onAction(action)}
             className={`group relative overflow-hidden p-6 text-left rounded-2xl border transition-all duration-300 w-full hover:-translate-y-1 hover:shadow-xl
                 ${primary
-                    ? 'bg-blue-600 dark:bg-blue-600 text-white border-blue-500 dark:border-blue-400 shadow-lg shadow-blue-500/30'
-                    : 'bg-white dark:bg-white/5 border-slate-200 dark:border-white/10 hover:border-blue-400 dark:hover:border-blue-500/50 hover:bg-slate-50 dark:hover:bg-white/10'
+                    ? 'bg-blue-600 text-white border-blue-500 shadow-lg shadow-blue-500/30'
+                    : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-blue-400 dark:hover:border-blue-500/50 hover:bg-slate-50 dark:hover:bg-slate-800'
                 }`}
         >
             <div className="flex items-start justify-between mb-2 relative z-10">
-                <div className={`p-3 rounded-xl ${primary ? 'bg-white/20' : 'bg-blue-50 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400'}`}>
+                <div className={`p-3 rounded-xl ${primary ? 'bg-white/20' : 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'}`}>
                     {icon}
                 </div>
                 {!primary && <ArrowRight size={20} className="text-slate-300 dark:text-slate-600 group-hover:text-blue-500 transition-colors" />}
@@ -91,11 +91,11 @@ export const ActionPanel: React.FC<ActionPanelProps> = ({ file, onClear, onActio
     return (
         <div className="w-full max-w-5xl mx-auto animate-in fade-in zoom-in duration-500">
             {/* File Info Card */}
-            <div className="bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-white/10 rounded-3xl p-6 sm:p-8 mb-12 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-xl shadow-slate-200/50 dark:shadow-none relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/5 rounded-full blur-3xl -z-10"></div>
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 mb-12 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-xl shadow-slate-200/50 dark:shadow-none relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/5 dark:bg-blue-500/10 rounded-full blur-3xl -z-10"></div>
 
                 <div className="flex items-center gap-6 w-full">
-                    <div className="w-20 h-20 bg-blue-50 dark:bg-blue-500/20 rounded-2xl flex items-center justify-center shrink-0 border border-blue-100 dark:border-blue-500/30 shadow-inner">
+                    <div className="w-20 h-20 bg-blue-50 dark:bg-blue-900/20 rounded-2xl flex items-center justify-center shrink-0 border border-blue-100 dark:border-blue-800/30 shadow-inner">
                         <FileText size={40} className="text-blue-600 dark:text-blue-400" />
                     </div>
                     <div className="flex-1 min-w-0">
@@ -103,7 +103,7 @@ export const ActionPanel: React.FC<ActionPanelProps> = ({ file, onClear, onActio
                             {file.name}
                         </h2>
                         <p className="text-slate-500 dark:text-slate-400 font-medium flex items-center gap-3">
-                            <span className="bg-slate-100 dark:bg-white/10 px-2 py-0.5 rounded text-xs uppercase tracking-wider font-bold text-slate-600 dark:text-slate-300">
+                            <span className="bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded text-xs uppercase tracking-wider font-bold text-slate-600 dark:text-slate-300">
                                 {file.name.split('.').pop()}
                             </span>
                             <span>•</span>
@@ -114,7 +114,7 @@ export const ActionPanel: React.FC<ActionPanelProps> = ({ file, onClear, onActio
 
                 <button
                     onClick={onClear}
-                    className="p-3 rounded-xl bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-500/20 transition-colors shrink-0 flex items-center gap-2 font-bold"
+                    className="p-3 rounded-xl bg-red-50 dark:bg-red-900/10 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/20 transition-colors shrink-0 flex items-center gap-2 font-bold"
                 >
                     <X size={20} />
                     <span className="hidden sm:inline">Kaldır</span>
@@ -150,16 +150,16 @@ export const ActionPanel: React.FC<ActionPanelProps> = ({ file, onClear, onActio
                                 <button
                                     key={fmt.ext}
                                     onClick={() => onAction('convert')}
-                                    className="flex items-center justify-between p-6 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl hover:border-blue-500 hover:shadow-lg transition-all group text-left relative overflow-hidden"
+                                    className="flex items-center justify-between p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl hover:border-blue-500 hover:shadow-lg transition-all group text-left relative overflow-hidden"
                                 >
-                                    <div className="absolute inset-0 bg-blue-50 dark:bg-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                    <div className="absolute inset-0 bg-blue-50 dark:bg-blue-900/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                                     <div className="flex flex-col relative z-10">
                                         <span className="text-xs text-slate-400 font-bold uppercase tracking-widest mb-2">
                                             {file.name.split('.').pop()?.toUpperCase()} &#8594; {fmt.ext.toUpperCase()}
                                         </span>
                                         <span className="text-lg font-black text-slate-800 dark:text-white">{fmt.label}</span>
                                     </div>
-                                    <div className="w-10 h-10 rounded-full bg-blue-50 dark:bg-white/10 flex items-center justify-center group-hover:bg-blue-500 group-hover:text-white transition-all text-blue-500 dark:text-blue-400 relative z-10">
+                                    <div className="w-10 h-10 rounded-full bg-blue-50 dark:bg-slate-800 flex items-center justify-center group-hover:bg-blue-500 group-hover:text-white transition-all text-blue-500 dark:text-blue-400 relative z-10">
                                         <ArrowRight size={20} />
                                     </div>
                                 </button>
@@ -179,7 +179,7 @@ export const ActionPanel: React.FC<ActionPanelProps> = ({ file, onClear, onActio
                                 <button
                                     key={fmt.ext}
                                     onClick={() => onAction('convert')}
-                                    className="flex items-center gap-3 p-4 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl hover:bg-slate-50 dark:hover:bg-white/10 hover:border-slate-300 dark:hover:border-white/20 transition-all text-left"
+                                    className="flex items-center gap-3 p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 hover:border-slate-300 dark:hover:border-slate-700 transition-all text-left"
                                 >
                                     <div className="text-slate-300 dark:text-slate-600">
                                         <ArrowRight size={16} />
@@ -196,7 +196,7 @@ export const ActionPanel: React.FC<ActionPanelProps> = ({ file, onClear, onActio
 
                 {/* Recommended Section (Conditional) */}
                 {recommended.length > 0 && (
-                    <div className="text-left space-y-6 pt-6 border-t border-slate-200 dark:border-white/5">
+                    <div className="text-left space-y-6 pt-6 border-t border-slate-200 dark:border-slate-800">
                         <h3 className="text-slate-800 dark:text-slate-200 text-lg font-black">
                             Bu Dosya İçin Diğer Araçlar
                         </h3>
@@ -220,7 +220,7 @@ export const ActionPanel: React.FC<ActionPanelProps> = ({ file, onClear, onActio
                 {/* Category: Görsel İşlemleri */}
                 {isImage && (
                     <div className="text-left">
-                        <h3 className="mb-4 opacity-70 text-sm uppercase tracking-wider font-medium">Görsel İşlemleri</h3>
+                        <h3 className="mb-4 opacity-70 text-sm uppercase tracking-wider font-medium text-slate-500 dark:text-slate-400">Görsel İşlemleri</h3>
                         <div className="grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))] gap-4">
                             {renderButton('social', <Smartphone size={28} className="text-fuchsia-400" />, 'Boyutlandır', 'Story / Post')}
                             {renderButton('exif', <Shield size={28} className="text-emerald-500" />, 'Exif Temizle', 'Gizlilik Koruması')}
@@ -234,7 +234,7 @@ export const ActionPanel: React.FC<ActionPanelProps> = ({ file, onClear, onActio
 
                 {/* Category: Dosya İşlemleri */}
                 <div className="text-left">
-                    <h3 className="mb-4 opacity-70 text-sm uppercase tracking-wider font-medium">Genel İşlemler</h3>
+                    <h3 className="mb-4 opacity-70 text-sm uppercase tracking-wider font-medium text-slate-500 dark:text-slate-400">Genel İşlemler</h3>
                     <div className="grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))] gap-4">
                         {renderButton('convert', <FileType size={28} className="text-blue-400" />, 'Çevir / Adlandır', 'Format ve Uzantı')}
                         {renderButton(
@@ -250,7 +250,7 @@ export const ActionPanel: React.FC<ActionPanelProps> = ({ file, onClear, onActio
 
                 {/* Category: Mühendislik Araçları */}
                 <div className="text-left">
-                    <h3 className="mb-4 opacity-70 text-sm uppercase tracking-wider font-medium">Mühendislik Araçları</h3>
+                    <h3 className="mb-4 opacity-70 text-sm uppercase tracking-wider font-medium text-slate-500 dark:text-slate-400">Mühendislik Araçları</h3>
                     <div className="grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))] gap-4">
                         {renderButton('units', <Calculator size={28} className="text-orange-500" />, 'Hesaplama Seti', 'Ölçek, Tarih, Alan')}
                     </div>
@@ -258,7 +258,7 @@ export const ActionPanel: React.FC<ActionPanelProps> = ({ file, onClear, onActio
 
                 {/* Category: Analiz & Görüntüleme */}
                 <div className="text-left">
-                    <h3 className="mb-4 opacity-70 text-sm uppercase tracking-wider font-medium">Analiz ve Veri</h3>
+                    <h3 className="mb-4 opacity-70 text-sm uppercase tracking-wider font-medium text-slate-500 dark:text-slate-400">Analiz ve Veri</h3>
                     <div className="grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))] gap-4">
                         {renderButton('hash', <Hash size={28} className="text-amber-400" />, 'Hash (İmza)', 'MD5, SHA1, SHA256')}
                         {isText && renderButton('text', <FileText size={28} className="text-violet-400" />, 'Metin Analizi', 'Kelime/Satır Sayacı')}
@@ -268,7 +268,7 @@ export const ActionPanel: React.FC<ActionPanelProps> = ({ file, onClear, onActio
 
                 {/* Category: Geliştirici */}
                 <div className="text-left">
-                    <h3 className="mb-4 opacity-70 text-sm uppercase tracking-wider font-medium">Geliştirici</h3>
+                    <h3 className="mb-4 opacity-70 text-sm uppercase tracking-wider font-medium text-slate-500 dark:text-slate-400">Geliştirici</h3>
                     <div className="grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))] gap-4">
                         {renderButton('base64', <Binary size={28} className="text-fuchsia-400" />, 'Base64 Çevirici', 'Veriyi Kodla')}
                     </div>
