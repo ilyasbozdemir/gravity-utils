@@ -283,6 +283,8 @@ function ImageToPdfTool({ onBack }: { onBack: () => void }) {
                                 <select
                                     value={pageSize}
                                     onChange={e => setPageSize(e.target.value as PageSize)}
+                                    title="Sayfa boyutu seç"
+                                    aria-label="Çıktı PDF sayfa boyutu"
                                     className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/40"
                                 >
                                     {Object.entries(PAGE_SIZES).map(([k, v]) => (
@@ -300,8 +302,8 @@ function ImageToPdfTool({ onBack }: { onBack: () => void }) {
                                                 key={o}
                                                 onClick={() => setOrientation(o)}
                                                 className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all border ${orientation === o
-                                                        ? 'bg-blue-600 text-white border-blue-600 shadow-lg shadow-blue-500/20'
-                                                        : 'bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700'
+                                                    ? 'bg-blue-600 text-white border-blue-600 shadow-lg shadow-blue-500/20'
+                                                    : 'bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700'
                                                     }`}
                                             >
                                                 {o === 'portrait' ? '📄 Dikey' : '🖼️ Yatay'}
@@ -323,8 +325,8 @@ function ImageToPdfTool({ onBack }: { onBack: () => void }) {
                                             key={opt.id}
                                             onClick={() => setImageFit(opt.id)}
                                             className={`w-full text-left p-3 rounded-xl border text-xs transition-all ${imageFit === opt.id
-                                                    ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-500 text-blue-700 dark:text-blue-400'
-                                                    : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400'
+                                                ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-500 text-blue-700 dark:text-blue-400'
+                                                : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400'
                                                 }`}
                                         >
                                             <div className="font-bold">{opt.label}</div>
@@ -423,8 +425,8 @@ function ImageToPdfTool({ onBack }: { onBack: () => void }) {
                     {/* Drop zone */}
                     <div
                         className={`border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer transition-all mb-4 ${dragOver
-                                ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-                                : 'border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50'
+                            ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                            : 'border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50'
                             }`}
                         onClick={() => inputRef.current?.click()}
                         onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
@@ -476,8 +478,8 @@ function ImageToPdfTool({ onBack }: { onBack: () => void }) {
                                     onDragOver={(e) => handleDragOver(e, item.id)}
                                     onDragEnd={handleDragEnd}
                                     className={`flex items-center gap-3 p-3 bg-white dark:bg-slate-900 border rounded-xl transition-all cursor-grab active:cursor-grabbing ${dragItemId === item.id
-                                            ? 'border-blue-500 opacity-50 scale-95'
-                                            : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'
+                                        ? 'border-blue-500 opacity-50 scale-95'
+                                        : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'
                                         }`}
                                 >
                                     {/* Drag handle */}
