@@ -417,7 +417,7 @@ export function JsonLdEditor({ onBack }: { onBack: () => void }) {
     };
 
     return (
-        <div className="max-w-6xl mx-auto p-6 animate-in fade-in zoom-in duration-300">
+        <div className="max-w-[1400px] mx-auto p-6 animate-in fade-in zoom-in duration-300">
 
             {/* Header */}
             <div className="flex items-center gap-4 mb-6">
@@ -476,16 +476,16 @@ export function JsonLdEditor({ onBack }: { onBack: () => void }) {
             {/* Schema type selector */}
             <div className="mb-6">
                 <p className="text-xs font-bold uppercase text-slate-400 mb-3">Şema Türü Seç</p>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
+                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-12 gap-2">
                     {Object.entries(SCHEMAS).map(([type, meta]) => (
                         <button key={type} onClick={() => applyTemplate(type)}
-                            className={`flex flex-col items-center gap-1 p-3 rounded-xl border-2 text-center transition-all ${selectedType === type
-                                ? 'border-violet-500 bg-violet-50 dark:bg-violet-900/20'
-                                : 'border-slate-200 dark:border-slate-800 hover:border-violet-300 bg-white dark:bg-slate-900'}`}>
-                            <span className="text-xl">{meta.emoji}</span>
-                            <span className={`text-[10px] font-bold leading-tight ${selectedType === type ? 'text-violet-700 dark:text-violet-400' : 'text-slate-600 dark:text-slate-400'}`}>
-                                {meta.label}
-                            </span>
+                            className={`flex flex-col items-center gap-1 py-2.5 px-1 rounded-xl border-2 text-center transition-all ${selectedType === type
+                                    ? 'border-violet-500 bg-violet-50 dark:bg-violet-900/20 shadow-md shadow-violet-500/10'
+                                    : 'border-slate-200 dark:border-slate-800 hover:border-violet-300 hover:bg-violet-50/50 dark:hover:bg-violet-900/10 bg-white dark:bg-slate-900'
+                                }`}>
+                            <span className="text-lg">{meta.emoji}</span>
+                            <span className={`text-[9px] font-bold leading-tight mt-0.5 ${selectedType === type ? 'text-violet-700 dark:text-violet-400' : 'text-slate-500 dark:text-slate-400'
+                                }`}>{meta.label}</span>
                         </button>
                     ))}
                 </div>
@@ -497,10 +497,10 @@ export function JsonLdEditor({ onBack }: { onBack: () => void }) {
             </div>
 
             {/* Main editor area */}
-            <div className="grid lg:grid-cols-2 gap-6">
+            <div className="grid xl:grid-cols-5 gap-6">
 
-                {/* Left: Editor */}
-                <div className="flex flex-col gap-3">
+                {/* Left: Editor — 3/5 width */}
+                <div className="xl:col-span-3 flex flex-col gap-3">
                     {/* View mode */}
                     <div className="flex items-center gap-2">
                         <div className="flex gap-1 bg-slate-100 dark:bg-slate-800 rounded-xl p-1">
@@ -532,12 +532,12 @@ export function JsonLdEditor({ onBack }: { onBack: () => void }) {
                             onChange={e => setCode(e.target.value)}
                             spellCheck={false}
                             aria-label="JSON-LD kodu"
-                            className="w-full h-[480px] bg-slate-950 text-green-400 font-mono text-xs p-5 rounded-2xl border border-slate-800 resize-none focus:outline-none focus:ring-2 focus:ring-violet-500/30 leading-relaxed shadow-lg"
+                            className="w-full h-[560px] bg-slate-950 text-green-400 font-mono text-sm p-5 rounded-2xl border border-slate-800 resize-none focus:outline-none focus:ring-2 focus:ring-violet-500/30 leading-relaxed shadow-lg"
                         />
                     )}
 
                     {viewMode === 'tree' && (
-                        <div className="h-[480px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 overflow-auto font-mono text-xs leading-relaxed">
+                        <div className="h-[560px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 overflow-auto font-mono text-xs leading-relaxed">
                             {parsedForTree
                                 ? <JsonNode data={parsedForTree} />
                                 : <p className="text-red-500">JSON parse edilemedi</p>}
@@ -545,15 +545,15 @@ export function JsonLdEditor({ onBack }: { onBack: () => void }) {
                     )}
 
                     {viewMode === 'preview' && (
-                        <div className="h-[480px] bg-slate-950 rounded-2xl border border-slate-800 overflow-auto p-5">
+                        <div className="h-[560px] bg-slate-950 rounded-2xl border border-slate-800 overflow-auto p-5">
                             <p className="text-slate-500 text-[10px] font-bold uppercase mb-3">HTML head içine yerleştirin:</p>
-                            <pre className="font-mono text-xs text-cyan-400 leading-relaxed whitespace-pre-wrap">{scriptTag}</pre>
+                            <pre className="font-mono text-sm text-cyan-400 leading-relaxed whitespace-pre-wrap">{scriptTag}</pre>
                         </div>
                     )}
                 </div>
 
-                {/* Right: Validation + Tips */}
-                <div className="flex flex-col gap-4">
+                {/* Right: Validation + Tips — 2/5 width */}
+                <div className="xl:col-span-2 flex flex-col gap-4">
 
                     {/* Score + validation */}
                     <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm">
