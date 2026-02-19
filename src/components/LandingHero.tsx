@@ -28,7 +28,7 @@ export const LandingHero: React.FC<LandingHeroProps> = ({ onFileSelect, onToolSe
                 </div>
 
                 <h1 className="text-[clamp(2.5rem,6vw,4rem)] font-extrabold leading-[1.1] tracking-tighter mb-6 max-w-[900px] text-slate-900 dark:text-white">
-                    Profesyonel <span className="text-blue-600 dark:text-blue-400">Dosya Araçları</span> <br />
+                    Profesyonel <span className="text-blue-600 dark:text-blue-400">Dijital Araçlar</span> <br />
                     Elinizin Altında.
                 </h1>
 

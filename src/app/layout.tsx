@@ -7,8 +7,8 @@ import { ThemeProvider } from "@/context/ThemeContext";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-    title: "Gravity Utils - Güvenli Dosya Araçları",
-    description: "Tarayıcı tabanlı, hızlı ve güvenli hepsi bir arada araç seti.",
+    title: "Gravity Utils - Hepsi Bir Arada Dijital Araç Seti",
+    description: "Tarayıcı tabanlı, hızlı ve güvenli hepsi bir arada araç seti. Dosya, ağ, geliştirici ve grafik araçları.",
 };
 
 // ThemeProvider needs to be wrapped or updated to "use client"
