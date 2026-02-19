@@ -79,7 +79,7 @@ export const StringInspector: React.FC<StringInspectorProps> = ({ onBack }) => {
                         <div className="flex items-center justify-between text-xs py-1 border-b border-white/5">
                             <span className="text-slate-500">En sık karakter</span>
                             <span className="text-slate-200 font-mono font-bold">
-                                {input ? Object.entries([...input].reduce((a: Record<string, number>, c) => (a[c] = (a[c] || 0) + 1, a), {})).sort((a, b) => b[1] - a[1])[0][0] : '-'}
+                                {input ? Object.entries([...input].reduce((a: Record<string, number>, c) => (a[c] = (a[c] || 0) + 1, a), {} as Record<string, number>)).sort((a, b) => b[1] - a[1])[0][0] : '-'}
                             </span>
                         </div>
                         <div className="flex items-center justify-between text-xs py-1 border-b border-white/5">

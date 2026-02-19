@@ -1,0 +1,73 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 0, 0, 0;
+  --background-start-rgb: 214, 219, 220;
+  --background-end-rgb: 255, 255, 255;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --foreground-rgb: 255, 255, 255;
+    --background-start-rgb: 0, 0, 0;
+    --background-end-rgb: 0, 0, 0;
+  }
+}
+
+@layer base {
+  body {
+    @apply bg-slate-50 text-slate-900 dark:bg-[#06070a] dark:text-slate-100 transition-colors duration-300;
+  }
+}
+
+/* Glassmorphism Utilities */
+.glass-panel {
+  @apply bg-white/70 dark:bg-black/60 backdrop-blur-md border border-white/20 dark:border-white/5 rounded-2xl shadow-lg;
+}
+
+.glass-button {
+  @apply bg-blue-500/10 border border-blue-500/20 text-blue-600 dark:text-blue-400 px-4 py-2 rounded-lg font-medium transition-all hover:bg-blue-500/20 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-blue-500/10;
+}
+
+.card {
+  @apply p-8 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl shadow-sm;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-slate-300 dark:bg-slate-700 rounded-full hover:bg-slate-400 dark:hover:bg-slate-600 border-4 border-transparent bg-clip-content;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+/* Global inputs */
+input[type="text"], 
+input[type="number"], 
+textarea, 
+select {
+  @apply bg-white dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-2 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all;
+}
+
+/* Headings */
+h1, h2, h3, h4, h5, h6 {
+  @apply text-slate-900 dark:text-white font-bold tracking-tight;
+}

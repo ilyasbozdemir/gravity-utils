@@ -1,0 +1,35 @@
+import type { Metadata } from "next";
+import { Inter } from "next/font/google"; // Using google fonts via next/font
+import "./globals.css";
+// We need to move ThemeProvider to a Client Component wrapper if it's using hooks directly in the layout, or keep it if it's "use client"
+import { ThemeProvider } from "@/context/ThemeContext";
+
+const inter = Inter({ subsets: ["latin"] });
+
+export const metadata: Metadata = {
+    title: "Gravity Utils - Güvenli Dosya Araçları",
+    description: "Tarayıcı tabanlı, hızlı ve güvenli hepsi bir arada araç seti.",
+};
+
+// ThemeProvider needs to be wrapped or updated to "use client"
+// Let's assume ThemeContext.tsx has "use client" or we add it. I'll handle that next.
+
+export default function RootLayout({
+    children,
+}: Readonly<{
+    children: React.ReactNode;
+}>) {
+    return (
+        <html lang="tr" suppressHydrationWarning>
+            <body className={inter.className}>
+                <div className="min-h-screen bg-slate-50 dark:bg-[#06070a] text-slate-900 dark:text-slate-100 transition-colors duration-300">
+                    {/* We need to ensure ThemeProvider wraps correctly. If it's not a client component, we error. */}
+                    {/* I will add 'use client' to ThemeContext.tsx next. */}
+                    <ThemeProvider>
+                        {children}
+                    </ThemeProvider>
+                </div>
+            </body>
+        </html>
+    );
+}
