@@ -29,6 +29,8 @@ import { ThemeProvider } from './context/ThemeContext';
 import { Sidebar } from './components/Sidebar';
 import type { ToolView as ViewType } from './components/Sidebar';
 
+import { OfficeTools } from './components/OfficeTools';
+
 const TOOL_TITLES: Record<ViewType, string> = {
   home: 'Gravity Utils - Güvenli Dosya Araçları',
   convert: 'Dosya Dönüştürücü - Gravity Utils',
@@ -52,6 +54,13 @@ const TOOL_TITLES: Record<ViewType, string> = {
   imagetopdf: 'Resimden PDF Oluştur - Gravity Utils',
   case: 'Büyük / Küçük Harf Çevirici - Gravity Utils',
   string: 'Metin Müfettişi & Analiz - Gravity Utils',
+  'word-pdf': 'Word -> PDF Dönüştürücü - Gravity Utils',
+  'pdf-word': 'PDF -> Word Dönüştürücü - Gravity Utils',
+  'excel-pdf': 'Excel -> PDF Dönüştürücü - Gravity Utils',
+  'pdf-excel': 'PDF -> Excel Dönüştürücü - Gravity Utils',
+  'ppt-pdf': 'PowerPoint -> PDF Dönüştürücü - Gravity Utils',
+  'pdf-ppt': 'PDF -> PowerPoint Dönüştürücü - Gravity Utils',
+  'pdf-image': 'PDF -> Resim Dönüştürücü - Gravity Utils',
 };
 
 function App() {
@@ -93,7 +102,7 @@ function AppContent() {
   };
 
   return (
-    <div className="flex h-screen overflow-hidden bg-slate-50 dark:bg-[#06070a] text-slate-800 dark:text-slate-200 transition-colors duration-300">
+    <div className="flex h-screen overflow-hidden bg-slate-50 dark:bg-[#06070a] text-slate-900 dark:text-slate-100 transition-colors duration-300">
 
       <Sidebar
         currentView={view}
@@ -114,7 +123,7 @@ function AppContent() {
           >
             <Menu size={24} />
           </button>
-          <span className="text-sm font-bold uppercase tracking-wider text-slate-700 dark:text-slate-200">
+          <span className="text-sm font-bold uppercase tracking-wider text-slate-700 dark:text-slate-200 truncate max-w-[200px]">
             {view === 'home' ? 'Gravity Utils' : TOOL_TITLES[view]?.split(' - ')[0]}
           </span>
           {file ? (
@@ -162,6 +171,14 @@ function AppContent() {
                 <ActionPanel file={file} onClear={clearFile} onAction={handleAction} />
               )}
 
+              {/* Office Tools Routing */}
+              {(view === 'word-pdf' || view === 'pdf-word' ||
+                view === 'excel-pdf' || view === 'pdf-excel' ||
+                view === 'ppt-pdf' || view === 'pdf-ppt' ||
+                view === 'pdf-image' || view === 'imagetopdf') && (
+                  <OfficeTools mode={view as import('./components/OfficeTools').OfficeToolMode} onBack={() => setView('home')} />
+                )}
+
               {view === 'convert' && (
                 <FileConverter file={file} onBack={() => setView('home')} />
               )}
@@ -190,7 +207,7 @@ function AppContent() {
                 <TextAnalyzer file={file} onBack={() => setView('home')} />
               )}
 
-              {(view === 'pdf' || view === 'imagetopdf') && (
+              {view === 'pdf' && (
                 <PdfManager file={file} onBack={() => setView('home')} />
               )}
 

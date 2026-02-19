@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 
-export type ToolView = 'home' | 'convert' | 'inspect' | 'base64' | 'optimize' | 'hash' | 'json' | 'text' | 'pdf' | 'exif' | 'qr' | 'social' | 'favicon' | 'units' | 'encrypt' | 'uuid' | 'yaml' | 'jwt' | 'url' | 'imagetopdf' | 'case' | 'string';
+export type ToolView = 'home' | 'convert' | 'inspect' | 'base64' | 'optimize' | 'hash' | 'json' | 'text' | 'pdf' | 'exif' | 'qr' | 'social' | 'favicon' | 'units' | 'encrypt' | 'uuid' | 'yaml' | 'jwt' | 'url' | 'imagetopdf' | 'case' | 'string' | 'word-pdf' | 'pdf-word' | 'excel-pdf' | 'pdf-excel' | 'ppt-pdf' | 'pdf-ppt' | 'pdf-image';
 
 interface SidebarProps {
     currentView: ToolView;
@@ -24,7 +24,8 @@ interface NavItem {
 }
 
 const CATEGORIES = [
-    { id: 'files', title: 'Dosya & PDF', icon: <FileText size={16} /> },
+    { id: 'office', title: 'Ofis Araçları', icon: <FileText size={16} /> },
+    { id: 'files', title: 'Dosya & PDF', icon: <Archive size={16} /> },
     { id: 'media', title: 'Görsel & Medya', icon: <ImageIcon size={16} /> },
     { id: 'dev', title: 'Geliştirici', icon: <Code size={16} /> },
     { id: 'security', title: 'Güvenlik', icon: <ShieldCheck size={16} /> },
@@ -32,15 +33,28 @@ const CATEGORIES = [
 ];
 
 const NAV_ITEMS: NavItem[] = [
+    // Office Tools
+    { id: 'word-pdf', title: 'Word → PDF', icon: <FileText size={18} />, category: 'office' },
+    { id: 'pdf-word', title: 'PDF → Word', icon: <FileText size={18} />, category: 'office' },
+    { id: 'excel-pdf', title: 'Excel → PDF', icon: <Layers size={18} />, category: 'office' },
+    { id: 'pdf-excel', title: 'PDF → Excel', icon: <Layers size={18} />, category: 'office' },
+    { id: 'ppt-pdf', title: 'PowerPoint → PDF', icon: <ImageIcon size={18} />, category: 'office' },
+    { id: 'pdf-ppt', title: 'PDF → PowerPoint', icon: <ImageIcon size={18} />, category: 'office' },
+
+    // Files
     { id: 'convert', title: 'Dosya Dönüştürücü', icon: <Layers size={18} />, category: 'files' },
     { id: 'pdf', title: 'PDF Yönetimi', icon: <FileText size={18} />, category: 'files' },
     { id: 'inspect', title: 'Arşiv Görüntüleyici', icon: <Archive size={18} />, category: 'files' },
+    { id: 'imagetopdf', title: 'Resim → PDF', icon: <ImageIcon size={18} />, category: 'files' },
+    { id: 'pdf-image', title: 'PDF → Resim', icon: <ImageIcon size={18} />, category: 'files' },
 
+    // Media
     { id: 'optimize', title: 'Resim Sıkıştırıcı', icon: <ImageIcon size={18} />, category: 'media' },
     { id: 'social', title: 'Sosyal Medya Boyut', icon: <Smartphone size={18} />, category: 'media' },
     { id: 'favicon', title: 'Favicon Oluşturucu', icon: <ImageIcon size={18} />, category: 'media' },
     { id: 'qr', title: 'QR Kod İşlemleri', icon: <QrCode size={18} />, category: 'media' },
 
+    // Dev
     { id: 'json', title: 'JSON Formatlayıcı', icon: <FileJson size={18} />, category: 'dev' },
     { id: 'yaml', title: 'YAML / JSON Çevirici', icon: <Code size={18} />, category: 'dev' },
     { id: 'jwt', title: 'JWT Debugger', icon: <ShieldCheck size={18} />, category: 'dev' },
@@ -48,10 +62,12 @@ const NAV_ITEMS: NavItem[] = [
     { id: 'url', title: 'URL Encoder', icon: <Globe size={18} />, category: 'dev' },
     { id: 'uuid', title: 'UUID Oluşturucu', icon: <Zap size={18} />, category: 'dev' },
 
+    // Security
     { id: 'encrypt', title: 'Dosya Şifreleyici', icon: <Lock size={18} />, category: 'security' },
     { id: 'hash', title: 'Hash Oluşturucu', icon: <Hash size={18} />, category: 'security' },
     { id: 'exif', title: 'Exif Temizleyici', icon: <Settings size={18} />, category: 'security' },
 
+    // Utils
     { id: 'units', title: 'Birim Çevirici', icon: <Calculator size={18} />, category: 'utils' },
     { id: 'text', title: 'Dosya Analizi', icon: <FileText size={18} />, category: 'utils' },
     { id: 'case', title: 'Harf Çevirici', icon: <Type size={18} />, category: 'utils' },
