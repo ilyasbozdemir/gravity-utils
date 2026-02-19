@@ -87,8 +87,8 @@ export default function Home() {
             />
 
             <div className="flex-1 flex flex-col h-full overflow-hidden relative">
-                {/* Mobile Header */}
-                <div className="lg:hidden px-4 py-3 bg-white dark:bg-[#0b101b] border-b border-slate-200 dark:border-white/5 flex items-center justify-between z-20">
+                {/* Mobile Header (Only on phones now) */}
+                <div className="md:hidden px-4 py-3 bg-white dark:bg-[#0b101b] border-b border-slate-200 dark:border-white/5 flex items-center justify-between z-20">
                     <button
                         onClick={() => setSidebarOpen(true)}
                         title="Menü"
@@ -98,7 +98,6 @@ export default function Home() {
                         <Menu size={24} />
                     </button>
                     <span className="text-sm font-bold uppercase tracking-wider text-slate-700 dark:text-slate-200 truncate max-w-[200px]">
-                        {/* Title Logic can be moved to a separate component or utility */}
                         Gravity Utils
                     </span>
                     {file ? (
@@ -113,13 +112,12 @@ export default function Home() {
                     )}
                 </div>
 
-                {/* Desktop Header */}
+                {/* Tablet & Desktop Header */}
                 {(file || view !== 'home') && (
-                    <header className="hidden lg:flex px-8 py-5 border-b border-slate-200 dark:border-white/5 items-center justify-between bg-white/80 dark:bg-[#06070a]/80 backdrop-blur-xl sticky top-0 z-30 transition-colors duration-300">
+                    <header className="hidden md:flex px-8 py-5 border-b border-slate-200 dark:border-white/5 items-center justify-between bg-white/80 dark:bg-[#06070a]/80 backdrop-blur-xl sticky top-0 z-30 transition-colors duration-300">
                         <div className="flex items-center gap-4">
-                            <h2 className="text-sm font-bold text-slate-700 dark:text-slate-400 uppercase tracking-widest">
-                                {/* Title logic simplified */}
-                                Application Tool
+                            <h2 className="text-sm font-bold text-slate-700 dark:text-slate-400 uppercase tracking-widest leading-none">
+                                {view.replace(/-/g, ' ')}
                             </h2>
                         </div>
                         {file && (
@@ -142,7 +140,7 @@ export default function Home() {
                     )}
 
                     {(file || view !== 'home') && (
-                        <div className="p-4 lg:p-8 max-w-[1200px] mx-auto w-full animate-[fadeIn_0.5s_ease] pb-20">
+                        <div className="p-4 md:p-6 lg:p-8 max-w-[1400px] mx-auto w-full animate-[fadeIn_0.5s_ease] pb-20">
                             {view === 'home' && file && (
                                 <ActionPanel file={file} onClear={clearFile} onAction={handleAction} />
                             )}

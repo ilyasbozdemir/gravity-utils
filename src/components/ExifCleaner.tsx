@@ -142,9 +142,9 @@ export const ExifCleaner: React.FC<ExifCleanerProps> = ({ file: initialFile, onB
                         />
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                    <div className="grid grid-cols-1 md:grid-cols-12 gap-6 lg:gap-8 items-start">
                         {/* Analysis Report */}
-                        <div className="lg:col-span-7 space-y-6">
+                        <div className="md:col-span-7 space-y-6">
                             {/* Security Status Banner */}
                             {!cleaned && riskLevel !== 'safe' && (
                                 <div className={`p-6 rounded-3xl border flex gap-4 animate-pulse ${riskLevel === 'high'
@@ -255,7 +255,7 @@ export const ExifCleaner: React.FC<ExifCleanerProps> = ({ file: initialFile, onB
                         </div>
 
                         {/* Preview Column */}
-                        <div className="lg:col-span-5 flex flex-col gap-6">
+                        <div className="md:col-span-5 flex flex-col gap-6">
                             <div className="bg-white dark:bg-black/40 border border-slate-200 dark:border-white/10 rounded-[2rem] p-6 flex flex-col items-center shadow-2xl relative min-h-[420px]">
                                 <button
                                     onClick={() => setFile(null)}

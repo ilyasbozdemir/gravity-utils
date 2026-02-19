@@ -259,7 +259,7 @@ export const UuidGenerator: React.FC<UuidGeneratorProps> = ({ onBack }) => {
                 {/* Version selector */}
                 <div className="space-y-2">
                     <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-1">UUID Versiyonu</label>
-                    <div className="grid grid-cols-5 gap-2">
+                    <div className="grid grid-cols-3 md:grid-cols-5 gap-2">
                         {(Object.keys(UUID_VERSIONS) as VersionKey[]).map(v => {
                             const m = UUID_VERSIONS[v];
                             const active = version === v;
@@ -268,10 +268,10 @@ export const UuidGenerator: React.FC<UuidGeneratorProps> = ({ onBack }) => {
                                     className={`flex flex-col items-center gap-1 py-3 px-2 rounded-2xl border-2 transition-all ${active
                                         ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20 shadow-lg shadow-indigo-500/10'
                                         : 'border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900 hover:border-indigo-300 dark:hover:border-indigo-600'}`}>
-                                    <span className={`text-lg font-black ${active ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400'}`}>
+                                    <span className={`text-base md:text-lg font-black ${active ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400'}`}>
                                         {m.label}
                                     </span>
-                                    <span className={`text-[9px] font-bold text-center leading-tight ${active ? 'text-indigo-500 dark:text-indigo-400' : 'text-slate-400'}`}>
+                                    <span className={`text-[8px] md:text-[9px] font-bold text-center leading-tight ${active ? 'text-indigo-500 dark:text-indigo-400' : 'text-slate-400'}`}>
                                         {m.name}
                                     </span>
                                 </button>

@@ -212,7 +212,7 @@ export function DateTimeConverter({ onBack }: { onBack: () => void }) {
                     {standardDiff ? (
                         <div className="space-y-6">
                             {diffMode === 'standard' && (
-                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                                <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">
                                     {[
                                         { label: 'GÜN', value: standardDiff.days, color: 'text-purple-600 dark:text-purple-400', bg: 'bg-purple-50 dark:bg-purple-900/10' },
                                         { label: 'SAAT', value: standardDiff.hours, color: 'text-blue-600 dark:text-blue-400', bg: 'bg-blue-50 dark:bg-blue-900/10' },

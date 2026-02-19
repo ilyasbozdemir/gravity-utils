@@ -31,7 +31,7 @@ const PRESETS = [
     { label: 'URL', pattern: 'https?:\\/\\/(www\\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b([-a-zA-Z0-9()@:%_+.~#?&/=]*)', flags: 'gi' },
     { label: 'IPv4', pattern: '\\b(?:\\d{1,3}\\.){3}\\d{1,3}\\b', flags: 'g' },
     { label: 'Tarih (GG/AA/YYYY)', pattern: '\\b(0?[1-9]|[12]\\d|3[01])[\\/\\-](0?[1-9]|1[0-2])[\\/\\-](\\d{4})\\b', flags: 'g' },
-    { label: 'Türk Telefon', pattern: '(\\+90|0)\\s?5\\d{2}\\s?\\d{3}\\s?\\d{2}\\s?\\d{2}', flags: 'g' },
+    { label: 'Telefon (Turkey)', pattern: '(\\+90|0)\\s?5\\d{2}\\s?\\d{3}\\s?\\d{2}\\s?\\d{2}', flags: 'g' },
     { label: 'Hex Renk', pattern: '#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})\\b', flags: 'gi' },
     { label: 'Türk TCKN', pattern: '\\b[1-9]\\d{10}\\b', flags: 'g' },
     { label: 'Sadece Rakam', pattern: '\\d+', flags: 'g' },
