@@ -160,6 +160,9 @@ export default function Home() {
                             {view === 'url' && <UrlEncoder onBack={() => setView('home')} />}
                             {view === 'case' && <CaseConverter onBack={() => setView('home')} />}
                             {view === 'string' && <StringInspector onBack={() => setView('home')} />}
+                            {view === 'json-xml' && <JsonXmlConverter onBack={() => setView('home')} />}
+                            {view === 'date-time' && <DateTimeConverter onBack={() => setView('home')} />}
+                            {view === 'sql-formatter' && <SqlFormatter onBack={() => setView('home')} />}
                         </div>
                     )}
 
