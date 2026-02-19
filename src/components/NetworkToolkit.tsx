@@ -431,6 +431,8 @@ function CidrTab() {
                         value={prefix}
                         onChange={e => setPrefix(parseInt(e.target.value))}
                         className="w-full h-10 accent-purple-500 cursor-pointer"
+                        title={`Prefix /${prefix}`}
+                        aria-label={`Prefix uzunluğu: /${prefix}`}
                     />
                 </div>
                 <div>
@@ -444,6 +446,8 @@ function CidrTab() {
                         value={subnets}
                         onChange={e => setSubnets(parseInt(e.target.value))}
                         className="w-full h-10 accent-purple-500 cursor-pointer"
+                        title={`Subnet bitleri: ${subnets}`}
+                        aria-label={`Subnet bit sayısı: ${subnets}, ${Math.pow(2, subnets)} alt ağ`}
                     />
                 </div>
             </div>
@@ -547,8 +551,8 @@ export function NetworkToolkit({ onBack }: { onBack: () => void }) {
                         key={t.id}
                         onClick={() => setTab(t.id)}
                         className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold transition-all ${tab === t.id
-                                ? `${tabColor[t.color]} shadow-lg`
-                                : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
+                            ? `${tabColor[t.color]} shadow-lg`
+                            : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
                             }`}
                     >
                         {t.icon}

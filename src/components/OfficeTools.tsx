@@ -1,9 +1,16 @@
-import React, { useState, useRef } from 'react';
-import { ArrowLeft, FileText, Upload, X, AlertCircle, Download, FileSpreadsheet, Presentation, Image as ImageIcon, FileType } from 'lucide-react';
-import { PDFDocument } from 'pdf-lib';
+'use client';
+
+import React, { useState, useRef, useCallback } from 'react';
+import {
+    ArrowLeft, FileText, Upload, X, AlertCircle, Download,
+    FileSpreadsheet, Image as ImageIcon, FileType,
+    GripVertical, ArrowUp, ArrowDown, Plus, Layers,
+    Settings2, CheckCircle2, Loader2
+} from 'lucide-react';
+import { PDFDocument, PageSizes } from 'pdf-lib';
 import * as pdfjsLib from 'pdfjs-dist';
 import { saveAs } from 'file-saver';
-import { Document, Packer, Paragraph, TextRun, ImageRun, type ISectionOptions } from 'docx';
+import { Document, Packer, Paragraph, ImageRun, type ISectionOptions } from 'docx';
 import fontkit from '@pdf-lib/fontkit';
 import { renderAsync } from 'docx-preview';
 import html2canvas from 'html2canvas';
@@ -29,18 +36,524 @@ interface FileState {
     resultName?: string;
 }
 
+interface ImageItem {
+    id: string;
+    file: File;
+    preview: string;
+    width: number;
+    height: number;
+}
+
 const TOOL_CONFIG = {
-    'word-pdf': { title: 'Word to PDF', accept: '.doc,.docx', icon: <FileText size={24} />, color: 'text-blue-600', bg: 'bg-blue-600' },
-    'pdf-word': { title: 'PDF to Word', accept: '.pdf', icon: <FileText size={24} />, color: 'text-red-500', bg: 'bg-red-500' },
-    'excel-pdf': { title: 'Excel to PDF', accept: '.xls,.xlsx', icon: <FileSpreadsheet size={24} />, color: 'text-green-600', bg: 'bg-green-600' },
-    'pdf-excel': { title: 'PDF to Excel', accept: '.pdf', icon: <FileSpreadsheet size={24} />, color: 'text-red-500', bg: 'bg-red-500' },
-    'ppt-pdf': { title: 'PowerPoint to PDF', accept: '.ppt,.pptx', icon: <Presentation size={24} />, color: 'text-orange-500', bg: 'bg-orange-500' },
-    'pdf-ppt': { title: 'PDF to PowerPoint', accept: '.pdf', icon: <Presentation size={24} />, color: 'text-red-500', bg: 'bg-red-500' },
-    'pdf-image': { title: 'PDF to Image', accept: '.pdf', icon: <ImageIcon size={24} />, color: 'text-purple-500', bg: 'bg-purple-500' },
-    'imagetopdf': { title: 'Image to PDF', accept: 'image/*', icon: <ImageIcon size={24} />, color: 'text-blue-500', bg: 'bg-blue-500' },
+    'word-pdf': { title: 'Word → PDF', accept: '.doc,.docx', icon: <FileText size={24} />, color: 'text-blue-600', bg: 'bg-blue-600' },
+    'pdf-word': { title: 'PDF → Word', accept: '.pdf', icon: <FileText size={24} />, color: 'text-red-500', bg: 'bg-red-500' },
+    'excel-pdf': { title: 'Excel → PDF', accept: '.xls,.xlsx', icon: <FileSpreadsheet size={24} />, color: 'text-green-600', bg: 'bg-green-600' },
+    'pdf-excel': { title: 'PDF → Excel', accept: '.pdf', icon: <FileSpreadsheet size={24} />, color: 'text-red-500', bg: 'bg-red-500' },
+    'ppt-pdf': { title: 'PowerPoint → PDF', accept: '.ppt,.pptx', icon: <FileSpreadsheet size={24} />, color: 'text-orange-500', bg: 'bg-orange-500' },
+    'pdf-ppt': { title: 'PDF → PowerPoint', accept: '.pdf', icon: <FileSpreadsheet size={24} />, color: 'text-red-500', bg: 'bg-red-500' },
+    'pdf-image': { title: 'PDF → Görsel', accept: '.pdf', icon: <ImageIcon size={24} />, color: 'text-purple-500', bg: 'bg-purple-500' },
+    'imagetopdf': { title: 'Görsel → PDF', accept: 'image/*', icon: <ImageIcon size={24} />, color: 'text-blue-500', bg: 'bg-blue-500' },
 };
 
+type PageSize = 'auto' | 'a4' | 'a3' | 'letter' | 'legal';
+type PageOrientation = 'portrait' | 'landscape';
+type ImageFit = 'fit' | 'fill' | 'stretch';
+
+const PAGE_SIZES: Record<PageSize, string> = {
+    auto: 'Otomatik (görsel boyutu)',
+    a4: 'A4 (210×297mm)',
+    a3: 'A3 (297×420mm)',
+    letter: 'Letter (216×279mm)',
+    legal: 'Legal (216×356mm)',
+};
+
+// ─── Multi-Image → PDF Component ─────────────────────────────────────────────
+function ImageToPdfTool({ onBack }: { onBack: () => void }) {
+    const [images, setImages] = useState<ImageItem[]>([]);
+    const [dragOver, setDragOver] = useState(false);
+    const [dragItemId, setDragItemId] = useState<string | null>(null);
+    const [pageSize, setPageSize] = useState<PageSize>('a4');
+    const [orientation, setOrientation] = useState<PageOrientation>('portrait');
+    const [imageFit, setImageFit] = useState<ImageFit>('fit');
+    const [margin, setMargin] = useState(20); // px
+    const [quality, setQuality] = useState(0.92);
+    const [isBuilding, setIsBuilding] = useState(false);
+    const [progress, setProgress] = useState(0);
+    const [done, setDone] = useState(false);
+    const inputRef = useRef<HTMLInputElement>(null);
+
+    const loadImage = useCallback((file: File): Promise<ImageItem> => {
+        return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const src = e.target?.result as string;
+                const img = new Image();
+                img.onload = () => {
+                    resolve({
+                        id: `${file.name}-${Date.now()}-${Math.random()}`,
+                        file,
+                        preview: src,
+                        width: img.naturalWidth,
+                        height: img.naturalHeight,
+                    });
+                };
+                img.src = src;
+            };
+            reader.readAsDataURL(file);
+        });
+    }, []);
+
+    const handleFiles = useCallback(async (fileList: FileList | File[]) => {
+        const accepted = Array.from(fileList).filter(f => f.type.startsWith('image/'));
+        if (!accepted.length) return;
+        const loaded = await Promise.all(accepted.map(loadImage));
+        setImages(prev => [...prev, ...loaded]);
+        setDone(false);
+    }, [loadImage]);
+
+    const handleDrop = useCallback((e: React.DragEvent) => {
+        e.preventDefault();
+        setDragOver(false);
+        if (e.dataTransfer.files) handleFiles(e.dataTransfer.files);
+    }, [handleFiles]);
+
+    const moveImage = (id: string, dir: 'up' | 'down') => {
+        setImages(prev => {
+            const idx = prev.findIndex(i => i.id === id);
+            if (idx === -1) return prev;
+            const next = [...prev];
+            const target = dir === 'up' ? idx - 1 : idx + 1;
+            if (target < 0 || target >= next.length) return prev;
+            [next[idx], next[target]] = [next[target], next[idx]];
+            return next;
+        });
+    };
+
+    const removeImage = (id: string) => {
+        setImages(prev => prev.filter(i => i.id !== id));
+        setDone(false);
+    };
+
+    // Drag-to-reorder
+    const handleDragStart = (id: string) => setDragItemId(id);
+    const handleDragOver = (e: React.DragEvent, targetId: string) => {
+        e.preventDefault();
+        if (!dragItemId || dragItemId === targetId) return;
+        setImages(prev => {
+            const from = prev.findIndex(i => i.id === dragItemId);
+            const to = prev.findIndex(i => i.id === targetId);
+            if (from === -1 || to === -1) return prev;
+            const next = [...prev];
+            next.splice(to, 0, next.splice(from, 1)[0]);
+            return next;
+        });
+    };
+    const handleDragEnd = () => setDragItemId(null);
+
+    const buildPdf = async () => {
+        if (!images.length) return;
+        setIsBuilding(true);
+        setProgress(0);
+        setDone(false);
+
+        try {
+            const pdfDoc = await PDFDocument.create();
+
+            for (let i = 0; i < images.length; i++) {
+                const item = images[i];
+                setProgress(Math.round(((i) / images.length) * 90));
+
+                // Draw image to canvas to get JPEG bytes at chosen quality
+                const canvas = document.createElement('canvas');
+                const img = new Image();
+                await new Promise<void>(res => { img.onload = () => res(); img.src = item.preview; });
+
+                // Determine page dimensions
+                let pgW: number, pgH: number;
+                if (pageSize === 'auto') {
+                    pgW = item.width;
+                    pgH = item.height;
+                } else {
+                    const sizePts = {
+                        a4: PageSizes.A4,
+                        a3: PageSizes.A3,
+                        letter: PageSizes.Letter,
+                        legal: PageSizes.Legal,
+                    }[pageSize] as [number, number];
+                    [pgW, pgH] = orientation === 'portrait' ? sizePts : [sizePts[1], sizePts[0]];
+                }
+
+                // Calculate image placement within page
+                const mPts = margin; // treat margin as pts
+                const drawW = pgW - mPts * 2;
+                const drawH = pgH - mPts * 2;
+
+                let imgX = mPts, imgY = mPts;
+                let imgW = drawW, imgH = drawH;
+
+                if (imageFit === 'fit') {
+                    // Scale to fit while preserving ratio
+                    const scale = Math.min(drawW / item.width, drawH / item.height);
+                    imgW = item.width * scale;
+                    imgH = item.height * scale;
+                    imgX = mPts + (drawW - imgW) / 2;
+                    imgY = mPts + (drawH - imgH) / 2;
+                } else if (imageFit === 'fill') {
+                    // Scale to fill (crop overflow)
+                    const scale = Math.max(drawW / item.width, drawH / item.height);
+                    imgW = item.width * scale;
+                    imgH = item.height * scale;
+                    imgX = mPts + (drawW - imgW) / 2;
+                    imgY = mPts + (drawH - imgH) / 2;
+                }
+                // 'stretch' = use full draw area
+
+                // Rasterize to JPEG
+                canvas.width = item.width;
+                canvas.height = item.height;
+                const ctx = canvas.getContext('2d')!;
+                ctx.drawImage(img, 0, 0);
+                const jpegDataUrl = canvas.toDataURL('image/jpeg', quality);
+                const base64 = jpegDataUrl.split(',')[1];
+                const jpegBytes = Uint8Array.from(atob(base64), c => c.charCodeAt(0));
+
+                const embeddedImg = await pdfDoc.embedJpg(jpegBytes);
+                const page = pdfDoc.addPage([pgW, pgH]);
+
+                // pdf-lib Y axis is bottom-up, flip imgY
+                const pdfImgY = pgH - imgY - imgH;
+
+                page.drawImage(embeddedImg, {
+                    x: imgX,
+                    y: pdfImgY,
+                    width: imgW,
+                    height: imgH,
+                });
+            }
+
+            setProgress(95);
+            const pdfBytes = await pdfDoc.save();
+            const blob = new Blob([pdfBytes as unknown as BlobPart], { type: 'application/pdf' });
+            saveAs(blob, `images-to-pdf-${Date.now()}.pdf`);
+            setProgress(100);
+            setDone(true);
+        } catch (e) {
+            console.error(e);
+            alert('PDF oluşturulurken hata oluştu: ' + (e as Error).message);
+        } finally {
+            setIsBuilding(false);
+        }
+    };
+
+    return (
+        <div className="max-w-5xl mx-auto p-6 animate-in fade-in zoom-in duration-300">
+            {/* Header */}
+            <div className="flex items-center gap-4 mb-8">
+                <button
+                    onClick={onBack}
+                    title="Geri Dön"
+                    aria-label="Geri Dön"
+                    className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                >
+                    <ArrowLeft className="w-6 h-6 text-slate-600 dark:text-slate-400" />
+                </button>
+                <div>
+                    <h2 className="text-2xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                        <ImageIcon className="w-6 h-6 text-blue-500" />
+                        Görsel → PDF Dönüştürücü
+                    </h2>
+                    <p className="text-slate-500 dark:text-slate-400 text-sm">
+                        Birden fazla görsel yükle, sırala ve tek PDF'e birleştir
+                    </p>
+                </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Settings Panel */}
+                <div className="lg:col-span-1 space-y-5">
+                    {/* Page size */}
+                    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5">
+                        <h3 className="text-sm font-bold text-slate-700 dark:text-slate-200 flex items-center gap-2 mb-4">
+                            <Settings2 size={16} className="text-blue-500" /> Sayfa Ayarları
+                        </h3>
+
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Sayfa Boyutu</label>
+                                <select
+                                    value={pageSize}
+                                    onChange={e => setPageSize(e.target.value as PageSize)}
+                                    className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/40"
+                                >
+                                    {Object.entries(PAGE_SIZES).map(([k, v]) => (
+                                        <option key={k} value={k}>{v}</option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            {pageSize !== 'auto' && (
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Yön</label>
+                                    <div className="flex gap-2">
+                                        {(['portrait', 'landscape'] as const).map(o => (
+                                            <button
+                                                key={o}
+                                                onClick={() => setOrientation(o)}
+                                                className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all border ${orientation === o
+                                                        ? 'bg-blue-600 text-white border-blue-600 shadow-lg shadow-blue-500/20'
+                                                        : 'bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700'
+                                                    }`}
+                                            >
+                                                {o === 'portrait' ? '📄 Dikey' : '🖼️ Yatay'}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            <div>
+                                <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Görsel Yerleşimi</label>
+                                <div className="space-y-1">
+                                    {([
+                                        { id: 'fit', label: 'Sığdır (en-boy oranı korur)', desc: 'Kenar boşluklu' },
+                                        { id: 'fill', label: 'Doldur (oran korur, taşabilir)', desc: 'Kenarlar kesilebilir' },
+                                        { id: 'stretch', label: 'Uzat (tam sayfa)', desc: 'Çarpıtılabilir' },
+                                    ] as const).map(opt => (
+                                        <button
+                                            key={opt.id}
+                                            onClick={() => setImageFit(opt.id)}
+                                            className={`w-full text-left p-3 rounded-xl border text-xs transition-all ${imageFit === opt.id
+                                                    ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-500 text-blue-700 dark:text-blue-400'
+                                                    : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400'
+                                                }`}
+                                        >
+                                            <div className="font-bold">{opt.label}</div>
+                                            <div className={`text-[10px] mt-0.5 ${imageFit === opt.id ? 'text-blue-500' : 'text-slate-400'}`}>{opt.desc}</div>
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {pageSize !== 'auto' && (
+                                <div>
+                                    <div className="flex justify-between mb-1">
+                                        <label className="text-xs font-bold text-slate-500 uppercase">Kenar Boşluğu</label>
+                                        <span className="text-xs text-slate-600 dark:text-slate-300 font-mono">{margin} pt</span>
+                                    </div>
+                                    <input
+                                        type="range"
+                                        min={0}
+                                        max={60}
+                                        value={margin}
+                                        onChange={e => setMargin(Number(e.target.value))}
+                                        className="w-full accent-blue-500"
+                                        aria-label="Kenar boşluğu"
+                                        title="Kenar boşluğu (pt)"
+                                    />
+                                </div>
+                            )}
+
+                            <div>
+                                <div className="flex justify-between mb-1">
+                                    <label className="text-xs font-bold text-slate-500 uppercase">JPEG Kalitesi</label>
+                                    <span className="text-xs text-slate-600 dark:text-slate-300 font-mono">{Math.round(quality * 100)}%</span>
+                                </div>
+                                <input
+                                    type="range"
+                                    min={0.5}
+                                    max={1.0}
+                                    step={0.01}
+                                    value={quality}
+                                    onChange={e => setQuality(Number(e.target.value))}
+                                    className="w-full accent-blue-500"
+                                    aria-label="JPEG çıktı kalitesi"
+                                    title="JPEG çıktı kalitesi"
+                                />
+                                <div className="flex justify-between text-[10px] text-slate-400 mt-1">
+                                    <span>Küçük dosya</span>
+                                    <span>Yüksek kalite</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Build button */}
+                    <button
+                        onClick={buildPdf}
+                        disabled={images.length === 0 || isBuilding}
+                        className="w-full py-4 bg-blue-600 hover:bg-blue-700 disabled:opacity-40 text-white rounded-2xl font-bold text-base transition-all shadow-lg shadow-blue-500/20 hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-3"
+                    >
+                        {isBuilding ? (
+                            <>
+                                <Loader2 size={20} className="animate-spin" />
+                                Oluşturuluyor... {progress}%
+                            </>
+                        ) : done ? (
+                            <>
+                                <CheckCircle2 size={20} />
+                                Tekrar İndir
+                            </>
+                        ) : (
+                            <>
+                                <Layers size={20} />
+                                {images.length > 0 ? `${images.length} Görseli PDF'e Dönüştür` : 'Görsel Ekle'}
+                            </>
+                        )}
+                    </button>
+
+                    {isBuilding && (
+                        <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 overflow-hidden">
+                            <div
+                                className="h-full bg-blue-600 transition-all duration-300 rounded-full"
+                                style={{ width: `${progress}%` }}
+                            />
+                        </div>
+                    )}
+
+                    {done && (
+                        <div className="flex items-center gap-2 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl text-green-700 dark:text-green-400 text-sm font-medium">
+                            <CheckCircle2 size={16} />
+                            PDF başarıyla indirildi!
+                        </div>
+                    )}
+                </div>
+
+                {/* Image List */}
+                <div className="lg:col-span-2">
+                    {/* Drop zone */}
+                    <div
+                        className={`border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer transition-all mb-4 ${dragOver
+                                ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                                : 'border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50'
+                            }`}
+                        onClick={() => inputRef.current?.click()}
+                        onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+                        onDragLeave={() => setDragOver(false)}
+                        onDrop={handleDrop}
+                    >
+                        <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 text-blue-500 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <Plus size={24} />
+                        </div>
+                        <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">
+                            Görsel eklemek için tıkla veya sürükle
+                        </p>
+                        <p className="text-xs text-slate-400 mt-1">JPG, PNG, WebP, GIF, BMP — birden fazla seçilebilir</p>
+                        <input
+                            ref={inputRef}
+                            type="file"
+                            accept="image/*"
+                            multiple
+                            className="hidden"
+                            title="Görsel seç"
+                            aria-label="Görsel dosyaları seç"
+                            onChange={e => e.target.files && handleFiles(e.target.files)}
+                        />
+                    </div>
+
+                    {/* Image grid / list */}
+                    {images.length === 0 ? (
+                        <div className="text-center py-12 text-slate-400">
+                            <ImageIcon size={48} className="mx-auto mb-3 opacity-30" />
+                            <p className="text-sm">Henüz görsel eklenmedi</p>
+                        </div>
+                    ) : (
+                        <div className="space-y-2">
+                            <div className="flex items-center justify-between px-1 mb-2">
+                                <p className="text-xs font-bold text-slate-500 uppercase">{images.length} Görsel — sürükleyerek sırala</p>
+                                <button
+                                    onClick={() => setImages([])}
+                                    className="text-xs text-red-500 hover:text-red-600 font-medium"
+                                >
+                                    Tümünü Temizle
+                                </button>
+                            </div>
+
+                            {images.map((item, idx) => (
+                                <div
+                                    key={item.id}
+                                    draggable
+                                    onDragStart={() => handleDragStart(item.id)}
+                                    onDragOver={(e) => handleDragOver(e, item.id)}
+                                    onDragEnd={handleDragEnd}
+                                    className={`flex items-center gap-3 p-3 bg-white dark:bg-slate-900 border rounded-xl transition-all cursor-grab active:cursor-grabbing ${dragItemId === item.id
+                                            ? 'border-blue-500 opacity-50 scale-95'
+                                            : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'
+                                        }`}
+                                >
+                                    {/* Drag handle */}
+                                    <GripVertical size={16} className="text-slate-300 dark:text-slate-600 shrink-0" />
+
+                                    {/* Page number */}
+                                    <span className="text-xs font-bold text-slate-400 w-6 text-center shrink-0">
+                                        {idx + 1}
+                                    </span>
+
+                                    {/* Thumbnail */}
+                                    <div className="w-16 h-12 rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800 shrink-0 border border-slate-200 dark:border-slate-700">
+                                        <img
+                                            src={item.preview}
+                                            alt={item.file.name}
+                                            className="w-full h-full object-cover"
+                                        />
+                                    </div>
+
+                                    {/* Info */}
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-sm font-medium text-slate-700 dark:text-slate-200 truncate">{item.file.name}</p>
+                                        <div className="flex items-center gap-3 text-[10px] text-slate-400 mt-0.5">
+                                            <span>{item.width} × {item.height}px</span>
+                                            <span>{(item.file.size / 1024).toFixed(0)} KB</span>
+                                        </div>
+                                    </div>
+
+                                    {/* Reorder buttons */}
+                                    <div className="flex flex-col gap-0.5 shrink-0">
+                                        <button
+                                            onClick={() => moveImage(item.id, 'up')}
+                                            disabled={idx === 0}
+                                            title="Yukarı taşı"
+                                            aria-label="Yukarı taşı"
+                                            className="p-1 text-slate-400 hover:text-blue-500 disabled:opacity-20 transition-colors rounded"
+                                        >
+                                            <ArrowUp size={14} />
+                                        </button>
+                                        <button
+                                            onClick={() => moveImage(item.id, 'down')}
+                                            disabled={idx === images.length - 1}
+                                            title="Aşağı taşı"
+                                            aria-label="Aşağı taşı"
+                                            className="p-1 text-slate-400 hover:text-blue-500 disabled:opacity-20 transition-colors rounded"
+                                        >
+                                            <ArrowDown size={14} />
+                                        </button>
+                                    </div>
+
+                                    {/* Remove */}
+                                    <button
+                                        onClick={() => removeImage(item.id)}
+                                        title="Kaldır"
+                                        aria-label="Görseli kaldır"
+                                        className="p-1.5 text-slate-400 hover:text-red-500 transition-colors rounded-lg shrink-0"
+                                    >
+                                        <X size={16} />
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+}
+
+// ─── Standard Office Tool ────────────────────────────────────────────────────
 export const OfficeTools: React.FC<OfficeToolsProps> = ({ mode, onBack }) => {
+    // Special case: image to PDF gets its own full-featured view
+    if (mode === 'imagetopdf') {
+        return <ImageToPdfTool onBack={onBack} />;
+    }
+
     const config = TOOL_CONFIG[mode];
     const [files, setFiles] = useState<FileState[]>([]);
     const inputRef = useRef<HTMLInputElement>(null);
@@ -64,24 +577,8 @@ export const OfficeTools: React.FC<OfficeToolsProps> = ({ mode, onBack }) => {
             let result: Blob | string | undefined;
             let resultName = item.file.name;
 
-            // --- IMAGE TO PDF ---
-            if (mode === 'imagetopdf') {
-                setFiles(prev => prev.map((f, i) => i === index ? { ...f, progress: 30 } : f));
-                const pdfDoc = await PDFDocument.create();
-                const imageBytes = await item.file.arrayBuffer();
-                let image;
-                if (item.file.type === 'image/jpeg') image = await pdfDoc.embedJpg(imageBytes);
-                else if (item.file.type === 'image/png') image = await pdfDoc.embedPng(imageBytes);
-                else throw new Error('Format desteklenmiyor (Sadece JPG/PNG)');
-
-                const page = pdfDoc.addPage([image.width, image.height]);
-                page.drawImage(image, { x: 0, y: 0, width: image.width, height: image.height });
-                const pdfBytes = await pdfDoc.save();
-                result = new Blob([pdfBytes as unknown as BlobPart], { type: 'application/pdf' });
-                resultName = item.file.name.replace(/\.[^/.]+$/, "") + ".pdf";
-            }
             // --- PDF TO IMAGE ---
-            else if (mode === 'pdf-image') {
+            if (mode === 'pdf-image') {
                 setFiles(prev => prev.map((f, i) => i === index ? { ...f, progress: 30 } : f));
                 const arrayBuffer = await item.file.arrayBuffer();
                 const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
@@ -91,12 +588,7 @@ export const OfficeTools: React.FC<OfficeToolsProps> = ({ mode, onBack }) => {
                 const context = canvas.getContext('2d');
                 canvas.height = viewport.height;
                 canvas.width = viewport.width;
-
-                const renderContext = {
-                    canvasContext: context!,
-                    viewport: viewport
-                };
-                await page.render(renderContext as any).promise;
+                await page.render({ canvasContext: context!, viewport } as any).promise;
                 result = canvas.toDataURL('image/jpeg');
                 resultName = item.file.name.replace(/\.[^/.]+$/, "") + ".jpg";
             }
@@ -107,37 +599,23 @@ export const OfficeTools: React.FC<OfficeToolsProps> = ({ mode, onBack }) => {
                     const container = renderContainerRef.current;
                     container.innerHTML = '';
                     const arrayBuffer = await item.file.arrayBuffer();
-
-                    // Render docx to HTML
                     await renderAsync(arrayBuffer, container, undefined, {
                         className: "docx",
                         inWrapper: true,
                         ignoreLastRenderedPageBreak: false,
-                        useBase64URL: true // Ensure images are base64
+                        useBase64URL: true
                     });
-
-                    // Wait for images
                     await new Promise(r => setTimeout(r, 1000));
                     setFiles(prev => prev.map((f, i) => i === index ? { ...f, progress: 60 } : f));
-
-                    // Convert HTML to Canvas
-                    const canvas = await html2canvas(container, {
-                        scale: 1.5,
-                        useCORS: true,
-                        logging: false
-                    });
-
+                    const canvas = await html2canvas(container, { scale: 1.5, useCORS: true, logging: false });
                     const imgData = canvas.toDataURL('image/jpeg', 0.95);
                     const pdf = new jsPDF('p', 'mm', 'a4');
                     const imgProps = pdf.getImageProperties(imgData);
                     const pdfWidth = pdf.internal.pageSize.getWidth();
                     const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-
                     let heightLeft = pdfHeight;
                     let position = 0;
                     const pageHeight = pdf.internal.pageSize.getHeight();
-
-                    // Handle multi-page
                     pdf.addImage(imgData, 'JPEG', 0, position, pdfWidth, pdfHeight);
                     heightLeft -= pageHeight;
                     while (heightLeft >= 0) {
@@ -146,10 +624,9 @@ export const OfficeTools: React.FC<OfficeToolsProps> = ({ mode, onBack }) => {
                         pdf.addImage(imgData, 'JPEG', 0, position, pdfWidth, pdfHeight);
                         heightLeft -= pageHeight;
                     }
-
                     result = pdf.output('blob');
                     resultName = item.file.name.replace(/\.[^/.]+$/, "") + ".pdf";
-                    container.innerHTML = ''; // Clean up
+                    container.innerHTML = '';
                 } else {
                     throw new Error("Render container not found");
                 }
@@ -161,7 +638,6 @@ export const OfficeTools: React.FC<OfficeToolsProps> = ({ mode, onBack }) => {
                 const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
                 const pdf = await loadingTask.promise;
                 const pageImages: string[] = [];
-
                 for (let i = 1; i <= pdf.numPages; i++) {
                     const page = await pdf.getPage(i);
                     const viewport = page.getViewport({ scale: 1.5 });
@@ -170,16 +646,11 @@ export const OfficeTools: React.FC<OfficeToolsProps> = ({ mode, onBack }) => {
                     if (context) {
                         canvas.height = viewport.height;
                         canvas.width = viewport.width;
-                        await page.render({
-                            canvasContext: context as unknown as CanvasRenderingContext2D,
-                            viewport: viewport,
-                            canvas: canvas
-                        } as unknown as Parameters<typeof page.render>[0]).promise;
+                        await page.render({ canvasContext: context as unknown as CanvasRenderingContext2D, viewport, canvas } as unknown as Parameters<typeof page.render>[0]).promise;
                         pageImages.push(canvas.toDataURL('image/jpeg', 0.8));
                     }
                     setFiles(prev => prev.map((f, idx) => idx === index ? { ...f, progress: 20 + Math.round((i / pdf.numPages) * 60) } : f));
                 }
-
                 const sections: ISectionOptions[] = [];
                 for (const imgData of pageImages) {
                     const res = await fetch(imgData);
@@ -191,7 +662,7 @@ export const OfficeTools: React.FC<OfficeToolsProps> = ({ mode, onBack }) => {
                                 children: [
                                     new ImageRun({
                                         data: imgArrayBuffer,
-                                        transformation: { width: 595, height: 841 }, // A4 approx
+                                        transformation: { width: 595, height: 841 },
                                         type: 'jpg'
                                     }),
                                 ],
@@ -199,30 +670,22 @@ export const OfficeTools: React.FC<OfficeToolsProps> = ({ mode, onBack }) => {
                         ],
                     });
                 }
-
                 const wordDoc = new Document({ sections });
                 result = await Packer.toBlob(wordDoc);
                 resultName = item.file.name.replace(/\.[^/.]+$/, "") + ".docx";
             }
-            // --- OTHERS (Excel, PPT - Mock with Font Support) ---
+            // --- OTHERS (Excel, PPT) ---
             else {
-                // Simulate delay
                 await new Promise(r => setTimeout(r, 1500));
                 setFiles(prev => prev.map((f, i) => i === index ? { ...f, progress: 80 } : f));
-
                 if (mode.endsWith('-pdf')) {
-                    // Create basic PDF with Turkish font support
                     const pdfDoc = await PDFDocument.create();
                     pdfDoc.registerFontkit(fontkit);
-                    const fontBytes = await loadTurkishFont(); // Load Roboto
+                    const fontBytes = await loadTurkishFont();
                     const customFont = await pdfDoc.embedFont(fontBytes);
-
                     const page = pdfDoc.addPage();
-                    page.drawText(`Bu ${item.file.name} dosyasının PDF çıktısıdır.\n\nNOT: Excel ve PowerPoint dönüşümleri, karmaşık yapıları nedeniyle\ntam olarak sunucu tarafında işlenmelidir. \nBu bir önizleme/mock çıktısıdır.\n\nTürkçe karakter test: ĞÜŞİÖÇ ğüşiöç`, {
-                        x: 50,
-                        y: 700,
-                        size: 12,
-                        font: customFont
+                    page.drawText(`Bu ${item.file.name} dosyasının PDF çıktısıdır.\n\nNOT: Excel ve PowerPoint dönüşümleri, karmaşık yapıları nedeniyle\ntam olarak sunucu tarafında işlenmelidir.\nBu bir önizleme/mock çıktısıdır.\n\nTürkçe karakter test: ĞÜŞİÖÇ ğüşiöç`, {
+                        x: 50, y: 700, size: 12, font: customFont
                     });
                     const pdfBytes = await pdfDoc.save();
                     result = new Blob([pdfBytes as unknown as BlobPart], { type: 'application/pdf' });
@@ -233,14 +696,7 @@ export const OfficeTools: React.FC<OfficeToolsProps> = ({ mode, onBack }) => {
                 }
             }
 
-            setFiles(prev => prev.map((f, i) => i === index ? {
-                ...f,
-                status: 'success',
-                progress: 100,
-                result,
-                resultName
-            } : f));
-
+            setFiles(prev => prev.map((f, i) => i === index ? { ...f, status: 'success', progress: 100, result, resultName } : f));
         } catch (error) {
             console.error(error);
             setFiles(prev => prev.map((f, i) => i === index ? { ...f, status: 'error', errorMsg: (error as Error).message } : f));
@@ -258,7 +714,7 @@ export const OfficeTools: React.FC<OfficeToolsProps> = ({ mode, onBack }) => {
             <div
                 ref={renderContainerRef}
                 className="fixed -left-[9999px] top-0 w-[800px] bg-white text-black pointer-events-none overflow-hidden font-sans"
-            ></div>
+            />
 
             {/* Header */}
             <div className="flex items-center gap-4 mb-8">
@@ -320,8 +776,6 @@ export const OfficeTools: React.FC<OfficeToolsProps> = ({ mode, onBack }) => {
                                 <p className="font-medium text-slate-700 dark:text-slate-200 truncate">{item.file.name}</p>
                                 <span className="text-xs text-slate-500 dark:text-slate-400 font-mono">{(item.file.size / 1024 / 1024).toFixed(2)} MB</span>
                             </div>
-
-                            {/* Progress Bar */}
                             <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden">
                                 <div
                                     className={`h-full transition-all duration-300 ${item.status === 'error' ? 'bg-red-500' : 'bg-blue-500'}`}
@@ -330,7 +784,6 @@ export const OfficeTools: React.FC<OfficeToolsProps> = ({ mode, onBack }) => {
                             </div>
                         </div>
 
-                        {/* Actions */}
                         <div className="flex items-center gap-2 shrink-0">
                             {item.status === 'idle' && (
                                 <button
@@ -341,13 +794,16 @@ export const OfficeTools: React.FC<OfficeToolsProps> = ({ mode, onBack }) => {
                                 </button>
                             )}
                             {item.status === 'converting' && (
-                                <span className="text-xs font-medium text-blue-500 animate-pulse">İşleniyor...</span>
+                                <span className="text-xs font-medium text-blue-500 animate-pulse flex items-center gap-1">
+                                    <Loader2 size={14} className="animate-spin" /> İşleniyor...
+                                </span>
                             )}
                             {item.status === 'success' && (
                                 <button
                                     onClick={() => downloadFile(item)}
                                     className="p-2 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20 rounded-lg transition-colors"
                                     title="İndir"
+                                    aria-label="Dosyayı indir"
                                 >
                                     <Download size={20} />
                                 </button>
@@ -364,6 +820,7 @@ export const OfficeTools: React.FC<OfficeToolsProps> = ({ mode, onBack }) => {
                                 onClick={() => setFiles(prev => prev.filter((_, i) => i !== index))}
                                 className="p-2 text-slate-400 hover:text-red-500 dark:hover:text-red-400 rounded-lg transition-colors"
                                 title="Kaldır"
+                                aria-label="Dosyayı listeden kaldır"
                             >
                                 <X size={18} />
                             </button>

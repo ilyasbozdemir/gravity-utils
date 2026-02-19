@@ -378,8 +378,8 @@ export const PdfManager: React.FC<PdfManagerProps> = ({ file, onBack }) => {
                                 key={tab}
                                 onClick={() => setActiveTab(tab)}
                                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === tab
-                                        ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm'
-                                        : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+                                    ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm'
+                                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
                                     }`}
                             >
                                 {tab === 'merge' && <Layers size={16} className="inline mr-2" />}
@@ -507,14 +507,14 @@ export const PdfManager: React.FC<PdfManagerProps> = ({ file, onBack }) => {
                                                         </span>
                                                         <div className="flex items-center justify-between mt-1">
                                                             <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                                <button onClick={() => movePage(index, 'up')} disabled={index === 0} className="p-1 hover:bg-slate-100 dark:hover:bg-slate-700 rounded text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 disabled:opacity-20">
+                                                                <button onClick={() => movePage(index, 'up')} disabled={index === 0} title="Yukarı taşı" aria-label="Sayfayı yukarı taşı" className="p-1 hover:bg-slate-100 dark:hover:bg-slate-700 rounded text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 disabled:opacity-20">
                                                                     <ArrowUp size={14} />
                                                                 </button>
-                                                                <button onClick={() => movePage(index, 'down')} disabled={index === organizedPages.length - 1} className="p-1 hover:bg-slate-100 dark:hover:bg-slate-700 rounded text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 disabled:opacity-20">
+                                                                <button onClick={() => movePage(index, 'down')} disabled={index === organizedPages.length - 1} title="Aşağı taşı" aria-label="Sayfayı aşağı taşı" className="p-1 hover:bg-slate-100 dark:hover:bg-slate-700 rounded text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 disabled:opacity-20">
                                                                     <ArrowDown size={14} />
                                                                 </button>
                                                             </div>
-                                                            <button onClick={() => removePage(page.id)} className="p-1 text-slate-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors ml-auto">
+                                                            <button onClick={() => removePage(page.id)} title="Sayfayı kaldır" aria-label="Sayfayı kaldır" className="p-1 text-slate-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors ml-auto">
                                                                 <Trash2 size={14} />
                                                             </button>
                                                         </div>

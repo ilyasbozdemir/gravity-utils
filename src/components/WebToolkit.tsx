@@ -141,8 +141,8 @@ function UrlTab() {
                         key={m.id}
                         onClick={() => setMode(m.id)}
                         className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${mode === m.id
-                                ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20'
-                                : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
+                            ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20'
+                            : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
                             }`}
                     >
                         {m.label}
@@ -175,8 +175,8 @@ function UrlTab() {
                         {output && <CopyButton text={output} />}
                     </div>
                     <div className={`w-full h-40 p-4 rounded-xl font-mono text-sm break-all leading-relaxed overflow-auto border ${error
-                            ? 'bg-red-50 dark:bg-red-900/10 border-red-300 dark:border-red-800 text-red-600 dark:text-red-400'
-                            : 'bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300'
+                        ? 'bg-red-50 dark:bg-red-900/10 border-red-300 dark:border-red-800 text-red-600 dark:text-red-400'
+                        : 'bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300'
                         }`}>
                         {error ? <><AlertCircle size={14} className="inline mr-1" />{error}</> : (output || <span className="text-slate-300 dark:text-slate-700 italic">Çıktı...</span>)}
                     </div>
@@ -226,8 +226,8 @@ function HtmlTab() {
                         key={m}
                         onClick={() => setMode(m)}
                         className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${mode === m
-                                ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/20'
-                                : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
+                            ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/20'
+                            : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
                             }`}
                     >
                         {m === 'encode' ? '🔒 HTML Encode' : '🔓 HTML Decode'}
@@ -320,8 +320,8 @@ function Base64TextTab() {
                         key={m}
                         onClick={() => setMode(m)}
                         className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${mode === m
-                                ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/20'
-                                : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
+                            ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/20'
+                            : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
                             }`}
                     >
                         {m === 'encode' ? '🔒 Text → Base64' : '🔓 Base64 → Text'}
@@ -353,8 +353,8 @@ function Base64TextTab() {
                         {output && <CopyButton text={output} />}
                     </div>
                     <div className={`w-full h-40 p-4 rounded-xl font-mono text-sm break-all leading-relaxed overflow-auto border ${error
-                            ? 'bg-red-50 dark:bg-red-900/10 border-red-300 dark:border-red-800 text-red-600 dark:text-red-400'
-                            : 'bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300'
+                        ? 'bg-red-50 dark:bg-red-900/10 border-red-300 dark:border-red-800 text-red-600 dark:text-red-400'
+                        : 'bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300'
                         }`}>
                         {error ? <><AlertCircle size={14} className="inline mr-1" />{error}</> : (output || <span className="text-slate-300 dark:text-slate-700 italic">Çıktı...</span>)}
                     </div>
@@ -424,6 +424,8 @@ function UrlParseTab() {
                     />
                     <button
                         onClick={parse}
+                        title="URL'yi ayrıştır"
+                        aria-label="URL'yi ayrıştır"
                         className="px-5 py-3 bg-green-600 hover:bg-green-700 text-white rounded-xl font-bold transition-all"
                     >
                         <RefreshCw size={16} />
@@ -531,8 +533,8 @@ export function WebToolkit({ onBack }: { onBack: () => void }) {
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id)}
                         className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold transition-all ${activeTab === tab.id
-                                ? `${colorClass[tab.color]} shadow-lg`
-                                : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
+                            ? `${colorClass[tab.color]} shadow-lg`
+                            : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
                             }`}
                     >
                         {tab.icon}

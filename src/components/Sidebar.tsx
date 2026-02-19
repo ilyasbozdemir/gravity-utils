@@ -7,11 +7,13 @@ import {
     FileCode,
     Database,
     CaseSensitive,
-    Clock
+    Clock,
+    Network,
+    Code2
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 
-export type ToolView = 'home' | 'convert' | 'inspect' | 'base64' | 'optimize' | 'hash' | 'json' | 'text' | 'pdf' | 'exif' | 'qr' | 'social' | 'favicon' | 'units' | 'encrypt' | 'uuid' | 'yaml' | 'jwt' | 'url' | 'imagetopdf' | 'case' | 'string' | 'json-xml' | 'date-time' | 'sql-formatter' | 'word-pdf' | 'pdf-word' | 'excel-pdf' | 'pdf-excel' | 'ppt-pdf' | 'pdf-ppt' | 'pdf-image' | 'pdf-split' | 'word-html' | 'pdf-text';
+export type ToolView = 'home' | 'convert' | 'inspect' | 'base64' | 'optimize' | 'hash' | 'json' | 'text' | 'pdf' | 'exif' | 'qr' | 'social' | 'favicon' | 'units' | 'encrypt' | 'uuid' | 'yaml' | 'jwt' | 'url' | 'imagetopdf' | 'case' | 'string' | 'json-xml' | 'date-time' | 'sql-formatter' | 'word-pdf' | 'pdf-word' | 'excel-pdf' | 'pdf-excel' | 'ppt-pdf' | 'pdf-ppt' | 'pdf-image' | 'pdf-split' | 'word-html' | 'pdf-text' | 'web-toolkit' | 'network-toolkit';
 
 interface SidebarProps {
     currentView: ToolView;
@@ -68,8 +70,10 @@ const NAV_ITEMS: NavItem[] = [
     { id: 'base64', title: 'Base64 Çevirici', icon: <Share2 size={18} />, category: 'dev' },
     { id: 'url', title: 'URL Encoder', icon: <Globe size={18} />, category: 'dev' },
     { id: 'uuid', title: 'UUID Oluşturucu', icon: <Zap size={18} />, category: 'dev' },
-    { id: 'json-xml', title: 'JSON <> XML', icon: <FileCode size={18} />, category: 'dev' },
+    { id: 'json-xml', title: 'JSON / XML / YAML', icon: <FileCode size={18} />, category: 'dev' },
     { id: 'sql-formatter', title: 'SQL Formatlayıcı', icon: <Database size={18} />, category: 'dev' },
+    { id: 'web-toolkit', title: 'Web Araç Seti', icon: <Globe size={18} />, category: 'dev' },
+    { id: 'network-toolkit', title: 'Ağ / IP Araçları', icon: <Network size={18} />, category: 'dev' },
 
     // Security
     { id: 'encrypt', title: 'Dosya Şifreleyici', icon: <Lock size={18} />, category: 'security' },

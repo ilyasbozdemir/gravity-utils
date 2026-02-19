@@ -2,8 +2,8 @@
 
 import React, { useState, useCallback, useEffect } from 'react';
 import Cropper from 'react-easy-crop';
-import { ArrowLeft, Download, Monitor, RefreshCw, ZoomIn, RotateCcw, Maximize, GripHorizontal } from 'lucide-react';
-import { getCroppedImg, getFittedImg, getMultiPartImg } from '../utils/cropImage';
+import { ArrowLeft, Download, Monitor, ZoomIn, RotateCcw, Maximize, GripHorizontal, Sliders } from 'lucide-react';
+import { getCroppedImg, getFittedImg, getMultiPartImg, estimateJpegSize, formatBytes } from '@/utils/cropImage';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 
@@ -38,6 +38,7 @@ export const SocialResizer: React.FC<SocialResizerProps> = ({ file: initialFile,
     const [selectedPreset, setSelectedPreset] = useState(PRESETS[0]);
     const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
     const [isProcessing, setIsProcessing] = useState(false);
+    const [quality, setQuality] = useState(0.92);
 
     // Modes
     const [fitMode, setFitMode] = useState(false);
@@ -110,50 +111,44 @@ export const SocialResizer: React.FC<SocialResizerProps> = ({ file: initialFile,
             setIsProcessing(true);
 
             if (fitMode) {
-                // Fit Mode: Generate one image with padding
                 const fittedImage = await getFittedImg(
                     imageSrc,
                     selectedPreset.w,
-                    selectedPreset.h
+                    selectedPreset.h,
+                    quality
                 );
                 if (!fittedImage) throw new Error('Fit failed');
-
                 saveAs(fittedImage, `social-fit-${selectedPreset.name.replace(/\s+/g, '-').toLowerCase()}.jpg`);
+
             } else if (carouselMode && carouselParts > 1) {
-                // Carousel Mode: Generate multiple images
                 const parts = await getMultiPartImg(
                     imageSrc,
                     selectedPreset.ratio,
                     selectedPreset.w,
-                    selectedPreset.h
+                    selectedPreset.h,
+                    quality
                 );
-
                 if (!parts || parts.length === 0) throw new Error('Carousel failed');
 
                 const zip = new JSZip();
-                parts.forEach((dataUrl, i) => {
-                    // Remove data:image/jpeg;base64, prefix
+                parts.forEach((dataUrl: string, i: number) => {
                     const base64Data = dataUrl.split(',')[1];
                     zip.file(`${i + 1}.jpg`, base64Data, { base64: true });
                 });
-
                 const content = await zip.generateAsync({ type: 'blob' });
                 saveAs(content, `social-carousel-${selectedPreset.name.replace(/\s+/g, '-').toLowerCase()}.zip`);
 
             } else {
-                // Standard Crop Mode
                 if (!croppedAreaPixels) return;
-
                 const croppedImage = await getCroppedImg(
                     imageSrc,
                     croppedAreaPixels,
                     rotation,
                     selectedPreset.w,
-                    selectedPreset.h
+                    selectedPreset.h,
+                    quality
                 );
-
                 if (!croppedImage) throw new Error('Crop failed');
-
                 saveAs(croppedImage, `social-crop-${selectedPreset.name.replace(/\s+/g, '-').toLowerCase()}.jpg`);
             }
 
@@ -241,6 +236,43 @@ export const SocialResizer: React.FC<SocialResizerProps> = ({ file: initialFile,
                         </div>
 
                         <div className="mt-auto pt-4 border-t border-slate-200 dark:border-slate-800 space-y-4">
+                            {/* Quality Slider */}
+                            <div>
+                                <div className="flex items-center justify-between mb-1">
+                                    <label className="text-xs font-medium text-slate-500 flex items-center gap-1">
+                                        <Sliders size={13} /> Kalite
+                                    </label>
+                                    <span className="text-xs font-bold text-slate-700 dark:text-slate-200">{Math.round(quality * 100)}%</span>
+                                </div>
+                                <input
+                                    type="range"
+                                    value={quality}
+                                    min={0.5}
+                                    max={1.0}
+                                    step={0.01}
+                                    aria-label="Çıktı kalitesi"
+                                    onChange={(e) => setQuality(Number(e.target.value))}
+                                    className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-pink-500"
+                                />
+                                {/* Estimated file size */}
+                                <div className="mt-2 flex items-center justify-between text-[10px] text-slate-400">
+                                    <span>Tahmini boyut:</span>
+                                    <span className="font-bold text-pink-500 dark:text-pink-400">
+                                        {(() => {
+                                            const outW = carouselMode
+                                                ? selectedPreset.w
+                                                : selectedPreset.w;
+                                            const outH = selectedPreset.h;
+                                            const estBytes = estimateJpegSize(outW, outH, quality);
+                                            return formatBytes(carouselMode && carouselParts > 1
+                                                ? estBytes * carouselParts
+                                                : estBytes);
+                                        })()}
+                                        {carouselMode && carouselParts > 1 && <span className="text-slate-400 ml-1">(toplam)</span>}
+                                    </span>
+                                </div>
+                            </div>
+
                             {/* Special Modes */}
                             <div className="grid grid-cols-2 gap-2">
                                 <button

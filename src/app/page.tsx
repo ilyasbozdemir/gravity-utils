@@ -32,6 +32,8 @@ const DateTimeConverter = dynamic(() => import('@/components/DateTimeConverter')
 const SqlFormatter = dynamic(() => import('@/components/SqlFormatter').then(mod => mod.SqlFormatter));
 const StringInspector = dynamic(() => import('@/components/StringInspector').then(mod => mod.StringInspector));
 const OfficeTools = dynamic(() => import('@/components/OfficeTools').then(mod => mod.OfficeTools));
+const WebToolkit = dynamic(() => import('@/components/WebToolkit').then(mod => mod.WebToolkit));
+const NetworkToolkit = dynamic(() => import('@/components/NetworkToolkit').then(mod => mod.NetworkToolkit));
 
 export default function Home() {
     const [file, setFile] = useState<File | null>(null);
@@ -170,6 +172,8 @@ export default function Home() {
                             {view === 'json-xml' && <JsonXmlConverter onBack={() => setView('home')} />}
                             {view === 'date-time' && <DateTimeConverter onBack={() => setView('home')} />}
                             {view === 'sql-formatter' && <SqlFormatter onBack={() => setView('home')} />}
+                            {view === 'web-toolkit' && <WebToolkit onBack={() => setView('home')} />}
+                            {view === 'network-toolkit' && <NetworkToolkit onBack={() => setView('home')} />}
                         </div>
                     )}
 
