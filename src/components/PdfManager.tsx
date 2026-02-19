@@ -352,28 +352,41 @@ export const PdfManager: React.FC<PdfManagerProps> = ({ file, onBack }) => {
     };
 
     return (
-        <div className="glass-panel w-full max-w-[1000px] mx-auto p-4 md:p-8 animate-[fadeIn_0.5s_ease]">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+        <div className="w-full max-w-[1000px] mx-auto p-4 md:p-8 animate-in fade-in zoom-in duration-300">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
                 <div className="flex items-center gap-4">
-                    <button onClick={onBack} className="glass-button p-2 bg-white/5 border-white/10 hover:bg-white/10" title="Geri Dön" aria-label="Geri Dön"><ArrowLeft size={18} /></button>
-                    <h2 className="text-xl font-bold m-0 flex items-center gap-2">
-                        <FileText className="text-red-400" />
-                        PDF Araçları
-                    </h2>
+                    <button
+                        onClick={onBack}
+                        className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors text-slate-600 dark:text-slate-400"
+                        title="Geri Dön"
+                        aria-label="Geri Dön"
+                    >
+                        <ArrowLeft size={24} />
+                    </button>
+                    <div>
+                        <h2 className="text-2xl font-bold flex items-center gap-2 text-slate-800 dark:text-white">
+                            <FileText className="text-red-500" />
+                            PDF Araçları
+                        </h2>
+                        <p className="text-sm text-slate-500 dark:text-slate-400">PDF dosyalarını yönet, birleştir ve düzenle</p>
+                    </div>
                 </div>
                 {pdfFiles.length > 0 && (
-                    <div className="flex gap-2 bg-white/5 p-1 rounded-xl border border-white/5">
+                    <div className="flex gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
                         {(['merge', 'split', 'compress', 'watermark'] as TabType[]).map((tab) => (
                             <button
                                 key={tab}
                                 onClick={() => setActiveTab(tab)}
-                                className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === tab ? 'bg-white/10 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
+                                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === tab
+                                        ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm'
+                                        : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+                                    }`}
                             >
                                 {tab === 'merge' && <Layers size={16} className="inline mr-2" />}
                                 {tab === 'split' && <Scissors size={16} className="inline mr-2" />}
                                 {tab === 'compress' && <Minimize2 size={16} className="inline mr-2" />}
                                 {tab === 'watermark' && <Stamp size={16} className="inline mr-2" />}
-                                {tab === 'merge' ? 'Birleştir & Düzenle' : tab.charAt(0).toUpperCase() + tab.slice(1)}
+                                {tab === 'merge' ? 'Birleştir' : tab.charAt(0).toUpperCase() + tab.slice(1)}
                             </button>
                         ))}
                     </div>
@@ -382,36 +395,36 @@ export const PdfManager: React.FC<PdfManagerProps> = ({ file, onBack }) => {
 
             <div className="min-h-[400px]">
                 {pdfFiles.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-20 text-center space-y-8">
+                    <div className="flex flex-col items-center justify-center py-20 text-center space-y-8 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-sm">
                         <div className="relative">
-                            <div className="absolute -inset-4 bg-red-500/10 blur-2xl rounded-full animate-pulse"></div>
-                            <FileText size={80} className="text-red-400 relative" />
+                            <div className="absolute -inset-4 bg-red-500/10 dark:bg-red-500/20 blur-2xl rounded-full"></div>
+                            <FileText size={80} className="text-red-500 relative" />
                         </div>
                         <div className="max-w-md mx-auto space-y-2">
-                            <h3 className="text-2xl font-bold">PDF İşlemeye Başlayın</h3>
-                            <p className="text-slate-400">PDF dosyalarınızı birleştirin, ayırın, sıkıştırın veya filigran ekleyin. Her şey tamamen tarayıcınızda gerçekleşir.</p>
+                            <h3 className="text-2xl font-bold text-slate-800 dark:text-white">PDF İşlemeye Başlayın</h3>
+                            <p className="text-slate-500 dark:text-slate-400">PDF dosyalarınızı birleştirin, ayırın, sıkıştırın veya filigran ekleyin.</p>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-xl">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-xl px-8">
                             <div
                                 onClick={() => mergeInputRef.current?.click()}
-                                className="p-6 bg-white/5 border border-white/10 rounded-2xl hover:border-red-500/50 hover:bg-white/10 transition-all cursor-pointer group text-left"
+                                className="p-6 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl hover:border-red-500 dark:hover:border-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 transition-all cursor-pointer group text-left"
                             >
-                                <div className="p-3 bg-red-500/10 rounded-xl text-red-400 w-fit mb-4 group-hover:scale-110 transition-transform">
+                                <div className="p-3 bg-red-100 dark:bg-red-900/30 rounded-xl text-red-500 w-fit mb-4 group-hover:scale-110 transition-transform">
                                     <Plus size={24} />
                                 </div>
-                                <h4 className="font-semibold mb-1">PDF Dosyası Ekle</h4>
-                                <p className="text-xs text-slate-500">Düzenlemek için bir veya daha fazla PDF seçin.</p>
+                                <h4 className="font-bold text-slate-800 dark:text-white mb-1">PDF Dosyası Ekle</h4>
+                                <p className="text-xs text-slate-500 dark:text-slate-400">Düzenlemek için bir veya daha fazla PDF seçin.</p>
                             </div>
                             <div
                                 onClick={() => mergeInputRef.current?.click()}
-                                className="p-6 bg-white/5 border border-white/10 rounded-2xl hover:border-blue-500/50 hover:bg-white/10 transition-all cursor-pointer group text-left"
+                                className="p-6 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl hover:border-blue-500 dark:hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-all cursor-pointer group text-left"
                             >
-                                <div className="p-3 bg-blue-500/10 rounded-xl text-blue-400 w-fit mb-4 group-hover:scale-110 transition-transform">
+                                <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-xl text-blue-500 w-fit mb-4 group-hover:scale-110 transition-transform">
                                     <ImageIcon size={24} />
                                 </div>
-                                <h4 className="font-semibold mb-1">Resimleri PDF Yap</h4>
-                                <p className="text-xs text-slate-500">JPG veya PNG resimlerini PDF'e dönüştürün.</p>
+                                <h4 className="font-bold text-slate-800 dark:text-white mb-1">Resimleri PDF Yap</h4>
+                                <p className="text-xs text-slate-500 dark:text-slate-400">JPG veya PNG resimlerini PDF'e dönüştürün.</p>
                             </div>
                         </div>
 
@@ -432,18 +445,18 @@ export const PdfManager: React.FC<PdfManagerProps> = ({ file, onBack }) => {
                             <div className="space-y-6">
                                 <div className="flex flex-wrap items-center justify-between gap-4">
                                     <div>
-                                        <h3 className="font-semibold text-lg flex items-center gap-2">
-                                            <LayoutGrid size={20} className="text-blue-400" />
+                                        <h3 className="font-semibold text-lg text-slate-800 dark:text-white flex items-center gap-2">
+                                            <LayoutGrid size={20} className="text-blue-500" />
                                             Sayfa Düzenleyici
                                         </h3>
-                                        <p className="text-sm text-slate-400">Sayfaları sürükleyip bırakarak veya okları kullanarak sırasını değiştirin.</p>
+                                        <p className="text-sm text-slate-500 dark:text-slate-400">Sürükleyip bırakarak sıralamayı değiştirin.</p>
                                     </div>
                                     <div className="flex gap-2">
                                         <button
                                             onClick={() => mergeInputRef.current?.click()}
-                                            className="px-4 py-2 bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 rounded-lg text-sm flex items-center gap-2 border border-blue-500/30 transition-all font-medium"
+                                            className="px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-lg text-sm flex items-center gap-2 transition-all font-medium"
                                         >
-                                            <Plus size={16} /> PDF/Resim Ekle
+                                            <Plus size={16} /> Dosya Ekle
                                         </button>
                                         <input
                                             type="file"
@@ -458,65 +471,60 @@ export const PdfManager: React.FC<PdfManagerProps> = ({ file, onBack }) => {
                                 </div>
 
                                 {/* ORGANIZER GRID */}
-                                <div className="bg-black/20 rounded-2xl border border-white/5 p-4 md:p-6">
+                                <div className="bg-slate-50 dark:bg-slate-900/50 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 md:p-6">
                                     {loadingThumbnails && organizedPages.length === 0 ? (
                                         <div className="flex flex-col items-center justify-center py-20 text-slate-400 gap-4">
-                                            <RefreshCw className="animate-spin text-blue-400" size={32} />
+                                            <RefreshCw className="animate-spin text-blue-500" size={32} />
                                             <p>Sayfalar yükleniyor...</p>
                                         </div>
                                     ) : organizedPages.length === 0 ? (
-                                        <div className="text-center py-20 border-2 border-dashed border-white/5 rounded-xl">
-                                            <p className="text-slate-500 mb-4">Düzenlemek için PDF veya Resim dosyaları ekleyin.</p>
-                                            <button onClick={() => mergeInputRef.current?.click()} className="text-blue-400 hover:underline text-sm font-medium">Dosyaları Seçin</button>
+                                        <div className="text-center py-20 border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-xl">
+                                            <p className="text-slate-500 dark:text-slate-400 mb-4">Düzenlemek için PDF veya Resim dosyaları ekleyin.</p>
+                                            <button onClick={() => mergeInputRef.current?.click()} className="text-blue-500 hover:underline text-sm font-medium">Dosyaları Seçin</button>
                                         </div>
                                     ) : (
                                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
                                             {organizedPages.map((page, index) => (
-                                                <div key={page.id} className="group relative bg-white/5 rounded-xl border border-white/10 p-2 transition-all hover:border-blue-500/50 hover:shadow-2xl hover:shadow-blue-500/10">
+                                                <div key={page.id} className="group relative bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-2 transition-all hover:border-blue-500 hover:shadow-lg">
                                                     {/* Page Thumbnail */}
-                                                    <div className="aspect-[3/4] rounded-lg overflow-hidden bg-white/5 mb-3 border border-white/5 relative">
+                                                    <div className="aspect-[3/4] rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-900 mb-3 border border-slate-100 dark:border-slate-800 relative">
                                                         {page.thumbnail ? (
                                                             <img src={page.thumbnail} alt={`Page ${page.pageIndex + 1}`} className="w-full h-full object-contain" />
                                                         ) : (
-                                                            <div className="w-full h-full flex items-center justify-center text-slate-600">
+                                                            <div className="w-full h-full flex items-center justify-center text-slate-400">
                                                                 <FileText size={40} />
                                                             </div>
                                                         )}
-                                                        <div className="absolute top-1 left-1 bg-black/60 backdrop-blur-md text-[10px] px-1.5 py-0.5 rounded text-white font-mono border border-white/10 z-10">
+                                                        <div className="absolute top-1 left-1 bg-slate-900/80 text-[10px] px-1.5 py-0.5 rounded text-white font-mono z-10">
                                                             P{page.pageIndex + 1}
                                                         </div>
                                                     </div>
 
                                                     {/* Info & Controls */}
                                                     <div className="flex flex-col gap-1 px-1">
-                                                        <span className="text-[10px] text-slate-500 truncate block font-medium" title={page.fileName}>
+                                                        <span className="text-[10px] text-slate-500 dark:text-slate-400 truncate block font-medium" title={page.fileName}>
                                                             {page.fileName}
                                                         </span>
                                                         <div className="flex items-center justify-between mt-1">
                                                             <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                                <button onClick={() => movePage(index, 'up')} disabled={index === 0} className="p-1 hover:bg-white/10 rounded text-slate-400 hover:text-white disabled:opacity-20" title="Yukarı Taşı" aria-label="Yukarı Taşı">
+                                                                <button onClick={() => movePage(index, 'up')} disabled={index === 0} className="p-1 hover:bg-slate-100 dark:hover:bg-slate-700 rounded text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 disabled:opacity-20">
                                                                     <ArrowUp size={14} />
                                                                 </button>
-                                                                <button onClick={() => movePage(index, 'down')} disabled={index === organizedPages.length - 1} className="p-1 hover:bg-white/10 rounded text-slate-400 hover:text-white disabled:opacity-20" title="Aşağı Taşı" aria-label="Aşağı Taşı">
+                                                                <button onClick={() => movePage(index, 'down')} disabled={index === organizedPages.length - 1} className="p-1 hover:bg-slate-100 dark:hover:bg-slate-700 rounded text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 disabled:opacity-20">
                                                                     <ArrowDown size={14} />
                                                                 </button>
                                                             </div>
-                                                            <button onClick={() => removePage(page.id)} className="p-1 text-slate-500 hover:text-red-400 hover:bg-red-500/10 rounded transition-colors ml-auto" title="Sayfayı Kaldır" aria-label="Sayfayı Kaldır">
+                                                            <button onClick={() => removePage(page.id)} className="p-1 text-slate-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors ml-auto">
                                                                 <Trash2 size={14} />
                                                             </button>
                                                         </div>
-                                                    </div>
-
-                                                    {/* Hover Grip (Visual Only for now) */}
-                                                    <div className="absolute top-2 right-2 p-1 bg-black/40 backdrop-blur-sm rounded opacity-0 group-hover:opacity-100 cursor-grab active:cursor-grabbing text-white/50">
-                                                        <GripVertical size={14} />
                                                     </div>
                                                 </div>
                                             ))}
 
                                             <button
                                                 onClick={() => mergeInputRef.current?.click()}
-                                                className="aspect-[3/4] rounded-xl border-2 border-dashed border-white/5 flex flex-col items-center justify-center gap-2 text-slate-500 hover:border-blue-500/30 hover:text-blue-400 transition-all bg-white/[0.02]"
+                                                className="aspect-[3/4] rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-700 flex flex-col items-center justify-center gap-2 text-slate-500 hover:border-blue-500 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-all bg-slate-50 dark:bg-slate-800/50"
                                             >
                                                 <Plus size={24} />
                                                 <span className="text-xs font-medium">Dosya Ekle</span>
@@ -526,15 +534,15 @@ export const PdfManager: React.FC<PdfManagerProps> = ({ file, onBack }) => {
                                 </div>
 
                                 {/* FOOTER ACTION */}
-                                <div className="flex justify-between items-center bg-blue-500/5 p-6 rounded-2xl border border-blue-500/10">
+                                <div className="flex justify-between items-center bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
                                     <div className="hidden sm:block">
-                                        <p className="text-sm font-medium text-white">{organizedPages.length} Sayfa Hazır</p>
-                                        <p className="text-[11px] text-slate-400">Tüm sayfalar tek bir PDF olarak birleştirilecek.</p>
+                                        <p className="text-sm font-bold text-slate-800 dark:text-white">{organizedPages.length} Sayfa Hazır</p>
+                                        <p className="text-[11px] text-slate-500 dark:text-slate-400">Tüm sayfalar tek bir PDF olarak birleştirilecek.</p>
                                     </div>
                                     <button
                                         onClick={handleMerge}
                                         disabled={processing || organizedPages.length === 0}
-                                        className={`primary-button-lg px-8 py-3 bg-blue-500 hover:bg-blue-600 shadow-xl shadow-blue-500/20 w-full sm:w-auto flex justify-center ${organizedPages.length === 0 || processing ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                        className={`px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold shadow-lg shadow-blue-500/20 w-full sm:w-auto flex justify-center items-center transition-all ${organizedPages.length === 0 || processing ? 'opacity-50 cursor-not-allowed' : 'hover:-translate-y-0.5'}`}
                                     >
                                         {processing ? <RefreshCw className="animate-spin mr-2" /> : <Layers className="mr-2" />}
                                         {processing ? 'Birleştiriliyor...' : 'Yeni PDF Oluştur'}
@@ -546,13 +554,13 @@ export const PdfManager: React.FC<PdfManagerProps> = ({ file, onBack }) => {
                         {/* SPLIT */}
                         {activeTab === 'split' && (
                             <div className="max-w-md mx-auto py-10 text-center">
-                                <div className="bg-white/5 p-8 rounded-3xl border border-white/10 space-y-6">
-                                    <div className="w-16 h-16 bg-red-500/10 rounded-2xl flex items-center justify-center mx-auto text-red-400 border border-red-500/20">
+                                <div className="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-6 shadow-sm">
+                                    <div className="w-16 h-16 bg-red-100 dark:bg-red-900/20 rounded-2xl flex items-center justify-center mx-auto text-red-500">
                                         <Scissors size={32} />
                                     </div>
                                     <div>
-                                        <h3 className="text-lg font-semibold mb-2">Sayfa Çıkar</h3>
-                                        <p className="text-sm text-slate-400">"{pdfFiles[0]?.name || 'Belge'}"</p>
+                                        <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-2">Sayfa Çıkar</h3>
+                                        <p className="text-sm text-slate-500">"{pdfFiles[0]?.name || 'Belge'}"</p>
                                     </div>
 
                                     <div className="flex items-center justify-center gap-6 py-4">
@@ -564,22 +572,21 @@ export const PdfManager: React.FC<PdfManagerProps> = ({ file, onBack }) => {
                                                 max={mainPdfPageCount || 1}
                                                 value={splitPage}
                                                 onChange={(e) => setSplitPage(Math.min(parseInt(e.target.value) || 1, mainPdfPageCount || 1))}
-                                                className="bg-black/40 border border-white/10 rounded-xl p-3 w-24 text-center text-xl font-bold focus:border-red-400/50 focus:outline-none transition-all"
+                                                className="bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 w-24 text-center text-xl font-bold text-slate-800 dark:text-white focus:border-red-500 focus:outline-none transition-all"
                                                 title="Çıkarılacak Sayfa Numarası"
-                                                aria-label="Çıkarılacak Sayfa Numarası"
                                             />
                                         </div>
-                                        <div className="text-4xl text-slate-700 font-light mt-4">/</div>
+                                        <div className="text-4xl text-slate-300 dark:text-slate-700 font-light mt-4">/</div>
                                         <div className="text-left mt-4">
-                                            <span className="text-2xl font-bold text-slate-500">{mainPdfPageCount}</span>
-                                            <p className="text-[10px] text-slate-600 uppercase font-bold">Toplam</p>
+                                            <span className="text-2xl font-bold text-slate-500 dark:text-slate-400">{mainPdfPageCount}</span>
+                                            <p className="text-[10px] text-slate-400 uppercase font-bold">Toplam</p>
                                         </div>
                                     </div>
 
                                     <button
                                         onClick={handleSplit}
                                         disabled={processing || pdfFiles.length === 0}
-                                        className="w-full py-4 bg-red-500 hover:bg-red-600 rounded-2xl font-bold text-white shadow-lg shadow-red-500/20 flex items-center justify-center gap-2 transition-all disabled:opacity-50"
+                                        className="w-full py-4 bg-red-500 hover:bg-red-600 rounded-2xl font-bold text-white shadow-lg shadow-red-500/20 flex items-center justify-center gap-2 transition-all disabled:opacity-50 hover:-translate-y-0.5"
                                     >
                                         {processing ? <RefreshCw className="animate-spin" /> : <Download size={20} />}
                                         {processing ? 'İşleniyor...' : 'Seçili Sayfayı İndir'}
@@ -591,21 +598,21 @@ export const PdfManager: React.FC<PdfManagerProps> = ({ file, onBack }) => {
                         {/* COMPRESS */}
                         {activeTab === 'compress' && (
                             <div className="max-w-md mx-auto py-10">
-                                <div className="bg-white/5 p-8 rounded-3xl border border-white/10 space-y-6 text-center">
-                                    <div className="w-16 h-16 bg-orange-500/10 rounded-2xl flex items-center justify-center mx-auto text-orange-400 border border-orange-500/20">
+                                <div className="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-6 text-center shadow-sm">
+                                    <div className="w-16 h-16 bg-orange-100 dark:bg-orange-900/20 rounded-2xl flex items-center justify-center mx-auto text-orange-500">
                                         <Minimize2 size={32} />
                                     </div>
                                     <div>
-                                        <h3 className="text-lg font-semibold mb-2">Akıllı Sıkıştırma</h3>
-                                        <p className="text-xs text-slate-400 leading-relaxed">
-                                            Metinleri ve görselleri optimize ederek dosya boyutunu küçültür. Profesyonel kalite kaybı olmadan sıkıştırma yapar.
+                                        <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-2">Akıllı Sıkıştırma</h3>
+                                        <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                                            Metinleri ve görselleri optimize ederek dosya boyutunu küçültür.
                                         </p>
                                     </div>
 
                                     <div className="space-y-4 py-4">
                                         <div className="flex justify-between items-center text-xs font-bold uppercase tracking-wider text-slate-500">
                                             <span>Hedef Kalite</span>
-                                            <span className="text-orange-400">{Math.round(compressionQuality * 100)}%</span>
+                                            <span className="text-orange-500">{Math.round(compressionQuality * 100)}%</span>
                                         </div>
                                         <input
                                             type="range"
@@ -614,11 +621,10 @@ export const PdfManager: React.FC<PdfManagerProps> = ({ file, onBack }) => {
                                             step="0.05"
                                             value={compressionQuality}
                                             onChange={(e) => setCompressionQuality(parseFloat(e.target.value))}
-                                            className="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-orange-500"
+                                            className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-orange-500"
                                             title="Sıkıştırma Kalitesi"
-                                            aria-label="Sıkıştırma Kalitesi"
                                         />
-                                        <div className="flex justify-between text-[10px] text-slate-600 font-bold uppercase">
+                                        <div className="flex justify-between text-[10px] text-slate-500 font-bold uppercase">
                                             <span>Küçük Boyut</span>
                                             <span>Yüksek Kalite</span>
                                         </div>
@@ -627,7 +633,7 @@ export const PdfManager: React.FC<PdfManagerProps> = ({ file, onBack }) => {
                                     <button
                                         onClick={handleCompress}
                                         disabled={processing || pdfFiles.length === 0}
-                                        className="w-full py-4 bg-orange-500 hover:bg-orange-600 rounded-2xl font-bold text-white shadow-lg shadow-orange-500/20 flex items-center justify-center gap-2 transition-all disabled:opacity-50"
+                                        className="w-full py-4 bg-orange-500 hover:bg-orange-600 rounded-2xl font-bold text-white shadow-lg shadow-orange-500/20 flex items-center justify-center gap-2 transition-all disabled:opacity-50 hover:-translate-y-0.5"
                                     >
                                         {processing ? <RefreshCw className="animate-spin" /> : <Plus size={20} />}
                                         {processing ? statusText : 'Sıkıştırmayı Başlat'}
@@ -639,22 +645,22 @@ export const PdfManager: React.FC<PdfManagerProps> = ({ file, onBack }) => {
                         {/* WATERMARK */}
                         {activeTab === 'watermark' && (
                             <div className="max-w-md mx-auto py-10">
-                                <div className="bg-white/5 p-8 rounded-3xl border border-white/10 space-y-6">
-                                    <div className="w-16 h-16 bg-purple-500/10 rounded-2xl flex items-center justify-center mx-auto text-purple-400 border border-purple-500/20">
+                                <div className="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-6 shadow-sm">
+                                    <div className="w-16 h-16 bg-purple-100 dark:bg-purple-900/20 rounded-2xl flex items-center justify-center mx-auto text-purple-500">
                                         <Stamp size={32} />
                                     </div>
-                                    <h3 className="text-lg font-semibold text-center">Filigran Ekle</h3>
+                                    <h3 className="text-lg font-bold text-center text-slate-800 dark:text-white">Filigran Ekle</h3>
 
-                                    <div className="flex bg-white/5 p-1 rounded-xl border border-white/10 mb-6">
+                                    <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-slate-700 mb-6">
                                         <button
                                             onClick={() => setWatermarkType('text')}
-                                            className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${watermarkType === 'text' ? 'bg-purple-500 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
+                                            className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${watermarkType === 'text' ? 'bg-white dark:bg-slate-600 text-slate-800 dark:text-white shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'}`}
                                         >
                                             Metin
                                         </button>
                                         <button
                                             onClick={() => setWatermarkType('image')}
-                                            className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${watermarkType === 'image' ? 'bg-purple-500 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
+                                            className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${watermarkType === 'image' ? 'bg-white dark:bg-slate-600 text-slate-800 dark:text-white shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'}`}
                                         >
                                             Resim (Logo)
                                         </button>
@@ -669,7 +675,7 @@ export const PdfManager: React.FC<PdfManagerProps> = ({ file, onBack }) => {
                                                         type="text"
                                                         value={watermarkText}
                                                         onChange={(e) => setWatermarkText(e.target.value)}
-                                                        className="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-white focus:border-purple-400/50 outline-none transition-all placeholder:text-slate-700"
+                                                        className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 text-slate-800 dark:text-white focus:border-purple-500 outline-none transition-all placeholder:text-slate-400"
                                                         title="Filigran Metni"
                                                         placeholder="Örn: GİZLİ"
                                                     />
@@ -684,13 +690,12 @@ export const PdfManager: React.FC<PdfManagerProps> = ({ file, onBack }) => {
                                                                 onChange={(e) => setWatermarkColor(e.target.value)}
                                                                 className="w-full h-11 bg-transparent border-none cursor-pointer rounded-xl"
                                                                 title="Filigran Rengi"
-                                                                aria-label="Filigran Rengi"
                                                             />
                                                         </div>
                                                     </div>
                                                     <div>
                                                         <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Opaklık</label>
-                                                        <div className="flex items-center gap-3 bg-black/40 border border-white/10 rounded-xl px-3 h-11">
+                                                        <div className="flex items-center gap-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 h-11">
                                                             <input
                                                                 type="range"
                                                                 min="0.1"
@@ -698,11 +703,10 @@ export const PdfManager: React.FC<PdfManagerProps> = ({ file, onBack }) => {
                                                                 step="0.1"
                                                                 value={watermarkOpacity}
                                                                 onChange={(e) => setWatermarkOpacity(parseFloat(e.target.value))}
-                                                                className="flex-1 h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-purple-500"
+                                                                className="flex-1 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-purple-500"
                                                                 title="Filigran Opaklığı"
-                                                                aria-label="Filigran Opaklığı"
                                                             />
-                                                            <span className="text-[10px] font-bold text-slate-400 w-6 text-right">{Math.round(watermarkOpacity * 100)}%</span>
+                                                            <span className="text-[10px] font-bold text-slate-500 w-6 text-right">{Math.round(watermarkOpacity * 100)}%</span>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -727,13 +731,13 @@ export const PdfManager: React.FC<PdfManagerProps> = ({ file, onBack }) => {
                                                             };
                                                             input.click();
                                                         }}
-                                                        className="w-full aspect-video bg-black/40 border-2 border-dashed border-white/10 rounded-2xl flex flex-col items-center justify-center cursor-pointer hover:border-purple-500/50 hover:bg-purple-500/5 transition-all group overflow-hidden"
+                                                        className="w-full aspect-video bg-slate-50 dark:bg-slate-800 border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-2xl flex flex-col items-center justify-center cursor-pointer hover:border-purple-500 hover:bg-purple-50 dark:hover:bg-purple-900/10 transition-all group overflow-hidden"
                                                     >
                                                         {watermarkImage ? (
                                                             <img src={watermarkImage} className="w-full h-full object-contain p-2" alt="Filigran" />
                                                         ) : (
                                                             <>
-                                                                <ImageIcon className="text-slate-600 group-hover:text-purple-400 mb-2" size={32} />
+                                                                <ImageIcon className="text-slate-400 group-hover:text-purple-500 mb-2" size={32} />
                                                                 <span className="text-xs text-slate-500">Logo veya Resim Yükle</span>
                                                             </>
                                                         )}
@@ -741,7 +745,7 @@ export const PdfManager: React.FC<PdfManagerProps> = ({ file, onBack }) => {
                                                 </div>
                                                 <div>
                                                     <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Opaklık</label>
-                                                    <div className="flex items-center gap-3 bg-black/40 border border-white/10 rounded-xl px-3 h-11">
+                                                    <div className="flex items-center gap-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 h-11">
                                                         <input
                                                             type="range"
                                                             min="0.1"
@@ -749,11 +753,10 @@ export const PdfManager: React.FC<PdfManagerProps> = ({ file, onBack }) => {
                                                             step="0.1"
                                                             value={watermarkOpacity}
                                                             onChange={(e) => setWatermarkOpacity(parseFloat(e.target.value))}
-                                                            className="flex-1 h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-purple-500"
+                                                            className="flex-1 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-purple-500"
                                                             title="Filigran Opaklığı"
-                                                            aria-label="Filigran Opaklığı"
                                                         />
-                                                        <span className="text-[10px] font-bold text-slate-400 w-6 text-right">{Math.round(watermarkOpacity * 100)}%</span>
+                                                        <span className="text-[10px] font-bold text-slate-500 w-6 text-right">{Math.round(watermarkOpacity * 100)}%</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -763,7 +766,7 @@ export const PdfManager: React.FC<PdfManagerProps> = ({ file, onBack }) => {
                                     <button
                                         onClick={handleWatermark}
                                         disabled={processing || pdfFiles.length === 0}
-                                        className="w-full py-4 bg-purple-500 hover:bg-purple-600 rounded-2xl font-bold text-white shadow-lg shadow-purple-500/20 flex items-center justify-center gap-2 transition-all disabled:opacity-50"
+                                        className="w-full py-4 bg-purple-500 hover:bg-purple-600 rounded-2xl font-bold text-white shadow-lg shadow-purple-500/20 flex items-center justify-center gap-2 transition-all disabled:opacity-50 hover:-translate-y-0.5"
                                     >
                                         {processing ? <RefreshCw className="animate-spin" /> : <Stamp size={20} />}
                                         {processing ? 'Ekleniyor...' : 'Filigranı PDFye Ekle'}
@@ -776,8 +779,8 @@ export const PdfManager: React.FC<PdfManagerProps> = ({ file, onBack }) => {
             </div>
 
             {processing && statusText && (
-                <div className="mt-8 flex items-center justify-center gap-3 text-sm font-medium text-slate-400 bg-white/5 p-4 rounded-xl border border-white/5 animate-pulse">
-                    <RefreshCw className="animate-spin text-blue-400" size={16} />
+                <div className="mt-8 flex items-center justify-center gap-3 text-sm font-medium text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-lg animate-pulse">
+                    <RefreshCw className="animate-spin text-blue-500" size={16} />
                     {statusText}
                 </div>
             )}
