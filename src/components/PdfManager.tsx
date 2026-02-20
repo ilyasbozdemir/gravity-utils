@@ -1,8 +1,13 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { ArrowLeft, FileText, Scissors, Download, Layers, Minimize2, Stamp, RefreshCw, Plus, Trash2, ArrowUp, ArrowDown, LayoutGrid, GripVertical, Image as ImageIcon } from 'lucide-react';
-import { PDFDocument, degrees, rgb, PDFImage } from 'pdf-lib';
+import { ArrowLeft, FileText, Scissors, Download, Layers, Minimize2, Stamp, RefreshCw, Plus, Trash2, ArrowUp, ArrowDown, LayoutGrid, GripVertical, Image as ImageIcon, Database, Info, Lock } from 'lucide-react';
+import { PDFDocument, degrees, rgb, PDFImage, PageSizes } from 'pdf-lib';
 import * as pdfjsLib from 'pdfjs-dist';
 import fontkit from '@pdf-lib/fontkit';
+import { saveAs } from 'file-saver';
+import { Document, Packer, Paragraph, ImageRun, type ISectionOptions } from 'docx';
+import { renderAsync } from 'docx-preview';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 import { loadTurkishFont } from '../utils/fontLoader';
 
 // Configure PDF.js worker
@@ -13,7 +18,7 @@ interface PdfManagerProps {
     onBack: () => void;
 }
 
-type TabType = 'split' | 'merge' | 'compress' | 'watermark';
+type TabType = 'split' | 'merge' | 'compress' | 'watermark' | 'convert';
 
 interface OrganizedPage {
     id: string;
@@ -51,7 +56,12 @@ export const PdfManager: React.FC<PdfManagerProps> = ({ file, onBack }) => {
 
     const [compressionQuality, setCompressionQuality] = useState(0.7);
 
+    // New Conversion States
+    const [convertFormat, setConvertFormat] = useState<'word' | 'image' | 'excel' | 'ppt'>('word');
+    const [convertProgress, setConvertProgress] = useState(0);
+
     const mergeInputRef = useRef<HTMLInputElement>(null);
+    const renderContainerRef = useRef<HTMLDivElement>(null);
 
     const downloadPdf = useCallback((data: Uint8Array, filename: string) => {
         const blob = new Blob([data as unknown as BlobPart], { type: 'application/pdf' });
@@ -331,6 +341,81 @@ export const PdfManager: React.FC<PdfManagerProps> = ({ file, onBack }) => {
         setStatusText('');
     };
 
+    const handleConversion = async () => {
+        if (pdfFiles.length === 0) return;
+        setProcessing(true);
+        const mainFile = pdfFiles[0].file;
+
+        try {
+            if (convertFormat === 'image') {
+                setStatusText('PDF görsele dönüştürülüyor...');
+                const arrayBuffer = await mainFile.arrayBuffer();
+                const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
+
+                for (let p = 1; p <= pdf.numPages; p++) {
+                    setStatusText(`Sayfa ${p}/${pdf.numPages} işleniyor...`);
+                    const page = await pdf.getPage(p);
+                    const viewport = page.getViewport({ scale: 2 });
+                    const canvas = document.createElement('canvas');
+                    const context = canvas.getContext('2d');
+                    canvas.height = viewport.height;
+                    canvas.width = viewport.width;
+                    await page.render({ canvasContext: context!, viewport } as any).promise;
+
+                    const blob = await new Promise<Blob>(res => canvas.toBlob(b => res(b!), 'image/jpeg', 0.95));
+                    saveAs(blob, `${mainFile.name.replace('.pdf', '')}-sayfa-${p}.jpg`);
+                }
+            } else if (convertFormat === 'word') {
+                setStatusText('PDF Word formatına çevriliyor (OCR-less)...');
+                const arrayBuffer = await mainFile.arrayBuffer();
+                const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+                const sections: ISectionOptions[] = [];
+
+                for (let i = 1; i <= pdf.numPages; i++) {
+                    setStatusText(`Sayfa ${i}/${pdf.numPages} çıkarılıyor...`);
+                    const page = await pdf.getPage(i);
+                    const viewport = page.getViewport({ scale: 1.5 });
+                    const canvas = document.createElement('canvas');
+                    const context = canvas.getContext('2d');
+                    canvas.height = viewport.height;
+                    canvas.width = viewport.width;
+                    await page.render({ canvasContext: context as any, viewport } as any).promise;
+
+                    const imgData = canvas.toDataURL('image/jpeg', 0.85);
+                    const res = await fetch(imgData);
+                    const imgArrayBuffer = await res.arrayBuffer();
+
+                    sections.push({
+                        properties: { page: { margin: { top: 0, bottom: 0, left: 0, right: 0 } } },
+                        children: [
+                            new Paragraph({
+                                children: [
+                                    new ImageRun({
+                                        data: imgArrayBuffer,
+                                        transformation: { width: 595, height: 841 },
+                                        type: 'jpg',
+                                    }),
+                                ],
+                            }),
+                        ],
+                    });
+                }
+
+                const wordDoc = new Document({ sections });
+                const blob = await Packer.toBlob(wordDoc);
+                saveAs(blob, `${mainFile.name.replace('.pdf', '')}.docx`);
+            } else {
+                alert('Bu format henüz tarayıcı tarafında tam desteklenmiyor. Lütfen Word veya Görsel seçin.');
+            }
+        } catch (err) {
+            console.error(err);
+            alert('Dönüştürme sırasında bir hata oluştu.');
+        } finally {
+            setProcessing(false);
+            setStatusText('');
+        }
+    };
+
     return (
         <div className="w-full max-w-[1000px] mx-auto p-4 md:p-8 animate-in fade-in zoom-in duration-300">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
@@ -352,8 +437,8 @@ export const PdfManager: React.FC<PdfManagerProps> = ({ file, onBack }) => {
                     </div>
                 </div>
                 {pdfFiles.length > 0 && (
-                    <div className="flex gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
-                        {(['merge', 'split', 'compress', 'watermark'] as TabType[]).map((tab) => (
+                    <div className="flex gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl flex-wrap">
+                        {(['merge', 'split', 'compress', 'watermark', 'convert'] as TabType[]).map((tab) => (
                             <button
                                 key={tab}
                                 onClick={() => setActiveTab(tab)}
@@ -366,7 +451,12 @@ export const PdfManager: React.FC<PdfManagerProps> = ({ file, onBack }) => {
                                 {tab === 'split' && <Scissors size={16} className="inline mr-2" />}
                                 {tab === 'compress' && <Minimize2 size={16} className="inline mr-2" />}
                                 {tab === 'watermark' && <Stamp size={16} className="inline mr-2" />}
-                                {tab === 'merge' ? 'Birleştir' : tab.charAt(0).toUpperCase() + tab.slice(1)}
+                                {tab === 'convert' && <RefreshCw size={16} className="inline mr-2" />}
+
+                                {tab === 'merge' ? 'Birleştir' :
+                                    tab === 'split' ? 'Ayır' :
+                                        tab === 'compress' ? 'Sıkıştır' :
+                                            tab === 'watermark' ? 'Filigran' : 'Dönüştür'}
                             </button>
                         ))}
                     </div>
@@ -418,11 +508,22 @@ export const PdfManager: React.FC<PdfManagerProps> = ({ file, onBack }) => {
                                 <h4 className="font-bold text-slate-800 dark:text-white mb-1 leading-tight">Boyut Küçült (Compress)</h4>
                                 <p className="text-[11px] text-slate-500 dark:text-slate-400">Dosya boyutunu düşürerek yer kazanın.</p>
                             </div>
+
+                            <div
+                                onClick={() => { setActiveTab('convert'); mergeInputRef.current?.click(); }}
+                                className="p-6 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-3xl hover:border-purple-500 dark:hover:border-purple-500 hover:bg-purple-50 dark:hover:bg-purple-900/10 transition-all cursor-pointer group text-left"
+                            >
+                                <div className="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-2xl text-purple-500 w-fit mb-4 group-hover:scale-110 transition-transform">
+                                    <RefreshCw size={24} />
+                                </div>
+                                <h4 className="font-bold text-slate-800 dark:text-white mb-1 leading-tight">Farklı Formata Dönüştür</h4>
+                                <p className="text-[11px] text-slate-500 dark:text-slate-400">PDF → Word, Excel, Görsel vb. formatlara çevirin.</p>
+                            </div>
                         </div>
 
                         <input
                             type="file"
-                            accept="application/pdf,image/*"
+                            accept="application/pdf,image/*,.doc,.docx,.xls,.xlsx,.ppt,.pptx"
                             multiple
                             ref={mergeInputRef}
                             className="hidden"
@@ -766,8 +867,111 @@ export const PdfManager: React.FC<PdfManagerProps> = ({ file, onBack }) => {
                                 </div>
                             </div>
                         )}
+                        {/* CONVERT */}
+                        {activeTab === 'convert' && (
+                            <div className="max-w-md mx-auto py-10">
+                                <div className="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-6 shadow-sm">
+                                    <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/20 rounded-2xl flex items-center justify-center mx-auto text-blue-500">
+                                        <RefreshCw size={32} />
+                                    </div>
+                                    <div className="text-center">
+                                        <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-2">Farklı Formata Dönüştür</h3>
+                                        <p className="text-sm text-slate-500">"{pdfFiles[0]?.name}" dosyasını dönüştürün.</p>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-3">
+                                        {[
+                                            { id: 'word', label: 'Word (docx)', icon: <FileText size={18} /> },
+                                            { id: 'image', label: 'Görsel (jpg)', icon: <ImageIcon size={18} /> },
+                                            { id: 'excel', label: 'Excel (xlsx)', icon: <Database size={18} /> },
+                                            { id: 'ppt', label: 'PowerPoint', icon: <Layers size={18} /> },
+                                        ].map((fmt) => (
+                                            <button
+                                                key={fmt.id}
+                                                onClick={() => setConvertFormat(fmt.id as any)}
+                                                className={`p-4 rounded-2xl border flex flex-col items-center gap-2 transition-all ${convertFormat === fmt.id
+                                                    ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-500 text-blue-600'
+                                                    : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500 hover:border-blue-300'
+                                                    }`}
+                                            >
+                                                {fmt.icon}
+                                                <span className="text-[11px] font-bold">{fmt.label}</span>
+                                            </button>
+                                        ))}
+                                    </div>
+
+                                    <div className="p-4 bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800 rounded-2xl">
+                                        <p className="text-[10px] text-amber-700 dark:text-amber-400 leading-tight">
+                                            <b>Not:</b> Word ve Görsel dönüşümleri tarayıcıda (offline) yapılır. Excel ve PPT dönüşümleri henüz geliştirme aşamasındadır.
+                                        </p>
+                                    </div>
+
+                                    <button
+                                        onClick={handleConversion}
+                                        disabled={processing}
+                                        className="w-full py-4 bg-blue-600 hover:bg-blue-700 rounded-2xl font-bold text-white shadow-lg shadow-blue-500/20 flex items-center justify-center gap-2 transition-all disabled:opacity-50"
+                                    >
+                                        {processing ? <RefreshCw className="animate-spin" /> : <Download size={20} />}
+                                        {processing ? 'Dönüştürülüyor...' : 'Dönüştür ve İndir'}
+                                    </button>
+                                </div>
+                            </div>
+                        )}
                     </>
                 )}
+            </div>
+
+            {/* Information Section */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-16 pb-10 border-t border-slate-100 dark:border-white/5 pt-10">
+                <div className="p-8 bg-slate-900 border border-white/5 rounded-[2.5rem] space-y-4">
+                    <h3 className="text-lg font-black text-white flex items-center gap-2">
+                        <Info size={20} className="text-blue-500" /> PDF Rehberi & SSS
+                    </h3>
+                    <div className="space-y-4 text-left">
+                        <details className="group border-b border-white/5 pb-4">
+                            <summary className="list-none font-bold text-slate-300 cursor-pointer flex justify-between items-center group-open:text-blue-400 transition-colors">
+                                İşlemler nerede gerçekleşiyor?
+                                <span className="group-open:rotate-180 transition-transform">↓</span>
+                            </summary>
+                            <p className="text-sm text-slate-400 mt-2 leading-relaxed">
+                                Sıkıştırma, görsele dönüştürme ve Word'e çevirme işlemleri %100 tarayıcınızda (client-side) yapılır. Dosyalarınız asla bir sunucuya yüklenmez, verileriniz tamamen gizli kalır.
+                            </p>
+                        </details>
+                        <details className="group border-b border-white/5 pb-4">
+                            <summary className="list-none font-bold text-slate-300 cursor-pointer flex justify-between items-center group-open:text-blue-400 transition-colors">
+                                Word dönüşümü nasıl çalışır?
+                                <span className="group-open:rotate-180 transition-transform">↓</span>
+                            </summary>
+                            <p className="text-sm text-slate-400 mt-2 leading-relaxed">
+                                Word dönüşümü, PDF sayfalarını yüksek kaliteli görsellere dönüştürüp bir Word belgesine yerleştirir. Bu sayede dosya yapısı bozulmaz, ancak metinler doğrudan düzenlenemez (imaj tabanlıdır).
+                            </p>
+                        </details>
+                        <details className="group border-b border-white/5 pb-4">
+                            <summary className="list-none font-bold text-slate-300 cursor-pointer flex justify-between items-center group-open:text-blue-400 transition-colors">
+                                Dosya boyutu neden önemli?
+                                <span className="group-open:rotate-180 transition-transform">↓</span>
+                            </summary>
+                            <p className="text-sm text-slate-400 mt-2 leading-relaxed">
+                                Web sitelerine veya e-postalara PDF eklerken 2MB altında kalmak idealdir. "Sıkıştır" aracımız kaliteden en az ödün vererek boyutu optimize eder.
+                            </p>
+                        </details>
+                    </div>
+                </div>
+
+                <div className="p-8 bg-red-600 rounded-[2.5rem] text-white space-y-4 shadow-xl shadow-red-500/20 flex flex-col justify-center">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2 bg-white/20 rounded-xl">
+                            <Lock size={24} />
+                        </div>
+                        <h3 className="text-xl font-black uppercase tracking-tight">Güvenlik Önemlidir</h3>
+                    </div>
+                    <p className="text-red-50 text-sm leading-relaxed font-medium">
+                        Gravity Utils, "Privacy First" (Önce Gizlilik) prensibiyle çalışır. PDF'lerinizi işlemek için yüksek performanslı `pdf-lib` ve `pdf.js` kütüphanelerini doğrudan tarayıcınızda çalıştırıyoruz. İnternetiniz olmasa bile çoğu aracı kullanmaya devam edebilirsiniz.
+                    </p>
+                    <div className="pt-4 border-t border-white/10 italic text-[11px] text-red-100 italic">
+                        * Dosyalarınız bellekte (RAM) işlenir ve indirildikten sonra tamamen temizlenir.
+                    </div>
+                </div>
             </div>
 
             {processing && statusText && (

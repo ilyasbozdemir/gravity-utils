@@ -18,26 +18,50 @@ export const TextToolkit: React.FC<TextToolkitProps> = ({ view, onBack }) => {
         setTimeout(() => setCopied(false), 2000);
     };
 
-    const processOnServer = async (action: string, params: any = {}) => {
+    const processLocal = (action: string, params: any = {}) => {
         setProcessing(true);
-        try {
-            const response = await fetch('/api/convert', {
-                method: 'POST',
-                body: JSON.stringify({
-                    type: 'text-process',
-                    action,
-                    text: input,
-                    ...params
-                }),
-                headers: { 'Content-Type': 'application/json' }
-            });
-            const data = await response.json();
-            if (data.error) throw new Error(data.error);
-            setOutput(data.result);
-        } catch (err) {
-            alert('İşlem başarısız: ' + (err as Error).message);
-        }
-        setProcessing(false);
+        // Simulate a tiny delay for UX feel, though not strictly necessary
+        setTimeout(() => {
+            let result = input;
+
+            switch (action) {
+                case 'clean-spaces':
+                    result = input.replace(/\s+/g, ' ').trim();
+                    break;
+                case 'clean-lines':
+                    result = input.split('\n').map(line => line.trim()).filter(line => line).join('\n');
+                    break;
+                case 'remove-emojis':
+                    result = input.replace(/[\u1000-\uFFFF]/g, ''); // Basic emoji/symbol removal
+                    break;
+                case 'normalize-tr':
+                    const trMap: Record<string, string> = { 'ç': 'c', 'Ç': 'C', 'ğ': 'g', 'Ğ': 'G', 'ı': 'i', 'İ': 'I', 'ö': 'o', 'Ö': 'O', 'ş': 's', 'Ş': 'S', 'ü': 'u', 'Ü': 'U' };
+                    result = input.replace(/[çÇğĞıİöÖşŞüÜ]/g, match => trMap[match] || match);
+                    break;
+                case 'show-hidden':
+                    result = input.replace(/ /g, '·').replace(/\n/g, '↵\n').replace(/\t/g, '→\t');
+                    break;
+                case 'limit':
+                    result = input.substring(0, params.limit || 2200);
+                    break;
+                case 'case':
+                    if (params.to === 'upper') result = input.toLocaleUpperCase('tr-TR');
+                    else if (params.to === 'lower') result = input.toLocaleLowerCase('tr-TR');
+                    else if (params.to === 'title') {
+                        result = input.toLocaleLowerCase('tr-TR').split(' ').map(s => s.charAt(0).toLocaleUpperCase('tr-TR') + s.substring(1)).join(' ');
+                    } else if (params.to === 'camel') {
+                        result = input.toLocaleLowerCase('tr-TR').replace(/[^a-zA-Z0-9]+(.)/g, (m, chr) => chr.toLocaleUpperCase('tr-TR')).replace(/[^a-zA-Z0-9]/g, '');
+                    } else if (params.to === 'snake') {
+                        result = input.toLocaleLowerCase('tr-TR').replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
+                    } else if (params.to === 'kebab') {
+                        result = input.toLocaleLowerCase('tr-TR').replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+                    }
+                    break;
+            }
+
+            setOutput(result);
+            setProcessing(false);
+        }, 100);
     };
 
     return (
@@ -117,21 +141,21 @@ export const TextToolkit: React.FC<TextToolkitProps> = ({ view, onBack }) => {
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                         {view === 'text-cleaner' ? (
                             <>
-                                <ToolButton title="Boşlukları Temizle" icon={<RefreshCw size={14} />} onClick={() => processOnServer('clean-spaces')} />
-                                <ToolButton title="Satırları Düzenle" icon={<RefreshCw size={14} />} onClick={() => processOnServer('clean-lines')} />
-                                <ToolButton title="Emojileri Sil" icon={<RefreshCw size={14} />} onClick={() => processOnServer('remove-emojis')} />
-                                <ToolButton title="TR Karakter Düzelt" icon={<RefreshCw size={14} />} onClick={() => processOnServer('normalize-tr')} />
-                                <ToolButton title="Gizli Karakter Göster" icon={<RefreshCw size={14} />} onClick={() => processOnServer('show-hidden')} />
-                                <ToolButton title="Instagram Limit (2200)" icon={<Type size={14} />} onClick={() => processOnServer('limit', { limit: 2200 })} />
+                                <ToolButton title="Boşlukları Temizle" icon={<RefreshCw size={14} />} onClick={() => processLocal('clean-spaces')} />
+                                <ToolButton title="Satırları Düzenle" icon={<RefreshCw size={14} />} onClick={() => processLocal('clean-lines')} />
+                                <ToolButton title="Emojileri Sil" icon={<RefreshCw size={14} />} onClick={() => processLocal('remove-emojis')} />
+                                <ToolButton title="TR Karakter Düzelt" icon={<RefreshCw size={14} />} onClick={() => processLocal('normalize-tr')} />
+                                <ToolButton title="Gizli Karakter Göster" icon={<RefreshCw size={14} />} onClick={() => processLocal('show-hidden')} />
+                                <ToolButton title="Instagram Limit (2200)" icon={<Type size={14} />} onClick={() => processLocal('limit', { limit: 2200 })} />
                             </>
                         ) : (
                             <>
-                                <ToolButton title="UPPERCASE" icon={<CaseSensitive size={14} />} onClick={() => processOnServer('case', { to: 'upper' })} />
-                                <ToolButton title="lowercase" icon={<CaseSensitive size={14} />} onClick={() => processOnServer('case', { to: 'lower' })} />
-                                <ToolButton title="Title Case" icon={<CaseSensitive size={14} />} onClick={() => processOnServer('case', { to: 'title' })} />
-                                <ToolButton title="camelCase" icon={<CaseSensitive size={14} />} onClick={() => processOnServer('case', { to: 'camel' })} />
-                                <ToolButton title="snake_case" icon={<CaseSensitive size={14} />} onClick={() => processOnServer('case', { to: 'snake' })} />
-                                <ToolButton title="kebab-case" icon={<CaseSensitive size={14} />} onClick={() => processOnServer('case', { to: 'kebab' })} />
+                                <ToolButton title="UPPERCASE" icon={<CaseSensitive size={14} />} onClick={() => processLocal('case', { to: 'upper' })} />
+                                <ToolButton title="lowercase" icon={<CaseSensitive size={14} />} onClick={() => processLocal('case', { to: 'lower' })} />
+                                <ToolButton title="Title Case" icon={<CaseSensitive size={14} />} onClick={() => processLocal('case', { to: 'title' })} />
+                                <ToolButton title="camelCase" icon={<CaseSensitive size={14} />} onClick={() => processLocal('case', { to: 'camel' })} />
+                                <ToolButton title="snake_case" icon={<CaseSensitive size={14} />} onClick={() => processLocal('case', { to: 'snake' })} />
+                                <ToolButton title="kebab-case" icon={<CaseSensitive size={14} />} onClick={() => processLocal('case', { to: 'kebab' })} />
                             </>
                         )}
                     </div>
