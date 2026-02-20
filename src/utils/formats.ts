@@ -123,36 +123,47 @@ export const getFileCategory = (file: File): FileCategory => {
 };
 
 export const getAvailableFormats = (file: File): Format[] => {
+    const originalExt = file.name.split('.').pop()?.toLowerCase() || '';
+    let results: Format[] = [];
+
     // 1. Check extension based logic first (more reliable for Office/PDF on some systems)
     const extFormats = getFormatByExtension(file.name);
-    if (extFormats.length > 0) return extFormats;
-
-    // 2. Check exact mime match
-    if (SUPPORTED_CONVERSIONS[file.type]) {
-        return SUPPORTED_CONVERSIONS[file.type];
-    }
-
-    // 3. Category Fallbacks
-    if (file.type.startsWith('image/')) {
-        return [
+    if (extFormats.length > 0) {
+        results = [...extFormats];
+    } else if (SUPPORTED_CONVERSIONS[file.type]) {
+        // 2. Check exact mime match
+        results = [...SUPPORTED_CONVERSIONS[file.type]];
+    } else if (file.type.startsWith('image/')) {
+        // 3. Category Fallbacks
+        results = [
             { ext: 'png', label: TR.pngImg, mime: 'image/png' },
             { ext: 'jpg', label: TR.jpegImg, mime: 'image/jpeg' },
             { ext: 'webp', label: TR.webpImg, mime: 'image/webp' },
             { ext: 'pdf', label: TR.pdfDoc, mime: 'application/pdf' }
         ];
-    }
-
-    if (file.type.startsWith('text/') || /\.(txt|md|js|ts|json|xml|html|css|py|java|c|cpp|h)$/i.test(file.name)) {
-        return [
+    } else if (file.type.startsWith('text/') || /\.(txt|md|js|ts|json|xml|html|css|py|java|c|cpp|h)$/i.test(file.name)) {
+        results = [
             { ext: 'pdf', label: TR.pdfDoc, mime: 'application/pdf' },
             { ext: 'json', label: TR.jsonFile, mime: 'application/json', isRenameOnly: true }
         ];
+    } else {
+        // 4. Default Renaming Options for Unknowns
+        results = [
+            { ext: 'zip', label: TR.zipArchive, mime: 'application/zip', isRenameOnly: true },
+            { ext: 'txt', label: TR.txtFile, mime: 'text/plain', isRenameOnly: true }
+        ];
     }
 
-    // 4. Default Renaming Options for Unknowns
-    return [
-        { ext: 'zip', label: TR.zipArchive, mime: 'application/zip', isRenameOnly: true },
-        { ext: 'txt', label: TR.txtFile, mime: 'text/plain', isRenameOnly: true }
-    ];
+    // Always ensure the original format is an option (for renaming or just downloading)
+    if (originalExt && !results.some(f => f.ext === originalExt)) {
+        results.unshift({
+            ext: originalExt,
+            label: `Orijinal Format (.${originalExt})`,
+            mime: file.type,
+            isRenameOnly: true
+        });
+    }
+
+    return results;
 };
 

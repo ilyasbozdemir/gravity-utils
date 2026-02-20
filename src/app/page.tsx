@@ -251,6 +251,7 @@ export default function Home() {
                             {view === 'email-header-analyzer' && <EmailHeaderAnalyzer onBack={() => setView('home')} />}
                             {view === 'document-toolkit' && <DocumentToolkit onBack={() => setView('home')} />}
                             {view === 'check-toolkit' && <CheckToolkit onBack={() => setView('home')} />}
+                            {view === 'convert' && <FileConverter file={file} onBack={() => setView('home')} />}
 
                             {/* Compatibility for old office routes */}
                             {(view === 'word-pdf' || view === 'pdf-word' || view === 'pdf-split' || view === 'pdf-text' || view === 'pdf') &&

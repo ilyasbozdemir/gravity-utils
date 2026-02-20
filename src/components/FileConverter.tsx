@@ -17,12 +17,13 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs
 interface FileConverterProps {
     file: File | null;
     onBack: () => void;
+    initialFormat?: Format | null;
 }
 
-export const FileConverter: React.FC<FileConverterProps> = ({ file: initialFile, onBack }) => {
+export const FileConverter: React.FC<FileConverterProps> = ({ file: initialFile, onBack, initialFormat = null }) => {
     const [file, setFile] = useState<File | null>(initialFile);
     const [formats, setFormats] = useState<Format[]>([]);
-    const [selectedFormat, setSelectedFormat] = useState<Format | null>(null);
+    const [selectedFormat, setSelectedFormat] = useState<Format | null>(initialFormat);
     const [customExt, setCustomExt] = useState('');
     const [isProcessing, setIsProcessing] = useState(false);
     const [progress, setProgress] = useState<string>('');

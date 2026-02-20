@@ -4,11 +4,13 @@ import React, { useState } from 'react';
 import {
     ArrowLeft, FileText, Layers, Scissors, Minimize2, Stamp,
     RefreshCw, Globe, FileType, Search, ChevronRight, Zap,
-    FileStack, Image as ImageIcon, FileSpreadsheet, PlayCircle
+    FileStack, Image as ImageIcon, FileSpreadsheet, PlayCircle,
+    Plus, X, Upload
 } from 'lucide-react';
 import { PdfManager } from './PdfManager';
 import { OfficeTools, OfficeToolMode } from './OfficeTools';
 import { FileConverter } from './FileConverter';
+import { getAvailableFormats, type Format } from '../utils/formats';
 
 type DocToolSubView = 'dashboard' | 'pdf-manager' | 'office-tools' | 'general-converter';
 
@@ -21,6 +23,9 @@ export const DocumentToolkit: React.FC<DocumentToolkitProps> = ({ onBack, initia
     const [view, setView] = useState<DocToolSubView>(initialView);
     const [officeMode, setOfficeMode] = useState<OfficeToolMode>('word-pdf');
     const [pdfTab, setPdfTab] = useState<'split' | 'merge' | 'compress' | 'watermark' | 'convert'>('merge');
+    const [smartFile, setSmartFile] = useState<File | null>(null);
+    const [smartFormats, setSmartFormats] = useState<Format[]>([]);
+    const [selectedSmartFormat, setSelectedSmartFormat] = useState<Format | null>(null);
 
     const handleOfficeTool = (mode: OfficeToolMode) => {
         setOfficeMode(mode);
@@ -32,6 +37,20 @@ export const DocumentToolkit: React.FC<DocumentToolkitProps> = ({ onBack, initia
         setView('pdf-manager');
     };
 
+    const handleSmartUpload = (file: File) => {
+        setSmartFile(file);
+        const formats = getAvailableFormats(file);
+        setSmartFormats(formats);
+        if (formats.length > 0) {
+            setSelectedSmartFormat(formats[0]);
+        }
+    };
+
+    const jumpToConverter = (fmt: Format) => {
+        setSelectedSmartFormat(fmt);
+        setView('general-converter');
+    };
+
     if (view === 'pdf-manager') {
         return <PdfManager file={null} onBack={() => setView('dashboard')} initialTab={pdfTab} />;
     }
@@ -41,14 +60,19 @@ export const DocumentToolkit: React.FC<DocumentToolkitProps> = ({ onBack, initia
     }
 
     if (view === 'general-converter') {
-        return <FileConverter file={null} onBack={() => setView('dashboard')} />;
+        return <FileConverter file={smartFile} onBack={() => setView('dashboard')} initialFormat={selectedSmartFormat} />;
     }
 
     return (
         <div className="max-w-6xl mx-auto p-6 space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20">
             {/* Header */}
             <div className="flex items-center gap-4">
-                <button onClick={onBack} title="Geri Dön" className="p-2.5 rounded-xl hover:bg-slate-100 dark:hover:bg-white/5 transition-colors group">
+                <button
+                    onClick={onBack}
+                    title="Geri Dön"
+                    aria-label="Geri Dön"
+                    className="p-2.5 rounded-xl hover:bg-slate-100 dark:hover:bg-white/5 transition-colors group"
+                >
                     <ArrowLeft className="group-hover:-translate-x-1 transition-transform" />
                 </button>
                 <div>
@@ -56,6 +80,95 @@ export const DocumentToolkit: React.FC<DocumentToolkitProps> = ({ onBack, initia
                     <p className="text-slate-500 text-sm font-medium">PDF yönetimi, ofis dökümanı dönüşümleri ve akıllı dosya araçları.</p>
                 </div>
             </div>
+
+            {/* Smart Upload Section */}
+            <section className="relative overflow-hidden p-8 rounded-[2.5rem] bg-gradient-to-br from-blue-600 to-indigo-700 text-white shadow-2xl shadow-blue-500/20 border border-blue-400/20">
+                <div className="absolute top-0 right-0 p-8 opacity-10">
+                    <Zap size={180} />
+                </div>
+
+                <div className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
+                    <div className="space-y-6">
+                        <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 rounded-full text-[10px] font-bold uppercase tracking-widest backdrop-blur-md">
+                            <Zap size={14} className="text-yellow-400" /> Akıllı Algılama Aktif
+                        </div>
+                        <h2 className="text-4xl font-black leading-tight">Hangi dosyayı<br />dönüştürmek istersiniz?</h2>
+                        <p className="text-blue-100/80 text-lg">Dosyanızı buraya bırakın, biz formatı algılayıp en iyi seçenekleri sunalım.</p>
+
+                        {!smartFile ? (
+                            <button
+                                onClick={() => document.getElementById('smart-upload-input')?.click()}
+                                title="Dosya Seçin"
+                                className="px-8 py-4 bg-white text-blue-600 rounded-2xl font-black flex items-center gap-3 hover:scale-105 transition-all shadow-xl shadow-black/10"
+                            >
+                                <Plus size={20} /> DOSYA SEÇİN
+                            </button>
+                        ) : (
+                            <div className="space-y-4 animate-in fade-in slide-in-from-left-4 duration-300">
+                                <div className="p-4 bg-white/10 rounded-2xl flex items-center justify-between border border-white/10">
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-2 bg-white/20 rounded-lg"><FileText size={20} /></div>
+                                        <span className="font-bold truncate max-w-[200px]">{smartFile.name}</span>
+                                    </div>
+                                    <button
+                                        onClick={() => { setSmartFile(null); setSelectedSmartFormat(null); }}
+                                        title="Dosyayı Kaldır"
+                                        aria-label="Dosyayı Kaldır"
+                                        className="p-1 hover:bg-white/20 rounded-md transition-colors"
+                                    >
+                                        <X size={16} />
+                                    </button>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-blue-200"> Şuna Dönüştür: </p>
+                                    <div className="flex flex-wrap gap-2">
+                                        {smartFormats.map(fmt => (
+                                            <button
+                                                key={fmt.ext}
+                                                onClick={() => jumpToConverter(fmt)}
+                                                title={`${fmt.label} olarak dönüştür`}
+                                                className="px-4 py-2 bg-white text-blue-600 rounded-xl text-xs font-black shadow-lg hover:bg-blue-50 transition-colors"
+                                            >
+                                                .{fmt.ext.toUpperCase()}
+                                            </button>
+                                        ))}
+                                        <button
+                                            onClick={() => setView('general-converter')}
+                                            title="Tüm formatları gör"
+                                            className="px-4 py-2 bg-blue-500 text-white rounded-xl text-xs font-black border border-blue-400/30"
+                                        >
+                                            Diğer...
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                        <input
+                            type="file"
+                            id="smart-upload-input"
+                            className="hidden"
+                            title="Akıllı Dosya Yükleyici"
+                            onChange={(e) => e.target.files?.[0] && handleSmartUpload(e.target.files[0])}
+                        />
+                    </div>
+
+                    <div
+                        onDragOver={(e) => e.preventDefault()}
+                        onDrop={(e) => {
+                            e.preventDefault();
+                            if (e.dataTransfer.files?.[0]) handleSmartUpload(e.dataTransfer.files[0]);
+                        }}
+                        className="group aspect-square lg:aspect-video rounded-[2rem] border-4 border-dashed border-white/20 hover:border-white/50 hover:bg-white/5 transition-all flex flex-col items-center justify-center gap-4 cursor-pointer"
+                        onClick={() => document.getElementById('smart-upload-input')?.click()}
+                    >
+                        <div className="w-20 h-20 rounded-full bg-white/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-500">
+                            <Upload size={32} />
+                        </div>
+                        <p className="font-black text-xl">DOSYAYI BIRAKIN</p>
+                    </div>
+                </div>
+            </section>
 
             {/* Quick X to Y Converter Grid */}
             <section className="space-y-4">
