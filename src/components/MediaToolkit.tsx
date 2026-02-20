@@ -9,6 +9,8 @@ interface MediaToolkitProps {
 export const MediaToolkit: React.FC<MediaToolkitProps> = ({ view, onBack }) => {
     const [files, setFiles] = useState<File[]>([]);
     const [exifData, setExifData] = useState<any>(null);
+    const [cleanSpaces, setCleanSpaces] = useState(true);
+    const [cleanTurkish, setCleanTurkish] = useState(true);
 
     const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files) {
@@ -37,7 +39,7 @@ export const MediaToolkit: React.FC<MediaToolkitProps> = ({ view, onBack }) => {
                     </button>
                     <div>
                         <h1 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight">
-                            {view === 'exif-viewer' && 'EXIF Görüntüleyici'}
+                            {view === 'exif-viewer' && 'Görsel Meta Veri & EXIF'}
                             {view === 'bulk-rename' && 'Toplu İsimlendir'}
                             {view === 'social' && 'Sosyal Medya Presetleri'}
                         </h1>
@@ -130,9 +132,25 @@ export const MediaToolkit: React.FC<MediaToolkitProps> = ({ view, onBack }) => {
                                             <label htmlFor="prefixRename" className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Ön Ek (Prefix)</label>
                                             <input id="prefixRename" type="text" placeholder="urun-adi-" title="Dosyalara eklenecek ön ek" className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-3 mt-1" />
                                         </div>
-                                        <div className="flex items-center gap-3 p-4 bg-amber-50 dark:bg-amber-500/10 rounded-2xl border border-amber-100 dark:border-amber-500/20">
-                                            <Info size={16} className="text-amber-600" />
-                                            <p className="text-[11px] text-amber-700 dark:text-amber-400 font-medium leading-snug">Boşluklar otomatik olarak tireye (-) dönüşecek ve Türkçe karakterler temizlenecektir.</p>
+                                        <div className="space-y-3 p-4 bg-slate-50 dark:bg-white/5 rounded-2xl border border-slate-100 dark:border-white/10">
+                                            <label className="flex items-center gap-3 cursor-pointer group">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={cleanSpaces}
+                                                    onChange={e => setCleanSpaces(e.target.checked)}
+                                                    className="w-5 h-5 rounded-lg border-2 border-slate-300 dark:border-white/20 checked:bg-blue-600 transition-all cursor-pointer"
+                                                />
+                                                <span className="text-xs font-bold text-slate-600 dark:text-slate-300 group-hover:text-blue-500 transition-colors">Boşlukları tireye (-) dönüştür</span>
+                                            </label>
+                                            <label className="flex items-center gap-3 cursor-pointer group">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={cleanTurkish}
+                                                    onChange={e => setCleanTurkish(e.target.checked)}
+                                                    className="w-5 h-5 rounded-lg border-2 border-slate-300 dark:border-white/20 checked:bg-blue-600 transition-all cursor-pointer"
+                                                />
+                                                <span className="text-xs font-bold text-slate-600 dark:text-slate-300 group-hover:text-blue-500 transition-colors">Türkçe karakterleri temizle (ç→c, ş→s...)</span>
+                                            </label>
                                         </div>
                                         <button className="w-full py-4 bg-blue-600 text-white rounded-2xl font-black shadow-lg shadow-blue-500/20 hover:scale-[1.02] active:scale-95 transition-all">
                                             İSİMLENDİR VE İNDİR (.zip)
@@ -144,9 +162,62 @@ export const MediaToolkit: React.FC<MediaToolkitProps> = ({ view, onBack }) => {
                     </div>
                 </div>
             )}
+            <MediaGuide />
         </div>
     );
 };
+
+const MediaGuide = () => (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-12 pb-10">
+        <div className="p-8 bg-slate-900 border border-white/5 rounded-[2.5rem] space-y-4">
+            <h3 className="text-lg font-black text-white flex items-center gap-2">
+                <Info size={20} className="text-blue-500" /> Medya Araçları Rehberi
+            </h3>
+            <div className="space-y-4 text-left">
+                <details className="group border-b border-white/5 pb-4">
+                    <summary className="list-none font-bold text-slate-300 cursor-pointer flex justify-between items-center group-open:text-blue-400 transition-colors">
+                        Hangi formatlar destekleniyor?
+                        <span className="group-open:rotate-180 transition-transform">↓</span>
+                    </summary>
+                    <p className="text-sm text-slate-400 mt-2 leading-relaxed">
+                        Meta veri görüntüleyici <b>JPEG, PNG, WebP ve HEIC</b> formatlarını destekler. Toplu isimlendirme aracı ise tüm dosya türleri için geçerlidir.
+                    </p>
+                </details>
+                <details className="group border-b border-white/5 pb-4">
+                    <summary className="list-none font-bold text-slate-300 cursor-pointer flex justify-between items-center group-open:text-blue-400 transition-colors">
+                        EXIF verisi nedir?
+                        <span className="group-open:rotate-180 transition-transform">↓</span>
+                    </summary>
+                    <p className="text-sm text-slate-400 mt-2 leading-relaxed">
+                        EXIF (Exchangeable Image File Format), fotoğrafın çekildiği kamera modeli, lens bilgisi, diyafram, ISO, çekim zamanı ve hatta GPS koordinatları gibi teknik bilgileri içeren bir veridir.
+                    </p>
+                </details>
+                <details className="group border-b border-white/5 pb-4">
+                    <summary className="list-none font-bold text-slate-300 cursor-pointer flex justify-between items-center group-open:text-blue-400 transition-colors">
+                        Dosya güvenliği nasıl sağlanıyor?
+                        <span className="group-open:rotate-180 transition-transform">↓</span>
+                    </summary>
+                    <p className="text-sm text-slate-400 mt-2 leading-relaxed">
+                        Tıpkı diğer araçlarımız gibi, medya işleme işlemleri de tamamen <b>tarayıcınızda (client-side)</b> gerçekleşir. Fotoğraflarınız hiçbir sunucuya yüklenmez.
+                    </p>
+                </details>
+            </div>
+        </div>
+
+        <div className="p-8 bg-blue-600 rounded-[2.5rem] text-white space-y-4 shadow-xl shadow-blue-500/20">
+            <h3 className="text-lg font-black flex items-center gap-2">
+                <Camera size={20} /> Pro İpucu
+            </h3>
+            <p className="text-blue-50 text-sm leading-relaxed">
+                Sosyal medya paylaşımları yapmadan önce görsellerinizin EXIF verilerini kontrol ederek <b>konum gibi hassas bilgileri</b> temizlediğinizden emin olun (Gizlilik için kritiktir).
+            </p>
+            <div className="pt-4 border-t border-white/10 flex items-center gap-3">
+                <div className="p-2 bg-white/20 rounded-lg"><Share2 size={16} /></div>
+                <p className="text-[11px] font-bold">Doğru boyutlarda paylaşım yapmak, sosyal medya algoritmalarında öne çıkmanızı sağlar.</p>
+            </div>
+        </div>
+    </div>
+);
 
 const SocialCard = ({ platform, sizes, color }: { platform: string, sizes: string[], color: string }) => (
     <div className={`p-6 rounded-[2.5rem] border-2 transition-all hover:-translate-y-2

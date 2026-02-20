@@ -36,6 +36,8 @@ export const SmartCalculator: React.FC<SmartCalculatorProps> = ({ view, onBack }
                 {view === 'css-units' && <CssUnits />}
                 {view === 'viewport-calc' && <ViewportCalc />}
             </div>
+
+            <CalculatorGuide />
         </div>
     );
 };
@@ -356,7 +358,7 @@ const CssUnits = () => {
                     id="px-input"
                     label="Piksel (px)"
                     value={px}
-                    onChange={v => { setPx(v); updateAll(Number(v), 'px', base); }}
+                    onChange={(v: string) => { setPx(v); updateAll(Number(v), 'px', base); }}
                     icon={<span className="text-[10px] font-bold">PX</span>}
                     color="blue"
                 />
@@ -364,7 +366,7 @@ const CssUnits = () => {
                     id="rem-input"
                     label="REM (root em)"
                     value={rem}
-                    onChange={v => { setRem(v); updateAll(Number(v), 'rem', base); }}
+                    onChange={(v: string) => { setRem(v); updateAll(Number(v), 'rem', base); }}
                     icon={<span className="text-[10px] font-bold">REM</span>}
                     color="purple"
                 />
@@ -372,7 +374,7 @@ const CssUnits = () => {
                     id="em-input"
                     label="EM (parent em)"
                     value={em}
-                    onChange={v => { setEm(v); updateAll(Number(v), 'em', base); }}
+                    onChange={(v: string) => { setEm(v); updateAll(Number(v), 'em', base); }}
                     icon={<span className="text-[10px] font-bold">EM</span>}
                     color="indigo"
                 />
@@ -380,7 +382,7 @@ const CssUnits = () => {
                     id="tw-input"
                     label="Tailwind Spacing"
                     value={tw}
-                    onChange={v => { setTw(v); updateAll(Number(v), 'tw', base); }}
+                    onChange={(v: string) => { setTw(v); updateAll(Number(v), 'tw', base); }}
                     prefix="w-"
                     desc={`örnek: w-${tw} = ${px}px`}
                     icon={<span className="text-[10px] font-bold">TW</span>}
@@ -398,31 +400,53 @@ const CssUnits = () => {
     );
 };
 
-const UnitInput = ({ id, label, value, onChange, icon, color, prefix, desc }: any) => (
-    <div className="space-y-2">
-        <label htmlFor={id} className="block text-xs font-black text-slate-500 uppercase tracking-widest">{label}</label>
-        <div className={`flex items-center gap-3 p-4 bg-white dark:bg-white/5 border-2 rounded-2xl transition-all focus-within:border-${color}-500/50 border-slate-100 dark:border-white/5`}>
-            <div className={`p-2 rounded-lg bg-${color}-50 dark:bg-${color}-500/10 text-${color}-600 dark:text-${color}-400`}>
-                {icon}
-            </div>
-            <div className="flex-1 flex flex-col">
-                <div className="flex items-center">
-                    {prefix && <span className="text-lg font-black text-slate-400">{prefix}</span>}
-                    <input
-                        id={id}
-                        type="number"
-                        value={value}
-                        onChange={e => onChange(e.target.value)}
-                        className="w-full bg-transparent text-lg font-black text-slate-800 dark:text-white focus:outline-none"
-                        title={label}
-                        placeholder="0"
-                    />
+interface UnitInputProps {
+    id: string;
+    label: string;
+    value: string;
+    onChange: (v: string) => void;
+    icon: React.ReactNode;
+    color: 'blue' | 'purple' | 'indigo' | 'sky';
+    prefix?: string;
+    desc?: string;
+}
+
+const UnitInput = ({ id, label, value, onChange, icon, color, prefix, desc }: UnitInputProps) => {
+    const colorClasses = {
+        blue: 'focus-within:border-blue-500/50 bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400',
+        purple: 'focus-within:border-purple-500/50 bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400',
+        indigo: 'focus-within:border-indigo-500/50 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400',
+        sky: 'focus-within:border-sky-500/50 bg-sky-50 dark:bg-sky-500/10 text-sky-600 dark:text-sky-400',
+    };
+
+    const activeClass = colorClasses[color] || colorClasses.blue;
+
+    return (
+        <div className="space-y-2">
+            <label htmlFor={id} className="block text-xs font-black text-slate-500 uppercase tracking-widest">{label}</label>
+            <div className={`flex items-center gap-3 p-4 bg-white dark:bg-white/5 border-2 rounded-2xl transition-all border-slate-100 dark:border-white/5 ${activeClass.split(' ')[0]}`}>
+                <div className={`p-2 rounded-lg ${activeClass.split(' ').slice(1).join(' ')}`}>
+                    {icon}
                 </div>
-                {desc && <p className="text-[9px] font-bold text-slate-400 mt-0.5">{desc}</p>}
+                <div className="flex-1 flex flex-col">
+                    <div className="flex items-center">
+                        {prefix && <span className="text-lg font-black text-slate-400">{prefix}</span>}
+                        <input
+                            id={id}
+                            type="number"
+                            value={value}
+                            onChange={e => onChange(e.target.value)}
+                            className="w-full bg-transparent text-lg font-black text-slate-800 dark:text-white focus:outline-none"
+                            title={label}
+                            placeholder="0"
+                        />
+                    </div>
+                    {desc && <p className="text-[9px] font-bold text-slate-400 mt-0.5">{desc}</p>}
+                </div>
             </div>
         </div>
-    </div>
-);
+    );
+};
 
 const ViewportCalc = () => {
     const [vw, setVw] = useState(5);
@@ -446,3 +470,55 @@ const ViewportCalc = () => {
         </div>
     );
 };
+
+const CalculatorGuide = () => (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-12 pb-10">
+        <div className="p-8 bg-slate-900 border border-white/5 rounded-[2.5rem] space-y-4">
+            <h3 className="text-lg font-black text-white flex items-center gap-2">
+                <Info size={20} className="text-blue-500" /> Hesaplayıcı Rehberi
+            </h3>
+            <div className="space-y-4 text-left">
+                <details className="group border-b border-white/5 pb-4">
+                    <summary className="list-none font-bold text-slate-300 cursor-pointer flex justify-between items-center group-open:text-blue-400 transition-colors">
+                        "Mbps" ve "MB/s" farkı nedir?
+                        <span className="group-open:rotate-180 transition-transform">↓</span>
+                    </summary>
+                    <p className="text-sm text-slate-400 mt-2 leading-relaxed">
+                        Mbps (Megabit per second) internet servis sağlayıcılarının kullandığı hız birimidir. MB/s (Megabyte per second) ise dosya indirme hızınızdır. 1 Byte = 8 Bit olduğu için, 80 Mbps hız ile saniyede en fazla 10 MB veri indirebilirsiniz.
+                    </p>
+                </details>
+                <details className="group border-b border-white/5 pb-4">
+                    <summary className="list-none font-bold text-slate-300 cursor-pointer flex justify-between items-center group-open:text-blue-400 transition-colors">
+                        Jitter nedir, neden önemlidir?
+                        <span className="group-open:rotate-180 transition-transform">↓</span>
+                    </summary>
+                    <p className="text-sm text-slate-400 mt-2 leading-relaxed">
+                        Jitter, gecikme süresindeki (Ping) dalgalanmadır. Düşük jitter, sabit bir bağlantı demektir. Özellikle online oyunlarda ve görüntülü konuşmalarda jitterın düşük (10ms altı) olması istenir.
+                    </p>
+                </details>
+                <details className="group border-b border-white/5 pb-4">
+                    <summary className="list-none font-bold text-slate-300 cursor-pointer flex justify-between items-center group-open:text-blue-400 transition-colors">
+                        Verilerim güvende mi?
+                        <span className="group-open:rotate-180 transition-transform">↓</span>
+                    </summary>
+                    <p className="text-sm text-slate-400 mt-2 leading-relaxed">
+                        Evet! IBAN, TCKN veya Viewport gibi tüm hesaplamalar tamamen tarayıcınızda (client-side) yapılır. Hiçbir girdi sunucuya gitmez, loglanmaz ve kaydedilmez.
+                    </p>
+                </details>
+            </div>
+        </div>
+
+        <div className="p-8 bg-amber-600 rounded-[2.5rem] text-white space-y-4 shadow-xl shadow-amber-500/20">
+            <h3 className="text-lg font-black flex items-center gap-2">
+                <Calculator size={20} /> Pro İpucu
+            </h3>
+            <p className="text-amber-50 text-sm leading-relaxed">
+                Web tasarımında <b>REM</b> birimini kullanmak, sitenizin erişilebilirliğini artırır. Kullanıcı tarayıcı font boyutunu değiştirdiğinde, REM kullanan tüm elementler ona göre ölçeklenir.
+            </p>
+            <div className="pt-4 border-t border-white/10 flex items-center gap-3">
+                <div className="p-2 bg-white/20 rounded-lg"><Smartphone size={16} /></div>
+                <p className="text-[11px] font-bold">Mobil uyumlu tasarımlar için <b>Viewport Calc</b> aracımızı mutlaka kullanın.</p>
+            </div>
+        </div>
+    </div>
+);
