@@ -7,15 +7,14 @@ import {
 
 export type ToolView =
     | 'home' | 'convert' | 'inspect' | 'base64' | 'optimize' | 'hash' | 'json' | 'text' | 'pdf' | 'exif' | 'qr'
-    | 'social' | 'favicon' | 'units' | 'encrypt' | 'uuid' | 'yaml' | 'jwt' | 'url' | 'case' | 'string'
-    | 'json-xml' | 'date-time' | 'sql-formatter' | 'web-toolkit' | 'network-toolkit' | 'password-generator'
-    | 'svg-optimizer' | 'cron-builder' | 'timezone-converter' | 'color-toolkit' | 'regex-tester'
-    | 'csv-viewer' | 'markdown-editor' | 'json-ld' | 'network-cable' | 'lorem-ipsum' | 'aspect-ratio'
-    | 'social-guide' | 'http-status' | 'json-csv' | 'word-pdf' | 'pdf-word' | 'excel-pdf' | 'pdf-excel'
-    | 'ppt-pdf' | 'pdf-ppt' | 'pdf-image' | 'imagetopdf'
-    | 'text-cleaner' | 'case-converter-pro' | 'css-units' | 'date-calculator' | 'internet-speed'
+    | 'social' | 'favicon' | 'units' | 'encrypt' | 'uuid' | 'yaml' | 'jwt' | 'url' | 'imagetopdf' | 'case' | 'string'
+    | 'json-xml' | 'date-time' | 'sql-formatter' | 'word-pdf' | 'pdf-word' | 'excel-pdf' | 'pdf-excel' | 'ppt-pdf'
+    | 'pdf-ppt' | 'pdf-image' | 'pdf-split' | 'word-html' | 'pdf-text' | 'web-toolkit' | 'network-toolkit' | 'color-toolkit'
+    | 'regex-tester' | 'csv-viewer' | 'markdown-editor' | 'password-generator' | 'svg-optimizer' | 'cron-builder'
+    | 'timezone-converter' | 'json-ld' | 'network-cable' | 'lorem-ipsum' | 'aspect-ratio' | 'social-guide' | 'http-status'
+    | 'json-csv' | 'text-cleaner' | 'case-converter-pro' | 'css-units' | 'date-calculator' | 'internet-speed'
     | 'iban-checker' | 'tckn-checker' | 'file-size-calc' | 'viewport-calc' | 'exif-viewer' | 'bulk-rename'
-    | 'email-header-analyzer' | 'identifier-converter' | 'schema-generator' | 'metadata-generator';
+    | 'email-header-analyzer' | 'identifier-converter' | 'schema-generator' | 'metadata-generator' | 'document-toolkit';
 
 interface LandingHeroProps {
     onFileSelect: (file: File) => void;
@@ -48,7 +47,7 @@ export const LandingHero: React.FC<LandingHeroProps> = ({ onToolSelect }) => {
 
                 {/* Main Tool Grid */}
                 <div className="w-full max-w-[1000px] grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-20 relative z-20">
-                    <HeroLink title="PDF Araçları" desc="Birleştir, Böl, Sıkıştır" icon={<FileText />} color="blue" onClick={() => onToolSelect('pdf')} />
+                    <HeroLink title="Belge & Ofis" desc="PDF, Word, Excel, PPT Dönüştür" icon={<FileText />} color="blue" onClick={() => onToolSelect('document-toolkit')} />
                     <HeroLink title="Resim Sıkıştır" desc="%80 tasarruf ile ölçekle" icon={<ImageIcon />} color="emerald" onClick={() => onToolSelect('optimize')} />
                     <HeroLink title="Case Converter" desc="camelCase, snake_case Pro" icon={<Type />} color="indigo" onClick={() => onToolSelect('case-converter-pro')} />
                     <HeroLink title="Metin Temizleyici" desc="Boşluk, Emoji, Normalizasyon" icon={<RefreshCw />} color="amber" onClick={() => onToolSelect('text-cleaner')} />
@@ -81,10 +80,10 @@ export const LandingHero: React.FC<LandingHeroProps> = ({ onToolSelect }) => {
                             <h3 className="text-xl font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">Hızlı Dönüşümler</h3>
                         </div>
                         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-                            <QuickAction title="Word → PDF" onClick={() => onToolSelect('word-pdf')} icon={<FileText size={16} />} color="blue" />
-                            <QuickAction title="PDF → Word" onClick={() => onToolSelect('pdf-word')} icon={<FileText size={16} />} color="red" />
-                            <QuickAction title="Resim → PDF" onClick={() => onToolSelect('imagetopdf')} icon={<ImageIcon size={16} />} color="emerald" />
-                            <QuickAction title="PDF → Resim" onClick={() => onToolSelect('pdf-image')} icon={<ImageIcon size={16} />} color="sky" />
+                            <QuickAction title="Word → PDF" onClick={() => onToolSelect('document-toolkit')} icon={<FileText size={16} />} color="blue" />
+                            <QuickAction title="PDF → Word" onClick={() => onToolSelect('document-toolkit')} icon={<FileText size={16} />} color="red" />
+                            <QuickAction title="Resim → PDF" onClick={() => onToolSelect('document-toolkit')} icon={<ImageIcon size={16} />} color="emerald" />
+                            <QuickAction title="PDF → Resim" onClick={() => onToolSelect('document-toolkit')} icon={<ImageIcon size={16} />} color="sky" />
                             <QuickAction title="Dosya Boyutu" onClick={() => onToolSelect('file-size-calc')} icon={<Archive size={16} />} color="indigo" />
                             <QuickAction title="Aspect Ratio" onClick={() => onToolSelect('aspect-ratio')} icon={<Layers size={16} />} color="orange" />
                         </div>

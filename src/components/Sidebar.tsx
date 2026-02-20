@@ -24,7 +24,7 @@ export type ToolView =
     | 'timezone-converter' | 'json-ld' | 'network-cable' | 'lorem-ipsum' | 'aspect-ratio' | 'social-guide' | 'http-status'
     | 'json-csv' | 'text-cleaner' | 'case-converter-pro' | 'css-units' | 'date-calculator' | 'internet-speed'
     | 'iban-checker' | 'tckn-checker' | 'file-size-calc' | 'viewport-calc' | 'exif-viewer' | 'bulk-rename'
-    | 'email-header-analyzer' | 'identifier-converter' | 'schema-generator' | 'metadata-generator';
+    | 'email-header-analyzer' | 'identifier-converter' | 'schema-generator' | 'metadata-generator' | 'document-toolkit' | 'check-toolkit';
 
 interface SidebarProps {
     currentView: ToolView;
@@ -53,11 +53,8 @@ const CATEGORIES = [
 
 const NAV_ITEMS: NavItem[] = [
     // Office & Documents
-    { id: 'word-pdf', title: 'Word → PDF', icon: <FileText size={18} />, category: 'office' },
-    { id: 'pdf-word', title: 'PDF → Word', icon: <FileText size={18} />, category: 'office' },
-    { id: 'pdf-split', title: 'PDF Ayırıcı (Split)', icon: <Layers size={18} />, category: 'office' },
-    { id: 'pdf-text', title: 'PDF → Metin', icon: <FileText size={18} />, category: 'office' },
-    { id: 'pdf', title: 'PDF Yönetimi', icon: <FileText size={18} />, category: 'office' },
+    // Office & Documents
+    { id: 'document-toolkit', title: 'Belge & Ofis Çıkın', icon: <FileText size={18} />, category: 'office', addedAt: '2026-02-20' },
     { id: 'convert', title: 'Dosya Dönüştürücü', icon: <Layers size={18} />, category: 'office' },
 
     // Text & Content (New)
@@ -94,9 +91,8 @@ const NAV_ITEMS: NavItem[] = [
     { id: 'aspect-ratio', title: 'Aspect Ratio', icon: <Layers size={18} />, category: 'calculators' },
 
     // Checks (New)
-    { id: 'iban-checker', title: 'IBAN Format Kontrol', icon: <ShieldCheck size={18} />, category: 'checks', addedAt: '2026-02-20' },
-    { id: 'tckn-checker', title: 'TCKN Format Kontrol', icon: <ShieldCheck size={18} />, category: 'checks', addedAt: '2026-02-20' },
-    { id: 'email-header-analyzer', title: 'Email Header Analiz', icon: <Globe size={18} />, category: 'checks', addedAt: '2026-02-20' },
+    // Verification Tools
+    { id: 'check-toolkit', title: 'Güvenlik & Doğrulama', icon: <ShieldCheck size={18} />, category: 'checks', addedAt: '2026-02-20' },
 
     // Security
     { id: 'encrypt', title: 'Dosya Şifreleyici', icon: <Lock size={18} />, category: 'security' },

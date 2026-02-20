@@ -55,7 +55,9 @@ const MediaToolkit = dynamic(() => import('@/components/MediaToolkit').then(mod 
 const IdentifierConverter = dynamic(() => import('@/components/IdentifierConverter').then(mod => mod.IdentifierConverter));
 const SchemaGenerator = dynamic(() => import('@/components/SchemaGenerator').then(mod => mod.SchemaGenerator));
 const MetadataGenerator = dynamic(() => import('@/components/MetadataGenerator').then(mod => mod.MetadataGenerator));
-const EmailHeaderAnalyzer = dynamic(() => import('@/components/EmailHeaderAnalyzer').then(mod => mod.EmailHeaderAnalyzer));
+const EmailHeaderAnalyzer = dynamic(() => import('@/components/EmailHeaderAnalyzer').then(mod => mod.EmailHeaderAnalyzer), { ssr: false });
+const DocumentToolkit = dynamic(() => import('@/components/DocumentToolkit').then(mod => mod.DocumentToolkit), { ssr: false });
+const CheckToolkit = dynamic(() => import('@/components/CheckToolkit').then(mod => mod.CheckToolkit), { ssr: false });
 
 export default function Home() {
     const [file, setFile] = useState<File | null>(null);
@@ -247,6 +249,15 @@ export default function Home() {
                             {view === 'schema-generator' && <SchemaGenerator onBack={() => setView('home')} />}
                             {view === 'metadata-generator' && <MetadataGenerator onBack={() => setView('home')} />}
                             {view === 'email-header-analyzer' && <EmailHeaderAnalyzer onBack={() => setView('home')} />}
+                            {view === 'document-toolkit' && <DocumentToolkit onBack={() => setView('home')} />}
+                            {view === 'check-toolkit' && <CheckToolkit onBack={() => setView('home')} />}
+
+                            {/* Compatibility for old office routes */}
+                            {(view === 'word-pdf' || view === 'pdf-word' || view === 'pdf-split' || view === 'pdf-text' || view === 'pdf') &&
+                                <DocumentToolkit onBack={() => setView('home')} />}
+
+                            {(view === 'iban-checker' || view === 'tckn-checker' || view === 'email-header-analyzer') &&
+                                <CheckToolkit onBack={() => setView('home')} />}
                         </div>
                     )}
 
