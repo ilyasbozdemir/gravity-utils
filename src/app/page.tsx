@@ -55,6 +55,7 @@ const MediaToolkit = dynamic(() => import('@/components/MediaToolkit').then(mod 
 const IdentifierConverter = dynamic(() => import('@/components/IdentifierConverter').then(mod => mod.IdentifierConverter));
 const SchemaGenerator = dynamic(() => import('@/components/SchemaGenerator').then(mod => mod.SchemaGenerator));
 const MetadataGenerator = dynamic(() => import('@/components/MetadataGenerator').then(mod => mod.MetadataGenerator));
+const EmailHeaderAnalyzer = dynamic(() => import('@/components/EmailHeaderAnalyzer').then(mod => mod.EmailHeaderAnalyzer));
 
 export default function Home() {
     const [file, setFile] = useState<File | null>(null);
@@ -245,6 +246,7 @@ export default function Home() {
                             {view === 'identifier-converter' && <IdentifierConverter onBack={() => setView('home')} />}
                             {view === 'schema-generator' && <SchemaGenerator onBack={() => setView('home')} />}
                             {view === 'metadata-generator' && <MetadataGenerator onBack={() => setView('home')} />}
+                            {view === 'email-header-analyzer' && <EmailHeaderAnalyzer onBack={() => setView('home')} />}
                         </div>
                     )}
 
