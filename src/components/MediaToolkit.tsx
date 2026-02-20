@@ -163,7 +163,7 @@ const SocialCard = ({ platform, sizes, color }: { platform: string, sizes: strin
             {sizes.map((s, i) => (
                 <div key={i} className="flex items-center justify-between p-3 bg-white/50 dark:bg-white/5 rounded-xl border border-white/50 dark:border-white/5">
                     <span className="text-xs font-bold text-slate-700 dark:text-slate-300">{s}</span>
-                    <button onClick={() => navigator.clipboard.writeText(s.split(': ')[1])} className="text-blue-500 hover:scale-110 active:scale-90 transition-transform">
+                    <button onClick={() => navigator.clipboard.writeText(s.split(': ')[1])} title="Kopyala" className="text-blue-500 hover:scale-110 active:scale-90 transition-transform">
                         <CopyIcon size={14} />
                     </button>
                 </div>

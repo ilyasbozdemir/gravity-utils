@@ -177,22 +177,72 @@ const IbanChecker = () => {
 
 const TcknChecker = () => {
     const [tckn, setTckn] = useState('');
-    const isValid = tckn.length === 11; // Mock logic
+    const [status, setStatus] = useState<{ isValid: boolean; message: string }>({ isValid: false, message: '11 hane girmelisiniz' });
+
+    useEffect(() => {
+        if (tckn.length === 11) {
+            const digits = tckn.split('').map(Number);
+
+            // Rule 1: First digit cannot be 0
+            if (digits[0] === 0) {
+                setStatus({ isValid: false, message: 'İlk hane 0 olamaz' });
+                return;
+            }
+
+            // Rule 3: (Sum of 1,3,5,7,9 * 7 - Sum of 2,4,6,8) % 10 == 10th digit
+            const oddSum = digits[0] + digits[2] + digits[4] + digits[6] + digits[8];
+            const evenSum = digits[1] + digits[3] + digits[5] + digits[7];
+            let tenthDigit = ((oddSum * 7) - evenSum) % 10;
+            if (tenthDigit < 0) tenthDigit += 10;
+
+            if (tenthDigit !== digits[9]) {
+                setStatus({ isValid: false, message: 'Algoritma hatası (10. hane uyumsuz)' });
+                return;
+            }
+
+            // Rule 4: Sum of first 10 digits % 10 == 11th digit
+            const totalSum = digits.slice(0, 10).reduce((a, b) => a + b, 0);
+            if (totalSum % 10 !== digits[10]) {
+                setStatus({ isValid: false, message: 'Algoritma hatası (11. hane uyumsuz)' });
+                return;
+            }
+
+            setStatus({ isValid: true, message: 'TCKN Geçerli' });
+        } else {
+            setStatus({ isValid: false, message: '11 hane girmelisiniz' });
+        }
+    }, [tckn]);
+
     return (
-        <div className="space-y-4">
-            <label htmlFor="tcknInput" className="block text-sm font-bold text-slate-500 mb-2">TC Kimlik Numarası</label>
-            <input
-                id="tcknInput"
-                type="text"
-                maxLength={11}
-                value={tckn}
-                onChange={e => setTckn(e.target.value.replace(/\D/g, ''))}
-                className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-4 text-3xl font-black text-center tracking-[1rem]"
-                title="Kontrol etmek istediğiniz TC Kimlik numarasını girin"
-            />
-            <div className={`p-4 rounded-xl flex items-center gap-3 ${isValid ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'}`}>
-                <ShieldCheck size={20} />
-                <span className="font-bold text-sm uppercase">{isValid ? 'TCKN Formatı Doğru' : '11 Hane Olmalıdır'}</span>
+        <div className="space-y-6">
+            <div className="space-y-4">
+                <label htmlFor="tcknInput" className="block text-sm font-bold text-slate-500 mb-2">TC Kimlik Numarası</label>
+                <div className="relative">
+                    <input
+                        id="tcknInput"
+                        type="text"
+                        maxLength={11}
+                        value={tckn}
+                        onChange={e => setTckn(e.target.value.replace(/\D/g, ''))}
+                        className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-4 text-3xl font-black text-center tracking-[1rem] focus:ring-4 focus:ring-blue-500/10 focus:outline-none transition-all"
+                        title="Kontrol etmek istediğiniz TC Kimlik numarasını girin"
+                        placeholder="00000000000"
+                    />
+                </div>
+                <div className={`p-4 rounded-xl flex items-center gap-3 transition-colors ${status.isValid ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400' : 'bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-400'}`}>
+                    <ShieldCheck size={20} />
+                    <span className="font-bold text-sm uppercase tracking-tight">{status.message}</span>
+                </div>
+            </div>
+
+            <div className="p-4 bg-slate-50 dark:bg-white/5 rounded-2xl border border-slate-100 dark:border-white/10">
+                <div className="flex items-center gap-3 text-slate-500 dark:text-slate-400 mb-2">
+                    <Info size={16} />
+                    <h4 className="text-xs font-bold uppercase tracking-widest">Gizlilik Bilgilendirmesi</h4>
+                </div>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed font-medium">
+                    Analiz tamamen <strong>tarayıcınızda (client-side)</strong> gerçekleşir. Verileriniz hiçbir sunucuya gönderilmez, network tabını izleyerek kontrol edebilirsiniz. %100 offline-ready bir araçtır.
+                </p>
             </div>
         </div>
     );

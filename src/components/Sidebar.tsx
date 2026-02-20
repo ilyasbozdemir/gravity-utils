@@ -24,7 +24,7 @@ export type ToolView =
     | 'timezone-converter' | 'json-ld' | 'network-cable' | 'lorem-ipsum' | 'aspect-ratio' | 'social-guide' | 'http-status'
     | 'json-csv' | 'text-cleaner' | 'case-converter-pro' | 'css-units' | 'date-calculator' | 'internet-speed'
     | 'iban-checker' | 'tckn-checker' | 'file-size-calc' | 'viewport-calc' | 'exif-viewer' | 'bulk-rename'
-    | 'email-header-analyzer';
+    | 'email-header-analyzer' | 'identifier-converter' | 'schema-generator' | 'metadata-generator';
 
 interface SidebarProps {
     currentView: ToolView;
@@ -82,6 +82,9 @@ const NAV_ITEMS: NavItem[] = [
     { id: 'viewport-calc', title: 'Viewport Calculator', icon: <Smartphone size={18} />, category: 'dev', addedAt: '2026-02-20' },
     { id: 'network-cable', title: 'Network Kablo Testi', icon: <Cable size={18} />, category: 'dev' },
     { id: 'sql-formatter', title: 'SQL Formatlayıcı', icon: <Database size={18} />, category: 'dev' },
+    { id: 'identifier-converter', title: 'Akıllı İsim Çevirici', icon: <Type size={18} />, category: 'dev', addedAt: '2026-02-20' },
+    { id: 'schema-generator', title: 'Şema & Form Üretici', icon: <Layers size={18} />, category: 'dev', addedAt: '2026-02-20' },
+    { id: 'metadata-generator', title: 'Meta Etiketi Üretici', icon: <Globe size={18} />, category: 'dev', addedAt: '2026-02-20' },
 
     // Calculators (New)
     { id: 'date-calculator', title: 'Tarih & Gün Hesapla', icon: <Clock size={18} />, category: 'calculators', addedAt: '2026-02-20' },

@@ -52,6 +52,9 @@ const JsonCsvConverter = dynamic(() => import('@/components/JsonCsvConverter').t
 const TextToolkit = dynamic(() => import('@/components/TextToolkit').then(mod => mod.TextToolkit));
 const SmartCalculator = dynamic(() => import('@/components/SmartCalculator').then(mod => mod.SmartCalculator));
 const MediaToolkit = dynamic(() => import('@/components/MediaToolkit').then(mod => mod.MediaToolkit));
+const IdentifierConverter = dynamic(() => import('@/components/IdentifierConverter').then(mod => mod.IdentifierConverter));
+const SchemaGenerator = dynamic(() => import('@/components/SchemaGenerator').then(mod => mod.SchemaGenerator));
+const MetadataGenerator = dynamic(() => import('@/components/MetadataGenerator').then(mod => mod.MetadataGenerator));
 
 export default function Home() {
     const [file, setFile] = useState<File | null>(null);
@@ -245,6 +248,10 @@ export default function Home() {
 
                             {(view === 'exif-viewer' || view === 'bulk-rename' || view === 'social') &&
                                 <MediaToolkit view={view} onBack={() => setView('home')} />}
+
+                            {view === 'identifier-converter' && <IdentifierConverter onBack={() => setView('home')} />}
+                            {view === 'schema-generator' && <SchemaGenerator onBack={() => setView('home')} />}
+                            {view === 'metadata-generator' && <MetadataGenerator onBack={() => setView('home')} />}
                         </div>
                     )}
 

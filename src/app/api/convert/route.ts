@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
             });
 
             const pdfBytes = await pdfDoc.save();
-            return new Response(pdfBytes, {
+            return new Response(Buffer.from(pdfBytes), {
                 headers: {
                     'Content-Type': 'application/pdf',
                     'Content-Disposition': `attachment; filename="watermarked-${file.name}"`,
@@ -69,7 +69,7 @@ export async function POST(req: NextRequest) {
             }
 
             const pdfBytes = await mainPdf.save();
-            return new Response(pdfBytes, {
+            return new Response(Buffer.from(pdfBytes), {
                 headers: {
                     'Content-Type': 'application/pdf',
                     'Content-Disposition': 'attachment; filename="merged.pdf"',
@@ -88,7 +88,7 @@ export async function POST(req: NextRequest) {
             pages.forEach(p => newPdf.addPage(p));
 
             const pdfBytes = await newPdf.save();
-            return new Response(pdfBytes, {
+            return new Response(Buffer.from(pdfBytes), {
                 headers: {
                     'Content-Type': 'application/pdf',
                     'Content-Disposition': 'attachment; filename="split.pdf"',
@@ -100,7 +100,7 @@ export async function POST(req: NextRequest) {
             const pdfDoc = await PDFDocument.load(arrayBuffer);
             const pdfBytes = await pdfDoc.save({ useObjectStreams: true });
             
-            return new Response(pdfBytes, {
+            return new Response(Buffer.from(pdfBytes), {
                 headers: {
                     'Content-Type': 'application/pdf',
                     'Content-Disposition': 'attachment; filename="compressed.pdf"',

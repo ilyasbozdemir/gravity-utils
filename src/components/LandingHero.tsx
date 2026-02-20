@@ -15,7 +15,7 @@ export type ToolView =
     | 'ppt-pdf' | 'pdf-ppt' | 'pdf-image' | 'imagetopdf'
     | 'text-cleaner' | 'case-converter-pro' | 'css-units' | 'date-calculator' | 'internet-speed'
     | 'iban-checker' | 'tckn-checker' | 'file-size-calc' | 'viewport-calc' | 'exif-viewer' | 'bulk-rename'
-    | 'email-header-analyzer';
+    | 'email-header-analyzer' | 'identifier-converter' | 'schema-generator' | 'metadata-generator';
 
 interface LandingHeroProps {
     onFileSelect: (file: File) => void;
