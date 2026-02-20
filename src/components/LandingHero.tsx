@@ -89,6 +89,22 @@ export const LandingHero: React.FC<LandingHeroProps> = ({ onToolSelect }) => {
                             <QuickAction title="Aspect Ratio" onClick={() => onToolSelect('aspect-ratio')} icon={<Layers size={16} />} color="orange" />
                         </div>
                     </section>
+
+                    {/* Category: Geliştirici Araçları */}
+                    <section>
+                        <div className="flex items-center gap-3 mb-8">
+                            <div className="p-2 bg-blue-50 dark:bg-blue-500/10 rounded-lg text-blue-600 dark:text-blue-400"><Code size={20} /></div>
+                            <h3 className="text-xl font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">Geliştirici Araçları</h3>
+                        </div>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+                            <QuickAction title="İsim Çevirici" onClick={() => onToolSelect('identifier-converter')} icon={<Type size={16} />} color="blue" />
+                            <QuickAction title="Şema Üretici" onClick={() => onToolSelect('schema-generator')} icon={<Layers size={16} />} color="indigo" />
+                            <QuickAction title="Meta Üretici" onClick={() => onToolSelect('metadata-generator')} icon={<Globe size={16} />} color="emerald" />
+                            <QuickAction title="Viewport Calc" onClick={() => onToolSelect('viewport-calc')} icon={<Smartphone size={16} />} color="orange" />
+                            <QuickAction title="JSON Schema" onClick={() => onToolSelect('json-ld')} icon={<Search size={16} />} color="amber" />
+                            <QuickAction title="SQL Format" onClick={() => onToolSelect('sql-formatter')} icon={<Database size={16} />} color="rose" />
+                        </div>
+                    </section>
                 </div>
             </div>
         </div>
