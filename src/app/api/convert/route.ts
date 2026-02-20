@@ -98,7 +98,6 @@ export async function POST(req: NextRequest) {
 
         if (type === 'pdf-compress') {
             const pdfDoc = await PDFDocument.load(arrayBuffer);
-            // pdf-lib compress is limited but we can re-save with optimizations
             const pdfBytes = await pdfDoc.save({ useObjectStreams: true });
             
             return new Response(pdfBytes, {
@@ -107,6 +106,56 @@ export async function POST(req: NextRequest) {
                     'Content-Disposition': 'attachment; filename="compressed.pdf"',
                 },
             });
+        }
+
+        // --- New Text Processing Logic ---
+        if (type === 'text-process') {
+            const body = await req.json();
+            const { action, text, params } = body;
+            let result = text || '';
+
+            switch (action) {
+                case 'clean-spaces':
+                    result = result.replace(/[ \t]+/g, ' ').trim();
+                    break;
+                case 'clean-lines':
+                    result = result.split('\n').map((l: string) => l.trim()).filter(Boolean).join('\n');
+                    break;
+                case 'remove-emojis':
+                    result = result.replace(/([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDC00-\uDFFF])/g, '');
+                    break;
+                case 'normalize-tr':
+                    const trMap: Record<string, string> = { 'ç': 'c', 'ğ': 'g', 'ı': 'i', 'ö': 'o', 'ş': 's', 'ü': 'u', 'Ç': 'C', 'Ğ': 'G', 'İ': 'I', 'Ö': 'O', 'Ş': 'S', 'Ü': 'U' };
+                    result = result.replace(/[çğıöşüÇĞİÖŞÜ]/g, (m: string) => trMap[m] || m);
+                    break;
+                case 'show-hidden':
+                    result = result
+                        .replace(/\n/g, '↵\n')
+                        .replace(/\t/g, '⇥ ')
+                        .replace(/ /g, '·');
+                    break;
+                case 'limit':
+                    result = result.substring(0, body.limit || 2200);
+                    break;
+                case 'case':
+                    if (body.to === 'upper') {
+                        // Correct Turkish UPPER case: i -> İ (Actually user wanted normalize usually, but let's do standard first or TR aware)
+                        result = result.toLocaleUpperCase('tr-TR');
+                    } else if (body.to === 'lower') {
+                        result = result.toLocaleLowerCase('tr-TR');
+                    } else if (body.to === 'title') {
+                        result = result.split(' ').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+                    } else if (body.to === 'camel') {
+                        result = result.toLowerCase().replace(/[^a-zA-Z0-9]+(.)/g, (_: any, chr: string) => chr.toUpperCase());
+                    } else if (body.to === 'snake') {
+                        result = result.replace(/\s+/g, '_').toLowerCase();
+                    } else if (body.to === 'kebab') {
+                        result = result.replace(/\s+/g, '-').toLowerCase();
+                    }
+                    break;
+            }
+
+            return NextResponse.json({ result });
         }
 
         return NextResponse.json({ error: 'Geçersiz işlem tipi: ' + type }, { status: 400 });

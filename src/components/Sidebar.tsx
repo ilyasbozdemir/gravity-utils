@@ -10,11 +10,21 @@ import {
     Clock,
     Network,
     Code2,
-    Cable
+    Cable,
+    RefreshCw
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 
-export type ToolView = 'home' | 'convert' | 'inspect' | 'base64' | 'optimize' | 'hash' | 'json' | 'text' | 'pdf' | 'exif' | 'qr' | 'social' | 'favicon' | 'units' | 'encrypt' | 'uuid' | 'yaml' | 'jwt' | 'url' | 'imagetopdf' | 'case' | 'string' | 'json-xml' | 'date-time' | 'sql-formatter' | 'word-pdf' | 'pdf-word' | 'excel-pdf' | 'pdf-excel' | 'ppt-pdf' | 'pdf-ppt' | 'pdf-image' | 'pdf-split' | 'word-html' | 'pdf-text' | 'web-toolkit' | 'network-toolkit' | 'color-toolkit' | 'regex-tester' | 'csv-viewer' | 'markdown-editor' | 'password-generator' | 'svg-optimizer' | 'cron-builder' | 'timezone-converter' | 'json-ld' | 'network-cable' | 'lorem-ipsum' | 'aspect-ratio' | 'social-guide' | 'http-status' | 'json-csv';
+export type ToolView =
+    | 'home' | 'convert' | 'inspect' | 'base64' | 'optimize' | 'hash' | 'json' | 'text' | 'pdf' | 'exif' | 'qr'
+    | 'social' | 'favicon' | 'units' | 'encrypt' | 'uuid' | 'yaml' | 'jwt' | 'url' | 'imagetopdf' | 'case' | 'string'
+    | 'json-xml' | 'date-time' | 'sql-formatter' | 'word-pdf' | 'pdf-word' | 'excel-pdf' | 'pdf-excel' | 'ppt-pdf'
+    | 'pdf-ppt' | 'pdf-image' | 'pdf-split' | 'word-html' | 'pdf-text' | 'web-toolkit' | 'network-toolkit' | 'color-toolkit'
+    | 'regex-tester' | 'csv-viewer' | 'markdown-editor' | 'password-generator' | 'svg-optimizer' | 'cron-builder'
+    | 'timezone-converter' | 'json-ld' | 'network-cable' | 'lorem-ipsum' | 'aspect-ratio' | 'social-guide' | 'http-status'
+    | 'json-csv' | 'text-cleaner' | 'case-converter-pro' | 'css-units' | 'date-calculator' | 'internet-speed'
+    | 'iban-checker' | 'tckn-checker' | 'file-size-calc' | 'viewport-calc' | 'exif-viewer' | 'bulk-rename'
+    | 'email-header-analyzer';
 
 interface SidebarProps {
     currentView: ToolView;
@@ -32,55 +42,63 @@ interface NavItem {
 }
 
 const CATEGORIES = [
-    { id: 'office', title: 'Ofis Araçları', icon: <FileText size={16} /> },
-    { id: 'files', title: 'Dosya & PDF', icon: <Archive size={16} /> },
+    { id: 'office', title: 'Ofis & Belge', icon: <FileText size={16} /> },
+    { id: 'text-content', title: 'Metin & İçerik', icon: <Type size={16} /> },
     { id: 'media', title: 'Görsel & Medya', icon: <ImageIcon size={16} /> },
     { id: 'dev', title: 'Geliştirici', icon: <Code size={16} /> },
-    { id: 'security', title: 'Güvenlik', icon: <ShieldCheck size={16} /> },
-    { id: 'utils', title: 'Genel Araçlar', icon: <Settings size={16} /> },
+    { id: 'calculators', title: 'Hesaplamalar', icon: <Calculator size={16} /> },
+    { id: 'checks', title: 'Form & Kontrol', icon: <ShieldCheck size={16} /> },
+    { id: 'security', title: 'Güvenlik & Gizlilik', icon: <Lock size={16} /> },
 ];
 
 const NAV_ITEMS: NavItem[] = [
-    // Office Tools
+    // Office & Documents
     { id: 'word-pdf', title: 'Word → PDF', icon: <FileText size={18} />, category: 'office' },
     { id: 'pdf-word', title: 'PDF → Word', icon: <FileText size={18} />, category: 'office' },
-    { id: 'word-html', title: 'Word → HTML', icon: <Globe size={18} />, category: 'office' },
     { id: 'pdf-split', title: 'PDF Ayırıcı (Split)', icon: <Layers size={18} />, category: 'office' },
     { id: 'pdf-text', title: 'PDF → Metin', icon: <FileText size={18} />, category: 'office' },
-    { id: 'excel-pdf', title: 'Excel → PDF', icon: <Layers size={18} />, category: 'office' },
-    { id: 'pdf-excel', title: 'PDF → Excel', icon: <Layers size={18} />, category: 'office' },
-    { id: 'ppt-pdf', title: 'PowerPoint → PDF', icon: <ImageIcon size={18} />, category: 'office' },
-    { id: 'pdf-ppt', title: 'PDF → PowerPoint', icon: <ImageIcon size={18} />, category: 'office' },
+    { id: 'pdf', title: 'PDF Yönetimi', icon: <FileText size={18} />, category: 'office' },
+    { id: 'convert', title: 'Dosya Dönüştürücü', icon: <Layers size={18} />, category: 'office' },
 
-    // Files
-    { id: 'convert', title: 'Dosya Dönüştürücü', icon: <Layers size={18} />, category: 'files' },
-    { id: 'pdf', title: 'PDF Yönetimi', icon: <FileText size={18} />, category: 'files' },
-    { id: 'inspect', title: 'Arşiv Görüntüleyici', icon: <Archive size={18} />, category: 'files' },
-    { id: 'imagetopdf', title: 'Resim → PDF', icon: <ImageIcon size={18} />, category: 'files' },
-    { id: 'pdf-image', title: 'PDF → Resim', icon: <ImageIcon size={18} />, category: 'files' },
+    // Text & Content (New)
+    { id: 'text-cleaner', title: 'Metin Temizleyici Pro', icon: <RefreshCw size={18} />, category: 'text-content', addedAt: '2026-02-20' },
+    { id: 'case-converter-pro', title: 'Case Converter Pro', icon: <CaseSensitive size={18} />, category: 'text-content', addedAt: '2026-02-20' },
+    { id: 'lorem-ipsum', title: 'Lorem Ipsum Üretici', icon: <Type size={18} />, category: 'text-content' },
+    { id: 'text', title: 'Metin Analizi', icon: <Search size={18} />, category: 'text-content' },
+    { id: 'markdown-editor', title: 'Markdown Editör', icon: <FileCode size={18} />, category: 'text-content' },
 
     // Media
     { id: 'optimize', title: 'Resim Sıkıştırıcı', icon: <ImageIcon size={18} />, category: 'media' },
     { id: 'social', title: 'Sosyal Medya Boyut', icon: <Smartphone size={18} />, category: 'media' },
-    { id: 'favicon', title: 'Favicon Oluşturucu', icon: <ImageIcon size={18} />, category: 'media' },
+    { id: 'exif-viewer', title: 'EXIF Görüntüleyici', icon: <Search size={18} />, category: 'media', addedAt: '2026-02-20' },
+    { id: 'bulk-rename', title: 'Toplu İsimlendir', icon: <Type size={18} />, category: 'media', addedAt: '2026-02-20' },
     { id: 'qr', title: 'QR Kod İşlemleri', icon: <QrCode size={18} />, category: 'media' },
 
     // Dev
     { id: 'json', title: 'JSON Formatlayıcı', icon: <FileJson size={18} />, category: 'dev' },
-    { id: 'yaml', title: 'YAML / JSON Çevirici', icon: <Code size={18} />, category: 'dev' },
     { id: 'jwt', title: 'JWT Debugger', icon: <ShieldCheck size={18} />, category: 'dev' },
-    { id: 'base64', title: 'Base64 Çevirici', icon: <Share2 size={18} />, category: 'dev' },
-    { id: 'url', title: 'URL Encoder', icon: <Globe size={18} />, category: 'dev' },
-    { id: 'uuid', title: 'UUID Oluşturucu', icon: <Zap size={18} />, category: 'dev' },
-    { id: 'json-xml', title: 'JSON / XML / YAML', icon: <FileCode size={18} />, category: 'dev' },
+    { id: 'http-status', title: 'HTTP Durum Kodları', icon: <Globe size={18} />, category: 'dev' },
+    { id: 'css-units', title: 'CSS Birim Çevirici', icon: <Code2 size={18} />, category: 'dev', addedAt: '2026-02-20' },
+    { id: 'viewport-calc', title: 'Viewport Calculator', icon: <Smartphone size={18} />, category: 'dev', addedAt: '2026-02-20' },
+    { id: 'network-cable', title: 'Network Kablo Testi', icon: <Cable size={18} />, category: 'dev' },
     { id: 'sql-formatter', title: 'SQL Formatlayıcı', icon: <Database size={18} />, category: 'dev' },
-    { id: 'web-toolkit', title: 'Web Araç Seti', icon: <Globe size={18} />, category: 'dev' },
-    { id: 'network-cable', title: 'Network Kablo Testi', icon: <Cable size={18} />, category: 'dev', addedAt: '2026-02-19' },
-    { id: 'lorem-ipsum', title: 'Lorem Ipsum Üretici', icon: <FileText size={18} />, category: 'utils', addedAt: '2026-02-19' },
-    { id: 'aspect-ratio', title: 'Aspect Ratio Hesapla', icon: <Layers size={18} />, category: 'utils', addedAt: '2026-02-19' },
-    { id: 'social-guide', title: 'Sosyal Medya Rehberi', icon: <Share2 size={18} />, category: 'media', addedAt: '2026-02-19' },
-    { id: 'http-status', title: 'HTTP Durum Kodları', icon: <Globe size={18} />, category: 'dev', addedAt: '2026-02-19' },
-    { id: 'json-csv', title: 'JSON ↔ CSV Dönüştür', icon: <FileJson size={18} />, category: 'convert', addedAt: '2026-02-19' },
+
+    // Calculators (New)
+    { id: 'date-calculator', title: 'Tarih & Gün Hesapla', icon: <Clock size={18} />, category: 'calculators', addedAt: '2026-02-20' },
+    { id: 'internet-speed', title: 'Download Süresi', icon: <Zap size={18} />, category: 'calculators', addedAt: '2026-02-20' },
+    { id: 'file-size-calc', title: 'Dosya Boyutu Tahmin', icon: <Layers size={18} />, category: 'calculators', addedAt: '2026-02-20' },
+    { id: 'units', title: 'Birim Dönüştürücü', icon: <Calculator size={18} />, category: 'calculators' },
+    { id: 'aspect-ratio', title: 'Aspect Ratio', icon: <Layers size={18} />, category: 'calculators' },
+
+    // Checks (New)
+    { id: 'iban-checker', title: 'IBAN Format Kontrol', icon: <ShieldCheck size={18} />, category: 'checks', addedAt: '2026-02-20' },
+    { id: 'tckn-checker', title: 'TCKN Format Kontrol', icon: <ShieldCheck size={18} />, category: 'checks', addedAt: '2026-02-20' },
+    { id: 'email-header-analyzer', title: 'Email Header Analiz', icon: <Globe size={18} />, category: 'checks', addedAt: '2026-02-20' },
+
+    // Security
+    { id: 'encrypt', title: 'Dosya Şifreleyici', icon: <Lock size={18} />, category: 'security' },
+    { id: 'hash', title: 'Hash Oluşturucu', icon: <Hash size={18} />, category: 'security' },
+    { id: 'password-generator', title: 'Şifre Üretici', icon: <Lock size={18} />, category: 'security' },
 ];
 
 function isNew(dateStr?: string) {

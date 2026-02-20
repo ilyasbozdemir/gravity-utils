@@ -49,6 +49,9 @@ const AspectRatioCalculator = dynamic(() => import('@/components/AspectRatioCalc
 const SocialGuide = dynamic(() => import('@/components/SocialGuide').then(mod => mod.SocialGuide));
 const HttpStatusCodes = dynamic(() => import('@/components/HttpStatusCodes').then(mod => mod.HttpStatusCodes));
 const JsonCsvConverter = dynamic(() => import('@/components/JsonCsvConverter').then(mod => mod.JsonCsvConverter));
+const TextToolkit = dynamic(() => import('@/components/TextToolkit').then(mod => mod.TextToolkit));
+const SmartCalculator = dynamic(() => import('@/components/SmartCalculator').then(mod => mod.SmartCalculator));
+const MediaToolkit = dynamic(() => import('@/components/MediaToolkit').then(mod => mod.MediaToolkit));
 
 export default function Home() {
     const [file, setFile] = useState<File | null>(null);
@@ -231,6 +234,17 @@ export default function Home() {
                             {view === 'social-guide' && <SocialGuide onBack={() => setView('home')} />}
                             {view === 'http-status' && <HttpStatusCodes onBack={() => setView('home')} />}
                             {view === 'json-csv' && <JsonCsvConverter onBack={() => setView('home')} />}
+
+                            {/* New Toolkit Views */}
+                            {(view === 'text-cleaner' || view === 'case-converter-pro') &&
+                                <TextToolkit view={view} onBack={() => setView('home')} />}
+
+                            {(view === 'date-calculator' || view === 'internet-speed' || view === 'file-size-calc' ||
+                                view === 'iban-checker' || view === 'tckn-checker' || view === 'css-units' || view === 'viewport-calc') &&
+                                <SmartCalculator view={view} onBack={() => setView('home')} />}
+
+                            {(view === 'exif-viewer' || view === 'bulk-rename' || view === 'social') &&
+                                <MediaToolkit view={view} onBack={() => setView('home')} />}
                         </div>
                     )}
 
