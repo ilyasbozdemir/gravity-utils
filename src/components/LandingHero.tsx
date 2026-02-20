@@ -1,7 +1,7 @@
 import React from 'react';
 import {
     Lock, Share2, MousePointer2, Settings, Smartphone, RefreshCw, Layers, Globe,
-    Type, Clock, Camera, Zap, Star, Calculator, FileText, Minimize2, Hash, Code, Search, QrCode, Archive,
+    Type, Clock, Camera, Zap, Star, Calculator, FileText, Minimize2, Hash, Code, Search, QrCode, Archive, Database,
     Image as ImageIcon
 } from 'lucide-react';
 
