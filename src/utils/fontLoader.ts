@@ -7,7 +7,7 @@
 // Standard PDF fonts (Helvetica, etc.) do NOT support these in WinAnsiEncoding.
 // We must embed a TTF font.
 
-const ROBOTO_REGULAR_URL = 'https://raw.githubusercontent.com/google/fonts/main/apache/roboto/static/Roboto-Regular.ttf';
+const ROBOTO_REGULAR_URL = 'https://cdn.jsdelivr.net/gh/googlefonts/roboto@master/src/hinted/Roboto-Regular.ttf';
 
 let cachedFont: ArrayBuffer | null = null;
 

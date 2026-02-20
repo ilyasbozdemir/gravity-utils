@@ -6,7 +6,14 @@ import {
 } from 'lucide-react';
 import { FileDropper } from './FileDropper';
 
-type ToolView = 'convert' | 'inspect' | 'base64' | 'optimize' | 'hash' | 'json' | 'text' | 'pdf' | 'exif' | 'qr' | 'social' | 'favicon' | 'units' | 'encrypt' | 'uuid' | 'yaml' | 'jwt' | 'url';
+type ToolView =
+    | 'home' | 'convert' | 'inspect' | 'base64' | 'optimize' | 'hash' | 'json' | 'text' | 'pdf' | 'exif' | 'qr'
+    | 'social' | 'favicon' | 'units' | 'encrypt' | 'uuid' | 'yaml' | 'jwt' | 'url' | 'case' | 'string'
+    | 'json-xml' | 'date-time' | 'sql-formatter' | 'web-toolkit' | 'network-toolkit' | 'password-generator'
+    | 'svg-optimizer' | 'cron-builder' | 'timezone-converter' | 'color-toolkit' | 'regex-tester'
+    | 'csv-viewer' | 'markdown-editor' | 'json-ld' | 'network-cable' | 'lorem-ipsum' | 'aspect-ratio'
+    | 'social-guide' | 'http-status' | 'json-csv' | 'word-pdf' | 'pdf-word' | 'excel-pdf' | 'pdf-excel'
+    | 'ppt-pdf' | 'pdf-ppt' | 'pdf-image' | 'imagetopdf';
 
 interface LandingHeroProps {
     onFileSelect: (file: File) => void;
@@ -32,21 +39,52 @@ export const LandingHero: React.FC<LandingHeroProps> = ({ onFileSelect, onToolSe
                     Elinizin Altında.
                 </h1>
 
-                <div className="w-full max-w-[700px] relative z-20 mb-12">
-                    <div className="p-2 rounded-3xl bg-white/50 dark:bg-slate-800/40 backdrop-blur-xl border border-slate-200 dark:border-white/10 shadow-2xl dark:shadow-none">
-                        <FileDropper onFileSelect={onFileSelect} />
-                    </div>
+                <p className="text-slate-500 dark:text-slate-400 max-w-[600px] mb-12 text-lg">
+                    Dosyalarınızı tarayıcıdan çıkarmadan, %100 güvenli ve hızlı bir şekilde işleyin.
+                    Popüler araçlara aşağıdan hızlıca erişebilirsiniz.
+                </p>
+
+                {/* Main Tool Grid (Replacing FileDropper) */}
+                <div className="w-full max-w-[900px] grid grid-cols-2 md:grid-cols-4 gap-4 mb-20 relative z-20">
+                    <HeroLink
+                        title="PDF Araçları"
+                        desc="Birleştir, Ayır, Sıkıştır"
+                        icon={<FileText size={28} />}
+                        color="red"
+                        onClick={() => onToolSelect('pdf')}
+                    />
+                    <HeroLink
+                        title="Resim İşlemleri"
+                        desc="Dönüştür & Optimize Et"
+                        icon={<ImageIcon size={28} />}
+                        color="blue"
+                        onClick={() => onToolSelect('convert')}
+                    />
+                    <HeroLink
+                        title="Metin & Kod"
+                        desc="JSON, Base64, Analiz"
+                        icon={<Code size={28} />}
+                        color="indigo"
+                        onClick={() => onToolSelect('json')}
+                    />
+                    <HeroLink
+                        title="Ağ Araçları"
+                        desc="HTTP, Kablo Testi"
+                        icon={<Globe size={28} />}
+                        color="emerald"
+                        onClick={() => onToolSelect('network-toolkit')}
+                    />
                 </div>
 
                 {/* Quick Search Mockup */}
-                <div className="relative w-full max-w-md mx-auto mb-16 px-4">
-                    <Search className="absolute left-7 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
+                <div className="relative w-full max-w-xl mx-auto mb-16 px-4">
+                    <Search className="absolute left-8 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
                     <input
                         type="text"
-                        placeholder="Araç ara... (Örn: pdf birleştir, exif temizle)"
+                        placeholder="Hangi aracı arıyorsun? (Örn: pdf birleştir, exif temizle)"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl py-3 pl-12 pr-4 text-sm focus:outline-none focus:border-blue-500/50 focus:ring-4 focus:ring-blue-500/10 transition-all text-slate-700 dark:text-slate-300 placeholder:text-slate-400 dark:placeholder:text-slate-500 shadow-xl shadow-slate-200/50 dark:shadow-none"
+                        className="w-full bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-3xl py-4 pl-14 pr-4 text-base focus:outline-none focus:border-blue-500/50 focus:ring-8 focus:ring-blue-500/5 transition-all text-slate-700 dark:text-slate-300 placeholder:text-slate-400 dark:placeholder:text-slate-500 shadow-2xl shadow-blue-500/10 dark:shadow-none"
                     />
                 </div>
             </div>
@@ -250,6 +288,31 @@ export const LandingHero: React.FC<LandingHeroProps> = ({ onFileSelect, onToolSe
         </div>
     );
 };
+
+const HeroLink = ({ title, desc, icon, color, onClick }: { title: string, desc: string, icon: React.ReactNode, color: string, onClick: () => void }) => (
+    <button
+        onClick={onClick}
+        className="group p-6 text-left bg-white dark:bg-white/[0.03] border-2 border-slate-100 dark:border-white/5 rounded-[2.5rem] transition-all duration-300 hover:border-blue-500/50 dark:hover:border-white/20 hover:-translate-y-2 active:scale-95 shadow-xl shadow-slate-200/50 dark:shadow-none relative overflow-hidden"
+    >
+        <div className={`absolute top-0 right-0 w-24 h-24 -mr-8 -mt-8 rounded-full opacity-10 transition-transform group-hover:scale-150
+            ${color === 'blue' ? 'bg-blue-500' : ''}
+            ${color === 'red' ? 'bg-red-500' : ''}
+            ${color === 'emerald' ? 'bg-emerald-500' : ''}
+            ${color === 'indigo' ? 'bg-indigo-500' : ''}
+        `}></div>
+
+        <div className={`mb-6 w-14 h-14 rounded-2xl flex items-center justify-center transition-all group-hover:rotate-6
+            ${color === 'blue' ? 'bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400' : ''}
+            ${color === 'red' ? 'bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400' : ''}
+            ${color === 'emerald' ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : ''}
+            ${color === 'indigo' ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400' : ''}
+        `}>
+            {icon}
+        </div>
+        <h4 className="text-base font-black mb-1 text-slate-800 dark:text-white">{title}</h4>
+        <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">{desc}</p>
+    </button>
+);
 
 const ToolItem = ({ icon, title, desc, color, onClick }: { icon: React.ReactNode, title: string, desc: string, color: string, onClick: () => void }) => (
     <button
