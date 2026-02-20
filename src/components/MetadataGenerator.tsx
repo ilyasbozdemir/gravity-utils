@@ -6,7 +6,7 @@ import { ArrowLeft, Copy, Check, Globe, Share2, Twitter, Search, Code, Smartphon
 export const MetadataGenerator: React.FC<{ onBack: () => void }> = ({ onBack }) => {
     const [title, setTitle] = useState('Gravity Utils – Akıllı Araçlar');
     const [desc, setDesc] = useState('Günlük hayatta ve geliştirme sürecinde işini hızlandıran ücretsiz araçlar.');
-    const [url, setUrl] = useState('https://gravityutils.dev');
+    const [url, setUrl] = useState('https://gravity-utils.ilyasbozdemir.dev');
     const [outputs, setOutputs] = useState<Record<string, string>>({});
     const [copiedKey, setCopiedKey] = useState<string | null>(null);
 

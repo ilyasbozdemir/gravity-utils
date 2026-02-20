@@ -16,6 +16,7 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs
 interface PdfManagerProps {
     file: File | null;
     onBack: () => void;
+    initialTab?: TabType;
 }
 
 type TabType = 'split' | 'merge' | 'compress' | 'watermark' | 'convert';
@@ -35,8 +36,8 @@ interface PdfFileInfo {
     pageCount: number;
 }
 
-export const PdfManager: React.FC<PdfManagerProps> = ({ file, onBack }) => {
-    const [activeTab, setActiveTab] = useState<TabType>('merge');
+export const PdfManager: React.FC<PdfManagerProps> = ({ file, onBack, initialTab = 'merge' }) => {
+    const [activeTab, setActiveTab] = useState<TabType>(initialTab);
     const [processing, setProcessing] = useState(false);
     const [statusText, setStatusText] = useState('');
 
@@ -198,31 +199,25 @@ export const PdfManager: React.FC<PdfManagerProps> = ({ file, onBack }) => {
     const handleSplit = async () => {
         if (pdfFiles.length === 0 || (selectedPages.size === 0 && !splitPage)) return;
         setProcessing(true);
-        setStatusText('Sayfalar sunucu tarafında ayrılıyor...');
+        setStatusText('Sayfalar ayrılıyor (Tarayıcıda)...');
         try {
             const mainFile = pdfFiles[0].file;
-            const formData = new FormData();
-            formData.append('file', mainFile);
-            formData.append('type', 'pdf-split');
+            const arrayBuffer = await mainFile.arrayBuffer();
+            const sourceDoc = await PDFDocument.load(arrayBuffer);
+            const newDoc = await PDFDocument.create();
 
             const pagesToSplit = selectedPages.size > 0
-                ? Array.from(selectedPages).sort((a, b) => a - b).join(',')
-                : splitPage.toString();
+                ? Array.from(selectedPages).sort((a, b) => a - b)
+                : [splitPage];
 
-            formData.append('pages', pagesToSplit);
+            const copiedPages = await newDoc.copyPages(sourceDoc, pagesToSplit.map(p => p - 1));
+            copiedPages.forEach(page => newDoc.addPage(page));
 
-            const response = await fetch('/api/convert', {
-                method: 'POST',
-                body: formData,
-            });
-
-            if (!response.ok) throw new Error('Sunucu hatası');
-
-            const blob = await response.blob();
-            downloadPdf(new Uint8Array(await blob.arrayBuffer()), `split-${mainFile.name}`);
+            const pdfBytes = await newDoc.save();
+            downloadPdf(pdfBytes, `split-${mainFile.name}`);
         } catch (err) {
             console.error(err);
-            alert('Dosya ayrılırken hata oluştu.');
+            alert('Dosya ayrılırken hata oluştu: ' + (err as Error).message);
         }
         setProcessing(false);
         setStatusText('');
@@ -231,36 +226,29 @@ export const PdfManager: React.FC<PdfManagerProps> = ({ file, onBack }) => {
     const handleMerge = async () => {
         if (organizedPages.length === 0) return;
         setProcessing(true);
-        setStatusText('Dosyalar sunucu tarafında birleştiriliyor...');
+        setStatusText('Dosyalar birleştiriliyor (Tarayıcıda)...');
         try {
-            const formData = new FormData();
-            formData.append('type', 'pdf-merge-organized');
+            const mergedPdf = await PDFDocument.create();
 
-            // Send unique files
-            pdfFiles.forEach(f => {
-                formData.append('files', f.file);
-                formData.append('fileIds', f.id);
-            });
+            // Map to store loaded PDFs to avoid double loading
+            const loadedPdfs: Record<string, PDFDocument> = {};
 
-            // Send organization map
-            const map = organizedPages.map(p => ({
-                fileId: p.fileId,
-                pageIndex: p.pageIndex
-            }));
-            formData.append('organization', JSON.stringify(map));
+            for (const fInfo of pdfFiles) {
+                const arrayBuffer = await fInfo.file.arrayBuffer();
+                loadedPdfs[fInfo.id] = await PDFDocument.load(arrayBuffer);
+            }
 
-            const response = await fetch('/api/convert', {
-                method: 'POST',
-                body: formData,
-            });
+            for (const item of organizedPages) {
+                const sourceDoc = loadedPdfs[item.fileId];
+                const [copiedPage] = await mergedPdf.copyPages(sourceDoc, [item.pageIndex]);
+                mergedPdf.addPage(copiedPage);
+            }
 
-            if (!response.ok) throw new Error('Sunucu hatası');
-
-            const blob = await response.blob();
-            downloadPdf(new Uint8Array(await blob.arrayBuffer()), `birlestirilmis-${Date.now()}.pdf`);
+            const pdfBytes = await mergedPdf.save();
+            downloadPdf(pdfBytes, `birlestirilmis-${Date.now()}.pdf`);
         } catch (err) {
             console.error(err);
-            alert('Birleştirme hatası.');
+            alert('Birleştirme hatası: ' + (err as Error).message);
         }
         setProcessing(false);
         setStatusText('');
@@ -269,28 +257,57 @@ export const PdfManager: React.FC<PdfManagerProps> = ({ file, onBack }) => {
     const handleWatermark = async () => {
         if (pdfFiles.length === 0) return;
         setProcessing(true);
-        setStatusText('Sunucu üzerinde filigran ekleniyor (CORS güvenli)...');
+        setStatusText('Filigran ekleniyor (Güvenli, Tarayıcıda)...');
         try {
             const mainFile = pdfFiles[0].file;
-            const formData = new FormData();
-            formData.append('file', mainFile);
-            formData.append('type', 'pdf-watermark');
-            formData.append('text', watermarkText);
-            formData.append('opacity', watermarkOpacity.toString());
-            formData.append('color', watermarkColor);
+            const arrayBuffer = await mainFile.arrayBuffer();
+            const pdfDoc = await PDFDocument.load(arrayBuffer);
 
-            const response = await fetch('/api/convert', {
-                method: 'POST',
-                body: formData,
-            });
+            pdfDoc.registerFontkit(fontkit);
+            const fontBytes = await loadTurkishFont();
+            const customFont = await pdfDoc.embedFont(fontBytes);
 
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error || 'Sunucu hatası');
+            const pages = pdfDoc.getPages();
+            const color = rgb(
+                parseInt(watermarkColor.substring(1, 3), 16) / 255,
+                parseInt(watermarkColor.substring(3, 5), 16) / 255,
+                parseInt(watermarkColor.substring(5, 7), 16) / 255
+            );
+
+            let embeddedImage: any = null;
+            if (watermarkType === 'image' && watermarkImage) {
+                const imgData = watermarkImage.split(',')[1];
+                const imgBytes = Uint8Array.from(atob(imgData), c => c.charCodeAt(0));
+                embeddedImage = watermarkImage.includes('png') ? await pdfDoc.embedPng(imgBytes) : await pdfDoc.embedJpg(imgBytes);
             }
 
-            const blob = await response.blob();
-            downloadPdf(new Uint8Array(await blob.arrayBuffer()), `filigran-${mainFile.name}`);
+            for (const page of pages) {
+                const { width, height } = page.getSize();
+                if (watermarkType === 'text') {
+                    page.drawText(watermarkText, {
+                        x: width / 4,
+                        y: height / 2,
+                        size: 60,
+                        font: customFont,
+                        color: color,
+                        opacity: watermarkOpacity,
+                        rotate: degrees(45),
+                    });
+                } else if (embeddedImage) {
+                    const imgWidth = 200;
+                    const imgHeight = (embeddedImage.height / embeddedImage.width) * imgWidth;
+                    page.drawImage(embeddedImage, {
+                        x: (width - imgWidth) / 2,
+                        y: (height - imgHeight) / 2,
+                        width: imgWidth,
+                        height: imgHeight,
+                        opacity: watermarkOpacity,
+                    });
+                }
+            }
+
+            const pdfBytes = await pdfDoc.save();
+            downloadPdf(pdfBytes, `filigran-${mainFile.name}`);
         } catch (err) {
             console.error(err);
             alert('Filigran eklenemedi: ' + (err as Error).message);

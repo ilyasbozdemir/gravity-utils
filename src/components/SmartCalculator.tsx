@@ -80,32 +80,89 @@ const DateCalc = () => {
 
 const InternetCalc = () => {
     const [size, setSize] = useState(100); // MB
+    const [unit, setUnit] = useState<'MB' | 'GB'>('MB');
     const [speed, setSpeed] = useState(16); // Mbps
-    const [result, setResult] = useState('');
+    const [mode, setMode] = useState<'download' | 'upload'>('download');
 
-    useEffect(() => {
+    // Quality Metrics
+    const [ping, setPing] = useState(20);
+    const [jitter, setJitter] = useState(2);
+
+    const calculateTime = () => {
+        const sizeInMB = unit === 'GB' ? size * 1024 : size;
         const speedMBps = speed / 8;
-        const totalSeconds = (size) / speedMBps;
-        const mins = Math.floor(totalSeconds / 60);
+        const totalSeconds = sizeInMB / speedMBps;
+
+        const hours = Math.floor(totalSeconds / 3600);
+        const mins = Math.floor((totalSeconds % 3600) / 60);
         const secs = Math.floor(totalSeconds % 60);
-        setResult(`${mins} dk ${secs} sn`);
-    }, [size, speed]);
+
+        if (hours > 0) return `${hours} sa ${mins} dk ${secs} sn`;
+        return `${mins} dk ${secs} sn`;
+    };
+
+    const getQualityLabel = () => {
+        if (ping < 30 && jitter < 5) return { label: 'Mükemmel', color: 'text-emerald-500', desc: 'Oyun ve yayın için ideal.' };
+        if (ping < 60 && jitter < 15) return { label: 'İyi', color: 'text-blue-500', desc: 'Standart kullanım için sorunsuz.' };
+        if (ping < 100 && jitter < 30) return { label: 'Orta', color: 'text-amber-500', desc: 'Gecikmeler hissedilebilir.' };
+        return { label: 'Kötü', color: 'text-rose-500', desc: 'Bağlantıda kopmalar/donmalar olabilir.' };
+    };
+
+    const quality = getQualityLabel();
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-8">
+            <div className="flex p-1 bg-slate-100 dark:bg-white/5 rounded-xl w-fit mx-auto">
+                <button onClick={() => setMode('download')} className={`px-6 py-2 rounded-lg text-sm font-bold transition-all ${mode === 'download' ? 'bg-white dark:bg-slate-700 text-blue-600 shadow-sm' : 'text-slate-500'}`}>İndirme (Download)</button>
+                <button onClick={() => setMode('upload')} className={`px-6 py-2 rounded-lg text-sm font-bold transition-all ${mode === 'upload' ? 'bg-white dark:bg-slate-700 text-blue-600 shadow-sm' : 'text-slate-500'}`}>Yükleme (Upload)</button>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                    <label htmlFor="fileSize" className="block text-sm font-bold text-slate-500 mb-2">Dosya Boyutu (MB)</label>
-                    <input id="fileSize" type="number" value={size} onChange={e => setSize(Number(e.target.value))} className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-3" title="İndirilecek dosyanın boyutunu megabayt cinsinden girin" />
+                <div className="space-y-4">
+                    <label htmlFor="fileSizeInput" className="block text-sm font-bold text-slate-500 uppercase tracking-wider">Dosya Boyutu</label>
+                    <div className="flex gap-2">
+                        <input id="fileSizeInput" title="Dosya Boyutu" placeholder="100" type="number" value={size} onChange={e => setSize(Number(e.target.value))} className="flex-1 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-3 focus:outline-none focus:border-blue-500" />
+                        <select id="sizeUnitSelect" title="Boyut Birimi" value={unit} onChange={e => setUnit(e.target.value as any)} className="bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-3 font-bold">
+                            <option value="MB">MB</option>
+                            <option value="GB">GB</option>
+                        </select>
+                    </div>
                 </div>
-                <div>
-                    <label htmlFor="netSpeed" className="block text-sm font-bold text-slate-500 mb-2">İnternet Hızı (Mbps)</label>
-                    <input id="netSpeed" type="number" value={speed} onChange={e => setSpeed(Number(e.target.value))} className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-3" title="İnternet bağlantınızın hızını megabit/saniye cinsinden girin" />
+                <div className="space-y-4">
+                    <label htmlFor="speedInput" className="block text-sm font-bold text-slate-500 uppercase tracking-wider">Hız (Mbps)</label>
+                    <input id="speedInput" title="İnternet Hızı (Mbps)" placeholder="16" type="number" value={speed} onChange={e => setSpeed(Number(e.target.value))} className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-3 focus:outline-none focus:border-blue-500" />
                 </div>
             </div>
-            <div className="p-6 bg-emerald-50 dark:bg-emerald-500/10 rounded-2xl border border-emerald-100 dark:border-emerald-500/20 text-center">
-                <p className="text-sm font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest mb-1">Tahmini İndirme Süresi</p>
-                <p className="text-4xl font-black text-emerald-700 dark:text-emerald-300">≈ {result}</p>
+
+            <div className="p-8 bg-emerald-50 dark:bg-emerald-500/10 rounded-[2.5rem] border border-emerald-100 dark:border-emerald-500/20 text-center">
+                <p className="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest mb-2">Tahmini {mode === 'download' ? 'İndirme' : 'Yükleme'} Süresi</p>
+                <p className="text-5xl font-black text-emerald-700 dark:text-emerald-300">≈ {calculateTime()}</p>
+            </div>
+
+            {/* Quality Analysis */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t border-slate-100 dark:border-white/5">
+                <div className="space-y-4">
+                    <h4 className="text-sm font-black text-slate-700 dark:text-slate-300 flex items-center gap-2">
+                        <Zap size={16} className="text-amber-500" /> Gecikme Analizi (Ping & Jitter)
+                    </h4>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label htmlFor="pingInput" className="text-[10px] font-bold text-slate-500 uppercase">Ping (ms)</label>
+                            <input id="pingInput" title="Ping Değeri (ms)" placeholder="20" type="number" value={ping} onChange={e => setPing(Number(e.target.value))} className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg p-2 text-sm" />
+                        </div>
+                        <div>
+                            <label htmlFor="jitterInput" className="text-[10px] font-bold text-slate-500 uppercase">Jitter (ms)</label>
+                            <input id="jitterInput" title="Jitter Değeri (ms)" placeholder="2" type="number" value={jitter} onChange={e => setJitter(Number(e.target.value))} className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg p-2 text-sm" />
+                        </div>
+                    </div>
+                </div>
+                <div className="p-4 bg-slate-50 dark:bg-white/5 rounded-2xl flex flex-col justify-center border border-slate-200 dark:border-white/10">
+                    <div className="flex items-center justify-between mb-1">
+                        <span className="text-xs font-bold text-slate-500 uppercase">Durum:</span>
+                        <span className={`text-sm font-black ${quality.color} uppercase`}>{quality.label}</span>
+                    </div>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 italic">{quality.desc}</p>
+                </div>
             </div>
         </div>
     );
@@ -249,23 +306,123 @@ const TcknChecker = () => {
 };
 
 const CssUnits = () => {
-    const [px, setPx] = useState(16);
     const [base, setBase] = useState(16);
+    const [px, setPx] = useState<string>('16');
+    const [rem, setRem] = useState<string>('1');
+    const [em, setEm] = useState<string>('1');
+    const [tw, setTw] = useState<string>('4');
+
+    const updateAll = (val: number, source: 'px' | 'rem' | 'em' | 'tw', baseVal: number) => {
+        let pixels = 0;
+        if (source === 'px') pixels = val;
+        if (source === 'rem') pixels = val * baseVal;
+        if (source === 'em') pixels = val * baseVal;
+        if (source === 'tw') pixels = val * 4;
+
+        if (source !== 'px') setPx(pixels.toString());
+        if (source !== 'rem') setRem((pixels / baseVal).toString());
+        if (source !== 'em') setEm((pixels / baseVal).toString());
+        if (source !== 'tw') setTw((pixels / 4).toString());
+    };
+
     return (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="space-y-4">
-                <label htmlFor="pxInput" className="block text-sm font-bold text-slate-500">Piksel (px)</label>
-                <input id="pxInput" type="number" value={px} onChange={e => setPx(Number(e.target.value))} className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-3" title="Piksel değerini girin" />
-            </div>
-            <div className="space-y-4">
-                <label htmlFor="remOutput" className="block text-sm font-bold text-slate-500 text-blue-500">REM Değeri</label>
-                <div id="remOutput" className="w-full bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20 rounded-xl p-3 text-2xl font-black text-blue-600 dark:text-blue-400" title="Hesaplanan REM değeri">
-                    {px / base} rem
+        <div className="space-y-8">
+            <div className="flex items-center gap-4 p-4 bg-slate-50 dark:bg-white/5 rounded-2xl border border-slate-100 dark:border-white/10">
+                <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg text-blue-600 dark:text-blue-400">
+                    <Info size={16} />
                 </div>
+                <div className="flex-1">
+                    <label htmlFor="baseFontSize" className="text-[10px] font-black uppercase text-slate-500 tracking-wider">Base Font Size (Root)</label>
+                    <div className="flex items-center gap-2">
+                        <input
+                            id="baseFontSize"
+                            type="number"
+                            value={base}
+                            onChange={e => {
+                                const b = Number(e.target.value);
+                                setBase(b);
+                                updateAll(Number(px), 'px', b);
+                            }}
+                            className="bg-transparent font-black text-slate-800 dark:text-white focus:outline-none w-16"
+                            title="Base Font Size ayarı"
+                        />
+                        <span className="text-xs font-bold text-slate-400">px</span>
+                    </div>
+                </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <UnitInput
+                    id="px-input"
+                    label="Piksel (px)"
+                    value={px}
+                    onChange={v => { setPx(v); updateAll(Number(v), 'px', base); }}
+                    icon={<span className="text-[10px] font-bold">PX</span>}
+                    color="blue"
+                />
+                <UnitInput
+                    id="rem-input"
+                    label="REM (root em)"
+                    value={rem}
+                    onChange={v => { setRem(v); updateAll(Number(v), 'rem', base); }}
+                    icon={<span className="text-[10px] font-bold">REM</span>}
+                    color="purple"
+                />
+                <UnitInput
+                    id="em-input"
+                    label="EM (parent em)"
+                    value={em}
+                    onChange={v => { setEm(v); updateAll(Number(v), 'em', base); }}
+                    icon={<span className="text-[10px] font-bold">EM</span>}
+                    color="indigo"
+                />
+                <UnitInput
+                    id="tw-input"
+                    label="Tailwind Spacing"
+                    value={tw}
+                    onChange={v => { setTw(v); updateAll(Number(v), 'tw', base); }}
+                    prefix="w-"
+                    desc={`örnek: w-${tw} = ${px}px`}
+                    icon={<span className="text-[10px] font-bold">TW</span>}
+                    color="sky"
+                />
+            </div>
+
+            <div className="p-4 bg-slate-50 dark:bg-white/5 rounded-2xl border border-dashed border-slate-200 dark:border-white/10">
+                <p className="text-[11px] text-center text-slate-500 font-medium">
+                    <b>İpucu:</b> Bir değeri değiştirdiğinizde diğerleri otomatik olarak hesaplanır.
+                    Tailwind birimleri varsayılan olarak <b>1 birim = 4px</b> hesabına dayanır.
+                </p>
             </div>
         </div>
     );
 };
+
+const UnitInput = ({ id, label, value, onChange, icon, color, prefix, desc }: any) => (
+    <div className="space-y-2">
+        <label htmlFor={id} className="block text-xs font-black text-slate-500 uppercase tracking-widest">{label}</label>
+        <div className={`flex items-center gap-3 p-4 bg-white dark:bg-white/5 border-2 rounded-2xl transition-all focus-within:border-${color}-500/50 border-slate-100 dark:border-white/5`}>
+            <div className={`p-2 rounded-lg bg-${color}-50 dark:bg-${color}-500/10 text-${color}-600 dark:text-${color}-400`}>
+                {icon}
+            </div>
+            <div className="flex-1 flex flex-col">
+                <div className="flex items-center">
+                    {prefix && <span className="text-lg font-black text-slate-400">{prefix}</span>}
+                    <input
+                        id={id}
+                        type="number"
+                        value={value}
+                        onChange={e => onChange(e.target.value)}
+                        className="w-full bg-transparent text-lg font-black text-slate-800 dark:text-white focus:outline-none"
+                        title={label}
+                        placeholder="0"
+                    />
+                </div>
+                {desc && <p className="text-[9px] font-bold text-slate-400 mt-0.5">{desc}</p>}
+            </div>
+        </div>
+    </div>
+);
 
 const ViewportCalc = () => {
     const [vw, setVw] = useState(5);

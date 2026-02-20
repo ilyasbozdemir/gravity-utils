@@ -190,21 +190,14 @@ export default function Home() {
                             {/* Note: In a full Next.js App Router migration, these should be separate routes (pages).
                   For this step, we keep the SPA behavior within the main page for quick migration. */}
 
-                            {(view === 'word-pdf' || view === 'pdf-word' ||
-                                view === 'excel-pdf' || view === 'pdf-excel' ||
-                                view === 'ppt-pdf' || view === 'pdf-ppt' ||
-                                view === 'pdf-image' || view === 'imagetopdf') && (
-                                    <OfficeTools mode={view as any} onBack={() => setView('home')} />
-                                )}
-
-                            {view === 'convert' && <FileConverter file={file} onBack={() => setView('home')} />}
-                            {view === 'inspect' && <ZipInspector file={file} onBack={() => setView('home')} />}
-                            {view === 'base64' && <Base64Viewer file={file} onBack={() => setView('home')} />}
-                            {view === 'optimize' && <ImageOptimizer file={file} onBack={() => setView('home')} />}
-                            {view === 'hash' && <HashGenerator file={file} onBack={() => setView('home')} />}
-                            {view === 'json' && <JsonFormatter file={file} onBack={() => setView('home')} />}
-                            {view === 'text' && <TextAnalyzer file={file} onBack={() => setView('home')} />}
-                            {view === 'pdf' && <PdfManager file={file} onBack={() => setView('home')} />}
+                            {(view === 'pdf' || view === 'pdf-word' || view === 'word-pdf' || view === 'pdf-image' || view === 'imagetopdf') &&
+                                <PdfManager
+                                    file={file}
+                                    onBack={() => setView('home')}
+                                    initialTab={
+                                        (view === 'pdf-word' || view === 'word-pdf' || view === 'pdf-image' || view === 'imagetopdf') ? 'convert' : 'merge'
+                                    }
+                                />}
                             {view === 'encrypt' && <FileEncryptor file={file} onBack={() => setView('home')} />}
                             {view === 'exif' && <ExifCleaner file={file} onBack={() => setView('home')} />}
                             {view === 'qr' && <QrManager file={file} onBack={() => setView('home')} />}
