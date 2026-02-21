@@ -104,40 +104,43 @@ export const SchemaGenerator: React.FC<{ onBack: () => void }> = ({ onBack }) =>
 
             {/* Mini Guide / FAQ */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-12 pb-10">
-                <div className="p-8 bg-slate-900 border border-white/5 rounded-[2.5rem] space-y-4">
-                    <h3 className="text-lg font-black text-white flex items-center gap-2">
-                        <Terminal size={20} className="text-blue-500" /> Sıkça Sorulan Sorular
+                <div className="p-8 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-white/5 rounded-[2.5rem] space-y-4 shadow-xl shadow-slate-200/50 dark:shadow-none">
+                    <h3 className="text-lg font-black text-slate-800 dark:text-white flex items-center gap-2">
+                        <Terminal size={20} className="text-blue-600 dark:text-blue-500" /> Sıkça Sorulan Sorular
                     </h3>
                     <div className="space-y-4 text-left">
-                        <details className="group border-b border-white/5 pb-4">
-                            <summary className="list-none font-bold text-slate-300 cursor-pointer flex justify-between items-center group-open:text-blue-400 transition-colors">
+                        <details className="group border-b border-slate-200 dark:border-white/5 pb-4">
+                            <summary className="list-none font-bold text-slate-600 dark:text-slate-300 cursor-pointer flex justify-between items-center group-open:text-blue-600 dark:group-open:text-blue-400 transition-colors">
                                 Neden Zod şeması kullanmalıyım?
-                                <span className="group-open:rotate-180 transition-transform">↓</span>
+                                <span className="group-open:rotate-180 transition-transform text-slate-400 dark:text-slate-500">↓</span>
                             </summary>
-                            <p className="text-sm text-slate-400 mt-2 leading-relaxed">
+                            <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">
                                 Zod, TypeScript ile %100 uyumlu bir şema deklarasyon ve doğrulama kütüphanesidir. Sadece veriyi doğrulamakla kalmaz, aynı zamanda tip güvenliği (type safety) sağlar, böylece "runtime" hatalarını minimize edersiniz.
                             </p>
                         </details>
-                        <details className="group border-b border-white/5 pb-4">
-                            <summary className="list-none font-bold text-slate-300 cursor-pointer flex justify-between items-center group-open:text-blue-400 transition-colors">
+                        <details className="group border-b border-slate-200 dark:border-white/5 pb-4">
+                            <summary className="list-none font-bold text-slate-600 dark:text-slate-300 cursor-pointer flex justify-between items-center group-open:text-blue-600 dark:group-open:text-blue-400 transition-colors">
                                 "DRY" prensibi nedir?
-                                <span className="group-open:rotate-180 transition-transform">↓</span>
+                                <span className="group-open:rotate-180 transition-transform text-slate-400 dark:text-slate-500">↓</span>
                             </summary>
-                            <p className="text-sm text-slate-400 mt-2 leading-relaxed">
+                            <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">
                                 "Don't Repeat Yourself" (Kendini Tekrar Etme) prensibi, aynı bilginin veya mantığın kod tabanında birden fazla yerde bulunmaması gerektiğini savunur. Bu araç, şema ve form tanımlarınızı tek bir yerden türeterek bu prensibi uygulamanıza yardımcı olur.
                             </p>
                         </details>
                     </div>
                 </div>
 
-                <div className="p-8 bg-emerald-600 rounded-[2.5rem] text-white space-y-4 shadow-xl shadow-emerald-500/20">
-                    <h3 className="text-lg font-black flex items-center gap-2">
+                <div className="p-8 bg-emerald-600 dark:bg-emerald-600 rounded-[2.5rem] text-white space-y-4 shadow-xl shadow-emerald-500/20 relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform">
+                        <Code size={20} />
+                    </div>
+                    <h3 className="text-lg font-black flex items-center gap-2 relative z-10">
                         <Code size={20} /> Form İpucu
                     </h3>
-                    <p className="text-emerald-50 text-sm leading-relaxed">
+                    <p className="text-emerald-50 text-sm leading-relaxed relative z-10">
                         React Hook Form ile Zod resolver'ı birlikte kullanarak hem form yönetimini basitleştirebilir hem de karmaşık doğrulama kurallarını tek bir yerden yönetebilirsiniz.
                     </p>
-                    <div className="pt-4 border-t border-white/10 italic text-[11px] text-emerald-100">
+                    <div className="pt-4 border-t border-white/10 italic text-[11px] text-emerald-100 relative z-10">
                         * Doğru yapılandırılmış şemalar, frontend ve backend arasındaki sözleşmedir (contract).
                     </div>
                 </div>

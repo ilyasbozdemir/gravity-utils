@@ -548,6 +548,51 @@ export const FileConverter: React.FC<FileConverterProps> = ({ file: initialFile,
                 </div>
             </div>
 
+            {/* Contextual Guide */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-12 pb-10 border-t border-slate-100 dark:border-white/5 pt-10">
+                <div className="p-8 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-white/5 rounded-[2.5rem] space-y-4 shadow-xl shadow-slate-200/50 dark:shadow-none">
+                    <h3 className="text-lg font-black text-slate-800 dark:text-white flex items-center gap-2">
+                        <AlertCircle size={20} className="text-blue-600 dark:text-blue-400" /> Dönüştürme Rehberi
+                    </h3>
+                    <div className="space-y-4 text-left">
+                        <details className="group border-b border-slate-200 dark:border-white/5 pb-4">
+                            <summary className="list-none font-bold text-slate-600 dark:text-slate-300 cursor-pointer flex justify-between items-center group-open:text-blue-600 dark:group-open:text-blue-400 transition-colors">
+                                "Rename Only" modu nedir?
+                                <span className="group-open:rotate-180 transition-transform text-slate-400 dark:text-slate-500">↓</span>
+                            </summary>
+                            <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">
+                                Bu mod, dosyanın iç yapısını değiştirmeden sadece sistemdeki uzantısını değiştirir. Özellikle yanlış kaydedilmiş dosyaların uzantısını düzeltmek için kullanılır.
+                            </p>
+                        </details>
+                        <details className="group border-b border-slate-200 dark:border-white/5 pb-4">
+                            <summary className="list-none font-bold text-slate-600 dark:text-slate-300 cursor-pointer flex justify-between items-center group-open:text-blue-600 dark:group-open:text-blue-400 transition-colors">
+                                Verilerim güvende mi?
+                                <span className="group-open:rotate-180 transition-transform text-slate-400 dark:text-slate-500">↓</span>
+                            </summary>
+                            <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">
+                                Kesinlikle! Gravity Utils "Local-First" mimarisiyle çalışır. Dosyalarınız sunucuya yüklenmez, tüm dönüşüm doğrudan tarayıcınızın belleğinde gerçekleşir.
+                            </p>
+                        </details>
+                    </div>
+                </div>
+
+                <div className="p-8 bg-blue-600 dark:bg-blue-600 rounded-[2.5rem] text-white space-y-4 shadow-xl shadow-blue-500/20 relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform">
+                        <RefreshCw size={24} />
+                    </div>
+                    <h3 className="text-lg font-black flex items-center gap-2 relative z-10">
+                        <AlertCircle size={20} /> Pro İpucu
+                    </h3>
+                    <p className="text-blue-50 text-sm leading-relaxed relative z-10">
+                        PDF dosyasını Word'e dönüştürürken, döküman çok karmaşıksa "Visual Fidelity" modu otomatik devreye girer. Bu, döküman düzenini %100 korumak için sayfaları resim olarak Word'e gömer.
+                    </p>
+                    <div className="pt-4 border-t border-white/10 flex items-center gap-3 relative z-10">
+                        <div className="p-2 bg-white/20 rounded-lg"><AlertCircle size={16} /></div>
+                        <p className="text-[11px] font-bold">Gizlilik odaklı: İşlem bittiğinde veriler tarayıcıdan silinir.</p>
+                    </div>
+                </div>
+            </div>
+
             {/* Hidden container for DOCX rendering */}
             <div
                 ref={renderContainerRef}

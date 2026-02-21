@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState, useEffect } from 'react';
 import { Share2, Copy, Check, FileText, ArrowLeft, RefreshCw } from 'lucide-react';
 
@@ -54,25 +56,25 @@ export const Base64Viewer: React.FC<Base64ViewerProps> = ({ file: initialFile, o
     const previewText = includeScheme ? base64 : base64.split(',')[1];
 
     return (
-        <div className="max-w-[800px] mx-auto p-8 animate-[fadeIn_0.5s_ease] bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl shadow-2xl">
+        <div className="max-w-[800px] mx-auto p-8 animate-[fadeIn_0.5s_ease] bg-white dark:bg-white/5 backdrop-blur-xl border border-slate-200 dark:border-white/10 rounded-3xl shadow-2xl">
             <div className="flex items-center justify-start gap-4 mb-8">
                 <button
                     onClick={onBack}
-                    className="p-2 bg-violet-500/20 border border-violet-500/40 text-white rounded-lg hover:bg-violet-500/40 transition-all shadow-[0_0_15px_rgba(139,92,246,0.2)]"
+                    className="p-3 bg-violet-500/10 border border-violet-500/20 text-violet-700 dark:text-violet-400 rounded-2xl hover:bg-violet-500/20 transition-all shadow-sm"
                     title="Geri Dön"
                 >
                     <ArrowLeft size={18} />
                 </button>
                 <div className="text-left">
-                    <h2 className="m-0 text-2xl font-bold tracking-tight">Base64 Araçları</h2>
-                    <p className="text-sm text-violet-400 font-medium">Resim ve Metin Dönüşümü</p>
+                    <h2 className="m-0 text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Base64 Araçları</h2>
+                    <p className="text-sm text-violet-600 dark:text-violet-400 font-medium">Resim ve Metin Dönüşümü</p>
                 </div>
             </div>
 
-            <p className="text-sm text-slate-400 text-left mb-6 leading-relaxed">
+            <p className="text-sm text-slate-500 dark:text-slate-400 text-left mb-6 leading-relaxed">
                 {file ? (
                     <>
-                        <span className="font-semibold text-slate-200">{file.name}</span> dosyası Base64 formatına dönüştürüldü.
+                        <span className="font-semibold text-slate-800 dark:text-slate-200">{file.name}</span> dosyası Base64 formatına dönüştürüldü.
                     </>
                 ) : (
                     'Herhangi bir dosyayı (resim, belge, vb.) Base64 metne dönüştürün veya Base64 kodlarını çözün.'
@@ -88,7 +90,7 @@ export const Base64Viewer: React.FC<Base64ViewerProps> = ({ file: initialFile, o
                         <Share2 size={36} />
                     </div>
                     <div className="text-center px-4">
-                        <p className="font-bold text-xl mb-1">Dönüştürmek için Dosya Seçin</p>
+                        <p className="font-bold text-xl mb-1 text-slate-800 dark:text-slate-200">Dönüştürmek için Dosya Seçin</p>
                         <p className="text-sm text-slate-500">Resim, metin veya herhangi bir binary dosya</p>
                     </div>
                     <input
@@ -139,7 +141,7 @@ export const Base64Viewer: React.FC<Base64ViewerProps> = ({ file: initialFile, o
                                     value={previewText}
                                     readOnly
                                     title="Base64 Çıktısı"
-                                    className="w-full h-full bg-transparent text-slate-300 p-6 resize-none font-mono text-[13px] leading-relaxed outline-none overflow-auto custom-scrollbar select-text"
+                                    className="w-full h-full bg-slate-50 dark:bg-black/40 text-slate-700 dark:text-slate-300 p-6 resize-none font-mono text-[13px] leading-relaxed outline-none overflow-auto custom-scrollbar select-text"
                                 />
                                 <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
                                     <div className="bg-slate-800/80 backdrop-blur px-3 py-1.5 rounded-lg border border-white/10 text-[10px] text-slate-400 font-mono">

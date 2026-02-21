@@ -77,7 +77,7 @@ export const JsonFormatter: React.FC<JsonFormatterProps> = ({ file: initialFile,
             <div className="flex items-center justify-start gap-4 mb-8">
                 <button
                     onClick={onBack}
-                    className="p-2 bg-indigo-500/20 border border-indigo-500/40 text-white rounded-lg hover:bg-indigo-500/40 transition-all shadow-[0_0_15px_rgba(99,102,241,0.2)]"
+                    className="p-2 bg-indigo-500/20 border border-indigo-500/40 text-indigo-700 dark:text-white rounded-lg hover:bg-indigo-500/40 transition-all shadow-[0_0_15px_rgba(99,102,241,0.2)]"
                     title="Geri Dön"
                 >
                     <ArrowLeft size={18} />
@@ -127,7 +127,7 @@ export const JsonFormatter: React.FC<JsonFormatterProps> = ({ file: initialFile,
                         <button
                             onClick={handleFormat}
                             disabled={!jsonContent}
-                            className="px-6 py-2.5 bg-indigo-500/20 hover:bg-indigo-500/30 border border-indigo-500/40 text-indigo-100 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl text-xs font-bold transition-all flex items-center gap-2 shadow-lg"
+                            className="px-6 py-2.5 bg-indigo-500/20 hover:bg-indigo-500/30 border border-indigo-500/40 text-indigo-700 dark:text-indigo-100 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl text-xs font-bold transition-all flex items-center gap-2 shadow-lg"
                         >
                             <RefreshCw size={14} className={jsonContent ? 'animate-spin-slow' : ''} />
                             Formatla
@@ -135,7 +135,7 @@ export const JsonFormatter: React.FC<JsonFormatterProps> = ({ file: initialFile,
                         <button
                             onClick={handleMinify}
                             disabled={!jsonContent}
-                            className="px-6 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl text-xs font-bold transition-all"
+                            className="px-6 py-2.5 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-300 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl text-xs font-bold transition-all"
                         >
                             Küçült (Minify)
                         </button>

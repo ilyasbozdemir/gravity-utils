@@ -250,8 +250,50 @@ export function PasswordGenerator({ onBack }: { onBack: () => void }) {
                             </div>
                         ))}
                     </div>
+                    {/* Contextual Guide */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-12 pb-10 border-t border-slate-100 dark:border-white/5 pt-10">
+                        <div className="p-8 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-white/5 rounded-[2.5rem] space-y-4 shadow-xl shadow-slate-200/50 dark:shadow-none text-left">
+                            <h3 className="text-lg font-black text-slate-800 dark:text-white flex items-center gap-2">
+                                <Lock size={20} className="text-emerald-600 dark:text-emerald-400" /> Güvenlik Rehberi
+                            </h3>
+                            <div className="space-y-4">
+                                <details className="group border-b border-slate-200 dark:border-white/5 pb-4">
+                                    <summary className="list-none font-bold text-slate-600 dark:text-slate-300 cursor-pointer flex justify-between items-center group-open:text-emerald-600 dark:group-open:text-emerald-400 transition-colors">
+                                        "Entropi" nedir?
+                                        <span className="group-open:rotate-180 transition-transform text-slate-400 dark:text-slate-500">↓</span>
+                                    </summary>
+                                    <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">
+                                        Entropi, bir şifrenin ne kadar rastgele ve tahmin edilemez olduğunun ölçüsüdür. Bit cinsinden ölçülür. 80-100 bit arası şifreler günümüz donanımıyla kırılması neredeyse imkansız (brute-force'a dayanıklı) kabul edilir.
+                                    </p>
+                                </details>
+                                <details className="group border-b border-slate-200 dark:border-white/5 pb-4">
+                                    <summary className="list-none font-bold text-slate-600 dark:text-slate-300 cursor-pointer flex justify-between items-center group-open:text-emerald-600 dark:group-open:text-emerald-400 transition-colors">
+                                        Şifreler kaydediliyor mu?
+                                        <span className="group-open:rotate-180 transition-transform text-slate-400 dark:text-slate-500">↓</span>
+                                    </summary>
+                                    <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">
+                                        Asla. Tüm şifreler tarayıcınızın belleğinde (RAM) üretilir. Sayfayı yenilediğinizde veya kapattığınızda üretilen tüm şifreler ve geçmiş kalıcı olarak silinir.
+                                    </p>
+                                </details>
+                            </div>
+                        </div>
+
+                        <div className="p-8 bg-emerald-600 dark:bg-emerald-600 rounded-[2.5rem] text-white space-y-4 shadow-xl shadow-emerald-500/20 relative overflow-hidden group">
+                            <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform">
+                                <ShieldCheck size={24} />
+                            </div>
+                            <h3 className="text-lg font-black flex items-center gap-2 relative z-10">
+                                <AlertTriangle size={20} /> Önemli Tavsiye
+                            </h3>
+                            <p className="text-emerald-50 text-sm leading-relaxed relative z-10">
+                                En güvenli şifre bile, birden fazla sitede kullanılıyorsa zayıftır. Her servis için farklı ve güçlü bir şifre üretin ve bu şifreleri yönetmek için güvenilir bir <b>Password Manager</b> (Bitwarden, 1Password vb.) kullanın.
+                            </p>
+                            <div className="pt-4 border-t border-white/10 flex items-center gap-3 relative z-10">
+                                <div className="p-2 bg-white/20 rounded-lg"><Lock size={16} /></div>
+                                <p className="text-[11px] font-bold">İşlem tarayıcıda, cihazınızın içinde gerçekleşir.</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            )}
-        </div>
-    );
+            );
 }

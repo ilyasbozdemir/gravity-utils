@@ -102,40 +102,43 @@ export const IdentifierConverter: React.FC<{ onBack: () => void }> = ({ onBack }
 
             {/* Mini Guide / FAQ */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-12 pb-10">
-                <div className="p-8 bg-slate-900 border border-white/5 rounded-[2.5rem] space-y-4">
-                    <h3 className="text-lg font-black text-white flex items-center gap-2">
-                        <Terminal size={20} className="text-blue-500" /> Sıkça Sorulan Sorular
+                <div className="p-8 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-white/5 rounded-[2.5rem] space-y-4 shadow-xl shadow-slate-200/50 dark:shadow-none">
+                    <h3 className="text-lg font-black text-slate-800 dark:text-white flex items-center gap-2">
+                        <Terminal size={20} className="text-blue-600 dark:text-blue-500" /> Sıkça Sorulan Sorular
                     </h3>
                     <div className="space-y-4 text-left">
-                        <details className="group border-b border-white/5 pb-4">
-                            <summary className="list-none font-bold text-slate-300 cursor-pointer flex justify-between items-center group-open:text-blue-400 transition-colors">
+                        <details className="group border-b border-slate-200 dark:border-white/5 pb-4">
+                            <summary className="list-none font-bold text-slate-600 dark:text-slate-300 cursor-pointer flex justify-between items-center group-open:text-blue-600 dark:group-open:text-blue-400 transition-colors">
                                 Değişken isminde neden Türkçe karakter kullanılmaz?
-                                <span className="group-open:rotate-180 transition-transform">↓</span>
+                                <span className="group-open:rotate-180 transition-transform text-slate-400 dar:text-slate-500">↓</span>
                             </summary>
-                            <p className="text-sm text-slate-400 mt-2 leading-relaxed">
+                            <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">
                                 Çoğu programlama dili (JS, Python, C++) standart olarak ASCII karakter setini baz alır. Türkçe karakterler "encoding" hatalarına yol açabilir ve ekip çalışmasında (özellikle global projelerde) büyük sorunlar yaratır.
                             </p>
                         </details>
-                        <details className="group border-b border-white/5 pb-4">
-                            <summary className="list-none font-bold text-slate-300 cursor-pointer flex justify-between items-center group-open:text-blue-400 transition-colors">
+                        <details className="group border-b border-slate-200 dark:border-white/5 pb-4">
+                            <summary className="list-none font-bold text-slate-600 dark:text-slate-300 cursor-pointer flex justify-between items-center group-open:text-blue-600 dark:group-open:text-blue-400 transition-colors">
                                 camelCase mi snake_case mi seçmeliyim?
-                                <span className="group-open:rotate-180 transition-transform">↓</span>
+                                <span className="group-open:rotate-180 transition-transform text-slate-400 dark:text-slate-500">↓</span>
                             </summary>
-                            <p className="text-sm text-slate-400 mt-2 leading-relaxed">
+                            <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">
                                 Bu tamamen kullandığınız dile ve projenizin "style guide"ına bağlıdır. JavaScript/TS ekosisteminde camelCase standarttır, ancak Python veya SQL tarafında snake_case tercih edilir.
                             </p>
                         </details>
                     </div>
                 </div>
 
-                <div className="p-8 bg-blue-600 rounded-[2.5rem] text-white space-y-4 shadow-xl shadow-blue-500/20">
-                    <h3 className="text-lg font-black flex items-center gap-2">
+                <div className="p-8 bg-blue-600 dark:bg-blue-600 rounded-[2.5rem] text-white space-y-4 shadow-xl shadow-blue-500/20 relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform">
+                        <Code size={20} />
+                    </div>
+                    <h3 className="text-lg font-black flex items-center gap-2 relative z-10">
                         <Code size={20} /> Geliştirici İpucu
                     </h3>
-                    <p className="text-blue-100 text-sm leading-relaxed">
+                    <p className="text-blue-50 text-sm leading-relaxed relative z-10">
                         Kod tabanınızda tutarlılık (consistency) hızı artırır. Bu aracı kullanarak ekipçe belirlediğiniz standartlara sadık kalabilir, Clean Code prensiplerini uygulayabilirsiniz.
                     </p>
-                    <div className="pt-4 border-t border-white/10 italic text-[11px] text-blue-200">
+                    <div className="pt-4 border-t border-white/10 italic text-[11px] text-blue-100 relative z-10">
                         * İsimlendirme kuralları projenizin sürdürülebilirliği için en kritik yatırımdır.
                     </div>
                 </div>

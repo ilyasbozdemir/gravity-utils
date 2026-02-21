@@ -37,7 +37,7 @@ export const SmartCalculator: React.FC<SmartCalculatorProps> = ({ view, onBack }
                 {view === 'viewport-calc' && <ViewportCalc />}
             </div>
 
-            <CalculatorGuide />
+            <CalculatorGuide view={view} />
         </div>
     );
 };
@@ -471,54 +471,111 @@ const ViewportCalc = () => {
     );
 };
 
-const CalculatorGuide = () => (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-12 pb-10">
-        <div className="p-8 bg-slate-900 border border-white/5 rounded-[2.5rem] space-y-4">
-            <h3 className="text-lg font-black text-white flex items-center gap-2">
-                <Info size={20} className="text-blue-500" /> Hesaplayıcı Rehberi
-            </h3>
-            <div className="space-y-4 text-left">
-                <details className="group border-b border-white/5 pb-4">
-                    <summary className="list-none font-bold text-slate-300 cursor-pointer flex justify-between items-center group-open:text-blue-400 transition-colors">
-                        "Mbps" ve "MB/s" farkı nedir?
-                        <span className="group-open:rotate-180 transition-transform">↓</span>
-                    </summary>
-                    <p className="text-sm text-slate-400 mt-2 leading-relaxed">
-                        Mbps (Megabit per second) internet servis sağlayıcılarının kullandığı hız birimidir. MB/s (Megabyte per second) ise dosya indirme hızınızdır. 1 Byte = 8 Bit olduğu için, 80 Mbps hız ile saniyede en fazla 10 MB veri indirebilirsiniz.
-                    </p>
-                </details>
-                <details className="group border-b border-white/5 pb-4">
-                    <summary className="list-none font-bold text-slate-300 cursor-pointer flex justify-between items-center group-open:text-blue-400 transition-colors">
-                        Jitter nedir, neden önemlidir?
-                        <span className="group-open:rotate-180 transition-transform">↓</span>
-                    </summary>
-                    <p className="text-sm text-slate-400 mt-2 leading-relaxed">
-                        Jitter, gecikme süresindeki (Ping) dalgalanmadır. Düşük jitter, sabit bir bağlantı demektir. Özellikle online oyunlarda ve görüntülü konuşmalarda jitterın düşük (10ms altı) olması istenir.
-                    </p>
-                </details>
-                <details className="group border-b border-white/5 pb-4">
-                    <summary className="list-none font-bold text-slate-300 cursor-pointer flex justify-between items-center group-open:text-blue-400 transition-colors">
-                        Verilerim güvende mi?
-                        <span className="group-open:rotate-180 transition-transform">↓</span>
-                    </summary>
-                    <p className="text-sm text-slate-400 mt-2 leading-relaxed">
-                        Evet! IBAN, TCKN veya Viewport gibi tüm hesaplamalar tamamen tarayıcınızda (client-side) yapılır. Hiçbir girdi sunucuya gitmez, loglanmaz ve kaydedilmez.
-                    </p>
-                </details>
-            </div>
-        </div>
+const CalculatorGuide = ({ view }: { view: SmartCalculatorProps['view'] }) => {
+    const guides: Record<SmartCalculatorProps['view'], { title: string; content: { q: string; a: string }[]; tip: string; tipIcon: React.ReactNode }> = {
+        'date-calculator': {
+            title: 'Tarih Rehberi',
+            content: [
+                { q: 'İki tarih arası nasıl hesaplanır?', a: 'Başlangıç ve bitiş tarihlerini seçtiğinizde, aralarındaki fark gün bazında otomatik olarak hesaplanır.' },
+                { q: 'Takvim formatı nedir?', a: 'Sistem yerel tarayıcı takviminizi kullanır. Yıllık izin, proje teslim süreleri gibi hesaplamalar için idealdir.' }
+            ],
+            tip: 'Tarih hesaplamaları proje planlama süreçlerinde kritik öneme sahiptir. İş günlerini hesaplarken resmi tatilleri manuel düşmeyi unutmayın.',
+            tipIcon: <Clock size={20} />
+        },
+        'internet-speed': {
+            title: 'İnternet & Hız Rehberi',
+            content: [
+                { q: '"Mbps" ve "MB/s" farkı nedir?', a: 'Mbps (Megabit) servis hız birimidir. MB/s (Megabyte) indirme hızıdır. 1 Byte = 8 Bit olduğu için, 80 Mbps hız ile saniyede 10 MB indirebilirsiniz.' },
+                { q: 'Jitter neden önemlidir?', a: 'Jitter, ping dalgalanmasıdır. Oyun ve video konferanslarda düşük (10ms altı) olması istenir.' }
+            ],
+            tip: 'Upload hızınız, video konferans kalitenizi ve dosya gönderme sürenizi doğrudan etkiler. Yayıncılar için yüksek upload kritiktir.',
+            tipIcon: <Zap size={20} />
+        },
+        'file-size-calc': {
+            title: 'Dosya Boyutu Rehberi',
+            content: [
+                { q: 'Video boyutları neden değişir?', a: 'Bitrate ve sıkıştırma algoritması boyutu belirler. 4K videolar standart HD videolara göre 5-10 kat daha fazla yer kaplar.' },
+                { q: 'Tahminler ne kadar doğru?', a: 'Bu değerler ortalama bitrate değerlerine dayanır. Kayıt kalitenize göre gerçek boyut %20-30 sapma gösterebilir.' }
+            ],
+            tip: 'Gmail/E-posta limiti genellikle 25MB\'tır. Daha büyük dosyaları göndermek için dosya sıkıştırıcı veya bulut depolama kullanmalısınız.',
+            tipIcon: <Layers size={20} />
+        },
+        'iban-checker': {
+            title: 'IBAN & Güvenlik',
+            content: [
+                { q: 'Verilerim güvende mi?', a: 'Evet! IBAN veya TCKN verileri asla sunucuya gitmez. Analiz %100 tarayıcınızda (offline) yapılır.' },
+                { q: 'IBAN yapısı nasıldır?', a: 'Türkiye için IBAN 26 hanelidir ve "TR" ile başlar. İlk hane ülke kodu, sonrakiler kontrol basamakları ve banka kodudur.' }
+            ],
+            tip: 'Para transferi yapmadan önce IBAN\'ın doğru kişiye ait olduğunu banka uygulamanızdan da teyit etmelisiniz.',
+            tipIcon: <ShieldCheck size={20} />
+        },
+        'tckn-checker': {
+            title: 'Kimlik Doğrulama Rehberi',
+            content: [
+                { q: 'Doğrulama algoritması nasıl çalışır?', a: 'TCKN, özel bir matematiksel algoritmaya dayanır. Son iki hane, ilk 9 haneden türetilen kontrol basamaklarıdır.' },
+                { q: 'Kişisel veri gizliliği?', a: 'Bu araç kişisel verinizi kaydetmez. Sadece girdiğiniz numaranın matematiksel kurala uyup uymadığını kontrol eder.' }
+            ],
+            tip: 'Bu araç Nüfus Müdürlüğü sistemine bağlı değildir, sadece matematiksel geçerlilik kontrolü (checksum) yapar.',
+            tipIcon: <Info size={20} />
+        },
+        'css-units': {
+            title: 'Web Tasarım Rehberi',
+            content: [
+                { q: 'Neden REM kullanmalıyım?', a: 'Erişilebilirlik için! Kullanıcı tarayıcı fontunu büyüttüğünde, REM kullanan tüm tasarım ona göre ölçeklenir.' },
+                { q: 'Tailwind birimleri nedir?', a: 'Tailwind spacing sistemi varsayılan olarak 4px katlarına (1 birim = 0.25rem = 4px) dayanır.' }
+            ],
+            tip: 'Responsive tasarımlarda piksel (px) yerine REM veya EM birimlerini kullanmak kodunuzu daha modern ve esnek kılar.',
+            tipIcon: <Layers size={20} />
+        },
+        'viewport-calc': {
+            title: 'Viewport Rehberi',
+            content: [
+                { q: 'VW birimi nedir?', a: 'Viewport Width (Ekran Genişliği). 100vw ekranın tam genişliğine, 1vw ise ekranın %1\'ine eşittir.' },
+                { q: 'Mobil uyumda nasıl kullanılır?', a: 'Özellikle büyük başlıkların her ekranda aynı görünmesi için VW birimi tercih edilebilir.' }
+            ],
+            tip: 'Pek çok mobil cihaz 375px ile 414px arası genişliğe sahiptir. Tasarım yaparken bu değerleri baz alabilirsiniz.',
+            tipIcon: <Smartphone size={20} />
+        }
+    };
 
-        <div className="p-8 bg-amber-600 rounded-[2.5rem] text-white space-y-4 shadow-xl shadow-amber-500/20">
-            <h3 className="text-lg font-black flex items-center gap-2">
-                <Calculator size={20} /> Pro İpucu
-            </h3>
-            <p className="text-amber-50 text-sm leading-relaxed">
-                Web tasarımında <b>REM</b> birimini kullanmak, sitenizin erişilebilirliğini artırır. Kullanıcı tarayıcı font boyutunu değiştirdiğinde, REM kullanan tüm elementler ona göre ölçeklenir.
-            </p>
-            <div className="pt-4 border-t border-white/10 flex items-center gap-3">
-                <div className="p-2 bg-white/20 rounded-lg"><Smartphone size={16} /></div>
-                <p className="text-[11px] font-bold">Mobil uyumlu tasarımlar için <b>Viewport Calc</b> aracımızı mutlaka kullanın.</p>
+    const guide = guides[view];
+
+    return (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-12 pb-10 overflow-hidden">
+            <div className="p-8 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-white/5 rounded-[2.5rem] space-y-4 shadow-xl shadow-slate-200/50 dark:shadow-none">
+                <h3 className="text-lg font-black text-slate-800 dark:text-white flex items-center gap-2">
+                    <Info size={20} className="text-blue-600 dark:text-blue-400" /> {guide.title}
+                </h3>
+                <div className="space-y-4 text-left">
+                    {guide.content.map((item, i) => (
+                        <details key={i} className="group border-b border-slate-200 dark:border-white/5 pb-4">
+                            <summary className="list-none font-bold text-slate-600 dark:text-slate-300 cursor-pointer flex justify-between items-center group-open:text-blue-600 dark:group-open:text-blue-400 transition-colors">
+                                {item.q}
+                                <span className="group-open:rotate-180 transition-transform text-slate-400 dark:text-slate-500">↓</span>
+                            </summary>
+                            <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">
+                                {item.a}
+                            </p>
+                        </details>
+                    ))}
+                </div>
+            </div>
+
+            <div className="p-8 bg-indigo-600 dark:bg-indigo-600 rounded-[2.5rem] text-white space-y-4 shadow-xl shadow-indigo-500/20 relative overflow-hidden group">
+                <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform">
+                    {guide.tipIcon}
+                </div>
+                <h3 className="text-lg font-black flex items-center gap-2 relative z-10">
+                    <Zap size={20} /> Uzman İpucu
+                </h3>
+                <p className="text-indigo-50 text-sm leading-relaxed relative z-10">
+                    {guide.tip}
+                </p>
+                <div className="pt-4 border-t border-white/10 flex items-center gap-3 relative z-10">
+                    <div className="p-2 bg-white/20 rounded-lg"><Info size={16} /></div>
+                    <p className="text-[11px] font-bold">Bu hesaplama tamamen tarayıcınızda ve gizli bir şekilde tamamlanır.</p>
+                </div>
             </div>
         </div>
-    </div>
-);
+    );
+};

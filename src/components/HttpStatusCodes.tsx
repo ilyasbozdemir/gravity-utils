@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { ArrowLeft, Search, Globe, Info, CheckCircle2, AlertCircle, AlertTriangle, XCircle } from 'lucide-react';
+import { ArrowLeft, Search, Globe, Info, CheckCircle2, AlertCircle, AlertTriangle, XCircle, Terminal } from 'lucide-react';
 
 const STATUS_CODES = [
     // 1xx: Informational
@@ -98,16 +98,16 @@ export function HttpStatusCodes({ onBack }: { onBack: () => void }) {
                 </div>
                 <div className="relative hidden md:block">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
-                    <input type="text" placeholder="Kod veya isim ara..." value={search} onChange={e => setSearch(e.target.value)}
-                        className="pl-10 pr-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all font-medium text-sm w-64" />
+                    <input type="text" title="Kod veya isim ara" placeholder="Kod veya isim ara..." value={search} onChange={e => setSearch(e.target.value)}
+                        className="pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all font-medium text-sm w-64 text-slate-800 dark:text-slate-100 placeholder:text-slate-400" />
                 </div>
             </div>
 
             <div className="md:hidden mb-6">
                 <div className="relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
-                    <input type="text" placeholder="Kod veya isim ara..." value={search} onChange={e => setSearch(e.target.value)}
-                        className="w-full pl-10 pr-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all font-medium text-sm" />
+                    <input type="text" title="Kod veya isim ara" placeholder="Kod veya isim ara..." value={search} onChange={e => setSearch(e.target.value)}
+                        className="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all font-medium text-sm text-slate-800 dark:text-slate-100 placeholder:text-slate-400" />
                 </div>
             </div>
 
@@ -138,6 +138,52 @@ export function HttpStatusCodes({ onBack }: { onBack: () => void }) {
                     <p className="text-slate-500 dark:text-slate-400 font-bold">Aradığınız kod bulunamadı.</p>
                 </div>
             )}
+
+            {/* Contextual Guide */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-12 pb-10 border-t border-slate-100 dark:border-white/5 pt-10">
+                <div className="p-8 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-white/5 rounded-[2.5rem] space-y-4 shadow-xl shadow-slate-200/50 dark:shadow-none text-left">
+                    <h3 className="text-lg font-black text-slate-800 dark:text-white flex items-center gap-2">
+                        <Globe size={20} className="text-indigo-600 dark:text-indigo-400" /> HTTP Protokol Rehberi
+                    </h3>
+                    <div className="space-y-4">
+                        <details className="group border-b border-slate-200 dark:border-white/5 pb-4">
+                            <summary className="list-none font-bold text-slate-600 dark:text-slate-300 cursor-pointer flex justify-between items-center group-open:text-indigo-600 dark:group-open:text-indigo-400 transition-colors">
+                                Durum kodları neden 3 haneli?
+                                <span className="group-open:rotate-180 transition-transform text-slate-400 dark:text-slate-500">↓</span>
+                            </summary>
+                            <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">
+                                HTTP standartları gereği ilk hane kategoriyi (1-5), son iki hane ise spesifik durumu belirtir. Bu yapı, istemcilerin tanımadıkları bir kodu bile kategorisine göre genel bir hata yönetimine tabi tutmasını sağlar.
+                            </p>
+                        </details>
+                        <details className="group border-b border-slate-200 dark:border-white/5 pb-4">
+                            <summary className="list-none font-bold text-slate-600 dark:text-slate-300 cursor-pointer flex justify-between items-center group-open:text-indigo-600 dark:group-open:text-indigo-400 transition-colors">
+                                4xx ve 5xx farkı nedir?
+                                <span className="group-open:rotate-180 transition-transform text-slate-400 dark:text-slate-500">↓</span>
+                            </summary>
+                            <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">
+                                <b>4xx (Client Error):</b> Hata istemci (kullanıcı/tarayıcı) kaynaklıdır (yanlış URL, yetkisiz erişim).
+                                <br /><b>5xx (Server Error):</b> İstemci isteği doğrudur ancak sunucu tarafında bir aksaklık oluşmuştur.
+                            </p>
+                        </details>
+                    </div>
+                </div>
+
+                <div className="p-8 bg-indigo-600 dark:bg-indigo-600 rounded-[2.5rem] text-white space-y-4 shadow-xl shadow-indigo-500/20 relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform">
+                        <Terminal size={24} />
+                    </div>
+                    <h3 className="text-lg font-black flex items-center gap-2 relative z-10">
+                        <Terminal size={20} /> Geliştirici İpucu
+                    </h3>
+                    <p className="text-indigo-50 text-sm leading-relaxed relative z-10">
+                        RESTful API tasarlarken her zaman en spesifik kodu dönmeye çalışın. Sadece <b>400 Bad Request</b> dönmek yerine, veri bulunamadıysa <b>404</b>, yetki yoksa <b>403</b> dönmek hata ayıklamayı çok kolaylaştırır.
+                    </p>
+                    <div className="pt-4 border-t border-white/10 flex items-center gap-3 relative z-10">
+                        <div className="p-2 bg-white/20 rounded-lg"><Globe size={16} /></div>
+                        <p className="text-[11px] font-bold">Standart dışı kodlardan (örn: 418 I'm a teapot) kaçının.</p>
+                    </div>
+                </div>
+            </div>
         </div>
     );
 }

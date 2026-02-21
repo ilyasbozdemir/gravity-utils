@@ -1,5 +1,7 @@
+"use client";
+
 import React, { useState, useRef, useEffect } from 'react';
-import { ArrowLeft, Calculator, Ruler, Box, Map, Calendar, Clock, Globe, Navigation, Coins, Delete, X, WifiOff } from 'lucide-react';
+import { ArrowLeft, Calculator, Ruler, Box, Map, Calendar, Clock, Globe, Navigation, Coins, Delete, X, WifiOff, Info, Zap } from 'lucide-react';
 
 interface UnitConverterProps {
     file?: File | null;
@@ -15,25 +17,25 @@ const VirtualNumpad = ({ onInput, onClose, onClear, onBackspace }: { onInput: (v
     const keys = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '0'];
 
     return (
-        <div className="absolute top-full left-0 mt-2 z-50 bg-slate-800 border border-white/20 rounded-xl shadow-2xl p-4 w-[240px] animate-[fadeIn_0.2s_ease]">
-            <div className="flex justify-between items-center mb-4 border-b border-white/10 pb-2">
-                <span className="text-xs font-bold text-slate-400 uppercase">Sanal Klavye</span>
-                <button onClick={onClose} className="text-slate-400 hover:text-white"><X size={16} /></button>
+        <div className="absolute top-full left-0 mt-2 z-50 bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/20 rounded-xl shadow-2xl p-4 w-[240px] animate-[fadeIn_0.2s_ease]">
+            <div className="flex justify-between items-center mb-4 border-b border-slate-100 dark:border-white/10 pb-2">
+                <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase">Sanal Klavye</span>
+                <button onClick={onClose} title="Klavye Kapat" className="text-slate-400 hover:text-slate-600 dark:hover:text-white"><X size={16} /></button>
             </div>
             <div className="grid grid-cols-3 gap-2">
                 {keys.map(k => (
                     <button
                         key={k}
                         onClick={() => onInput(k)}
-                        className="bg-white/5 hover:bg-white/10 active:bg-orange-500 active:text-white transition-colors p-3 rounded-lg font-mono text-lg font-bold border border-white/5"
+                        className="bg-slate-50 dark:bg-white/5 hover:bg-slate-100 dark:hover:bg-white/10 active:bg-orange-500 active:text-white transition-colors p-3 rounded-lg font-mono text-lg font-bold border border-slate-200 dark:border-white/5 text-slate-800 dark:text-slate-200"
                     >
                         {k}
                     </button>
                 ))}
-                <button onClick={onBackspace} className="bg-white/5 hover:bg-red-500/20 text-red-300 transition-colors p-3 rounded-lg flex items-center justify-center">
+                <button onClick={onBackspace} title="Geri Sil" className="bg-slate-50 dark:bg-white/5 hover:bg-red-500/20 text-red-500 dark:text-red-300 transition-colors p-3 rounded-lg flex items-center justify-center border border-slate-200 dark:border-white/5">
                     <Delete size={20} />
                 </button>
-                <button onClick={onClear} className="col-span-3 bg-red-500/10 hover:bg-red-500/20 text-red-300 py-2 rounded-lg text-xs font-bold uppercase tracking-wider mt-2">
+                <button onClick={onClear} title="Tamamını Temizle" className="col-span-3 bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-300 py-2 rounded-lg text-xs font-bold uppercase tracking-wider mt-2 border border-red-500/20">
                     Temizle
                 </button>
             </div>
@@ -81,7 +83,8 @@ const NumpadInput = ({ value, onChange, label, placeholder, type = "number" }: {
                 />
                 <button
                     onClick={() => setShowPad(!showPad)}
-                    className={`absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-md transition-colors ${showPad ? 'text-orange-400 bg-orange-400/10' : 'text-slate-400 hover:text-white'}`}
+                    title="Sanal Klavye"
+                    className={`absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-md transition-colors ${showPad ? 'text-orange-400 bg-orange-400/10' : 'text-slate-400 hover:text-slate-600 dark:hover:text-white'}`}
                 >
                     <Calculator size={16} />
                 </button>
@@ -177,12 +180,13 @@ const UnitTool = () => {
                     <div>
                         <label className="block text-xs text-slate-400 mb-2 uppercase font-bold">Buradan</label>
                         <select
+                            title="Kaynak Birim"
                             value={fromUnit.name}
                             onChange={(e) => setFromUnit(UNITS[category].find(u => u.name === e.target.value) || fromUnit)}
-                            className="glass-input w-full"
+                            className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-3 font-bold text-slate-700 dark:text-slate-200 transition-colors"
                         >
                             {UNITS[category].map(u => (
-                                <option key={u.name} value={u.name} className="bg-slate-800">{u.label}</option>
+                                <option key={u.name} value={u.name} className="bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200">{u.label}</option>
                             ))}
                         </select>
                     </div>
@@ -192,12 +196,13 @@ const UnitTool = () => {
                     <div>
                         <label className="block text-xs text-slate-400 mb-2 uppercase font-bold">Buraya</label>
                         <select
+                            title="Hedef Birim"
                             value={toUnit.name}
                             onChange={(e) => setToUnit(UNITS[category].find(u => u.name === e.target.value) || toUnit)}
-                            className="glass-input w-full"
+                            className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-3 font-bold text-slate-700 dark:text-slate-200 transition-colors"
                         >
                             {UNITS[category].map(u => (
-                                <option key={u.name} value={u.name} className="bg-slate-800">{u.label}</option>
+                                <option key={u.name} value={u.name} className="bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200">{u.label}</option>
                             ))}
                         </select>
                     </div>
@@ -264,11 +269,11 @@ const DateTool = () => {
                         <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <label className="block text-xs text-slate-400 mb-2 uppercase font-bold">Başlangıç</label>
-                                <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="glass-input w-full" />
+                                <input title="Başlangıç Tarihi" type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-3 text-slate-700 dark:text-slate-200" />
                             </div>
                             <div>
                                 <label className="block text-xs text-slate-400 mb-2 uppercase font-bold">Bitiş</label>
-                                <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="glass-input w-full" />
+                                <input title="Bitiş Tarihi" type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-3 text-slate-700 dark:text-slate-200" />
                             </div>
                         </div>
                         <div className="mt-4 pt-6 border-t border-white/10 text-center flex flex-col gap-2">
@@ -281,7 +286,7 @@ const DateTool = () => {
                     <>
                         <div>
                             <label className="block text-xs text-slate-400 mb-2 uppercase font-bold">Tarih</label>
-                            <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="glass-input w-full" />
+                            <input title="Tarih Seçin" type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-3 text-slate-700 dark:text-slate-200" />
                         </div>
                         <div>
                             <NumpadInput
@@ -379,10 +384,10 @@ const FinanceTool = () => {
                     </div>
                     <div>
                         <label className="block text-xs text-slate-400 mb-2 uppercase font-bold">Vergi Oranı (%)</label>
-                        <select value={rate} onChange={(e) => setRate(Number(e.target.value))} className="glass-input w-full">
-                            <option value={1} className="bg-slate-800">%1 (KDV)</option>
-                            <option value={10} className="bg-slate-800">%10 (KDV)</option>
-                            <option value={20} className="bg-slate-800">%20 (KDV/Stopaj)</option>
+                        <select title="Vergi Oranı" value={rate} onChange={(e) => setRate(Number(e.target.value))} className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-3 font-bold text-slate-700 dark:text-slate-200">
+                            <option value={1} className="bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200">%1 (KDV)</option>
+                            <option value={10} className="bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200">%10 (KDV)</option>
+                            <option value={20} className="bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200">%20 (KDV/Stopaj)</option>
                         </select>
                     </div>
                 </div>
@@ -500,8 +505,8 @@ export const UnitConverter: React.FC<UnitConverterProps> = ({ onBack }) => {
         <button
             onClick={() => setActiveTab(id)}
             className={`px-5 py-3 font-medium transition-all border-b-2 flex items-center gap-2 whitespace-nowrap outline-none ${activeTab === id
-                    ? `border-${colorClass}-500 text-${colorClass}-400 bg-white/5`
-                    : 'border-transparent text-slate-400 hover:text-white hover:bg-white/5'
+                ? `border-${colorClass}-500 text-${colorClass}-400 bg-white/5`
+                : 'border-transparent text-slate-400 hover:text-white hover:bg-white/5'
                 }`}
         >
             {icon} {label}
@@ -509,12 +514,12 @@ export const UnitConverter: React.FC<UnitConverterProps> = ({ onBack }) => {
     );
 
     return (
-        <div className="glass-panel max-w-[900px] mx-auto p-8 animate-[fadeIn_0.5s_ease] relative">
+        <div className="max-w-[900px] mx-auto p-8 animate-[fadeIn_0.5s_ease] relative bg-white dark:bg-white/5 backdrop-blur-xl border border-slate-200 dark:border-white/10 rounded-3xl shadow-xl dark:shadow-2xl transition-colors duration-300">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
                 <div className="flex items-center gap-4">
-                    <button onClick={onBack} className="glass-button p-2"><ArrowLeft size={18} /></button>
-                    <h2 className="text-xl font-bold m-0 flex items-center gap-2">
-                        <Calculator className="text-indigo-400" />
+                    <button onClick={onBack} title="Geri Dön" className="glass-button p-2"><ArrowLeft size={18} /></button>
+                    <h2 className="text-xl font-bold m-0 flex items-center gap-2 text-slate-800 dark:text-white">
+                        <Calculator className="text-indigo-600 dark:text-indigo-400" />
                         Mühendislik ve Hesaplama
                     </h2>
                 </div>
@@ -523,8 +528,8 @@ export const UnitConverter: React.FC<UnitConverterProps> = ({ onBack }) => {
                 <button
                     onClick={toggleOffline}
                     className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all border ${isOfflineMode
-                            ? 'bg-emerald-500/10 border-emerald-500/50 text-emerald-400'
-                            : 'bg-white/5 border-white/10 text-slate-400 hover:bg-white/10'
+                        ? 'bg-emerald-500/10 border-emerald-500/50 text-emerald-400'
+                        : 'bg-white/5 border-white/10 text-slate-400 hover:bg-white/10'
                         }`}
                 >
                     <WifiOff size={14} />
@@ -532,9 +537,9 @@ export const UnitConverter: React.FC<UnitConverterProps> = ({ onBack }) => {
                 </button>
             </div>
 
-            <p className="text-slate-400 mb-8 text-center bg-white/5 p-4 rounded-lg">
+            <p className="text-slate-600 dark:text-slate-300 mb-8 text-center bg-slate-50 dark:bg-white/5 p-4 rounded-lg border border-slate-100 dark:border-white/5">
                 Arazi, Tarih, KDV ve Koordinat işlemleri için kapsamlı teknik araç seti.
-                <span className="block mt-1 text-xs opacity-70">Tüm işlemler tarayıcınızda gerçekleşir, verileriniz sunucuya gönderilmez.</span>
+                <span className="block mt-1 text-xs text-slate-500 dark:text-slate-400">Tüm işlemler tarayıcınızda gerçekleşir, verileriniz sunucuya gönderilmez.</span>
             </p>
 
             <div className="flex border-b border-white/10 mb-8 overflow-x-auto no-scrollbar">
@@ -551,6 +556,100 @@ export const UnitConverter: React.FC<UnitConverterProps> = ({ onBack }) => {
                 {activeTab === 'date' && <DateTool />}
                 {activeTab === 'map' && <MapTool />}
                 {activeTab === 'coords' && <CoordTool />}
+            </div>
+
+            {/* Contextual Guide */}
+            <UnitConverterGuide activeTab={activeTab} />
+        </div>
+    );
+};
+
+const UnitConverterGuide = ({ activeTab }: { activeTab: TabType }) => {
+    const guides: Record<TabType, { title: string; content: { q: string; a: string }[]; tip: string; icon: React.ReactNode }> = {
+        units: {
+            title: 'Birim Çevirici Rehberi',
+            content: [
+                { q: 'Dönüm ve Dekar farkı nedir?', a: 'Aslında bir fark yoktur. 1 Dekar = 1000 m²\'dir ve halk arasında "Dönüm" olarak bilinir.' },
+                { q: 'Hektar ne kadar büyüktür?', a: '1 Hektar = 10.000 m²\'dir. Yaklaşık olarak standart bir futbol sahasının 1.5 katı büyüklüktedir.' }
+            ],
+            tip: 'Arazi ölçümlerinde "Ar" birimi 100 m²\'ye tekabül eder. Özellikle tapu kayıtlarında bu terimlerle sıkça karşılaşırsınız.',
+            icon: <Ruler size={24} />
+        },
+        finance: {
+            title: 'KDV & Stopaj Rehberi',
+            content: [
+                { q: 'KDV Dahil hesaplama nasıl yapılır?', a: 'Net tutarı (1 + KDV Oranı) ile çarparak brüt tutarı bulabilirsiniz. Örn: 100 * 1.20 = 120 TL.' },
+                { q: 'Stopaj nedir?', a: 'Gelir vergisinin kaynaktan kesilmesidir. Kira veya serbest meslek makbuzlarında genellikle %20 oranında uygulanır.' }
+            ],
+            tip: 'Ticari işlemlerde KDV tevkifatı gibi özel durumlar olabilir. Bu araç genel bilgilendirme amaçlı temel hesaplamalar sunar.',
+            icon: <Coins size={24} />
+        },
+        date: {
+            title: 'Tarih & Süre Rehberi',
+            content: [
+                { q: 'İki tarih arası gün nasıl sayılır?', a: 'Başlangıç gününü 0 kabul ederek bitiş gününe kadar olan takvim günleri toplanır.' },
+                { q: 'İş günü hesaplaması?', a: 'Bu araç takvim günlerini baz alır. Resmi tatil ve hafta sonlarını manuel olarak düşmelisiniz.' }
+            ],
+            tip: 'Yıllık izin veya proje bitiş tarihi hesaplarken bitiş gününün dahil olup olmadığını netleştirmeniz hesaplamayı etkiler.',
+            icon: <Calendar size={24} />
+        },
+        map: {
+            title: 'Harita & Ölçek Rehberi',
+            content: [
+                { q: 'Harita ölçeği nasıl okunur?', a: '1/25.000 ölçek, haritadaki 1 cm\'nin gerçekte 25.000 cm (250 metre) olduğunu gösterir.' },
+                { q: 'Ölçek paydası büyüdükçe ne olur?', a: 'Payda büyüdükçe harita küçülür, daha geniş bir alan daha az detayla gösterilir.' }
+            ],
+            tip: 'İmar planlarında genellikle 1/1000 (Uygulama) ve 1/5000 (Nazım) ölçekleri kullanılır.',
+            icon: <Globe size={24} />
+        },
+        coords: {
+            title: 'Koordinat Sistemleri',
+            content: [
+                { q: 'Decimal vs DMS farkı?', a: 'Decimal (41.0082) sayısal hesaplamalar için, DMS (41° 0\' 29") ise geleneksel haritacılık ve denizcilik için kullanılır.' },
+                { q: 'Hassasiyet neden önemli?', a: 'Virgülden sonraki 4. basamak yaklaşık 11 metrelik bir farka denk gelir. GPS cihazları genellikle 5-6 basamak kullanır.' }
+            ],
+            tip: 'Google Haritalar\'dan kopyaladığınız koordinatları Decimal (Ondalık) kısmına yapıştırarak DMS karşılığını anında alabilirsiniz.',
+            icon: <Navigation size={24} />
+        }
+    };
+
+    const guide = guides[activeTab];
+
+    return (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-12 pb-10 border-t border-slate-100 dark:border-white/5 pt-10">
+            <div className="p-8 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-white/5 rounded-[2.5rem] space-y-4 shadow-xl shadow-slate-200/50 dark:shadow-none">
+                <h3 className="text-lg font-black text-slate-800 dark:text-white flex items-center gap-2">
+                    <Info size={20} className="text-blue-600 dark:text-blue-400" /> {guide.title}
+                </h3>
+                <div className="space-y-4 text-left">
+                    {guide.content.map((item, i) => (
+                        <details key={i} className="group border-b border-slate-200 dark:border-white/5 pb-4">
+                            <summary className="list-none font-bold text-slate-600 dark:text-slate-300 cursor-pointer flex justify-between items-center group-open:text-blue-600 dark:group-open:text-blue-400 transition-colors">
+                                {item.q}
+                                <span className="group-open:rotate-180 transition-transform text-slate-400 dark:text-slate-500">↓</span>
+                            </summary>
+                            <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">
+                                {item.a}
+                            </p>
+                        </details>
+                    ))}
+                </div>
+            </div>
+
+            <div className="p-8 bg-indigo-600 dark:bg-indigo-600 rounded-[2.5rem] text-white space-y-4 shadow-xl shadow-indigo-500/20 relative overflow-hidden group">
+                <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform">
+                    {guide.icon}
+                </div>
+                <h3 className="text-lg font-black flex items-center gap-2 relative z-10">
+                    <Zap size={20} /> Uzman İpucu
+                </h3>
+                <p className="text-indigo-50 text-sm leading-relaxed relative z-10">
+                    {guide.tip}
+                </p>
+                <div className="pt-4 border-t border-white/10 flex items-center gap-3 relative z-10">
+                    <div className="p-2 bg-white/20 rounded-lg"><Info size={16} /></div>
+                    <p className="text-[11px] font-bold">Tüm dönüşümler tarayıcıda, yerel olarak gerçekleşir.</p>
+                </div>
             </div>
         </div>
     );

@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, RefreshCw, Copy, Check, Fingerprint } from 'lucide-react';
 
@@ -55,25 +57,25 @@ export const HashGenerator: React.FC<HashGeneratorProps> = ({ file: initialFile,
     };
 
     return (
-        <div className="max-w-[800px] mx-auto p-8 animate-[fadeIn_0.5s_ease] bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl shadow-2xl">
+        <div className="max-w-[800px] mx-auto p-8 animate-[fadeIn_0.5s_ease] bg-white dark:bg-white/5 backdrop-blur-xl border border-slate-200 dark:border-white/10 rounded-3xl shadow-2xl">
             <div className="flex items-center justify-start gap-4 mb-8">
                 <button
                     onClick={onBack}
-                    className="p-2 bg-emerald-500/20 border border-emerald-500/40 text-white rounded-lg hover:bg-emerald-500/40 transition-all shadow-[0_0_15px_rgba(16,185,129,0.2)]"
+                    className="p-2 bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-400 rounded-lg hover:bg-emerald-500/20 transition-all shadow-sm"
                     title="Geri Dön"
                 >
                     <ArrowLeft size={18} />
                 </button>
                 <div className="text-left">
-                    <h2 className="m-0 text-2xl font-bold tracking-tight text-white">Dosya İmzası (Hash)</h2>
-                    <p className="text-sm text-emerald-400 font-medium tracking-wide">SHA-1 ve SHA-256 Hesaplayıcı</p>
+                    <h2 className="m-0 text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Dosya İmzası (Hash)</h2>
+                    <p className="text-sm text-emerald-600 dark:text-emerald-400 font-medium tracking-wide">SHA-1 ve SHA-256 Hesaplayıcı</p>
                 </div>
             </div>
 
-            <p className="text-sm text-slate-400 text-left mb-6 leading-relaxed">
+            <p className="text-sm text-slate-500 dark:text-slate-400 text-left mb-6 leading-relaxed">
                 {file ? (
                     <>
-                        <span className="font-semibold text-slate-200">{file.name}</span> dosyası için benzersiz imzalar oluşturuldu. Bu imzalar dosyanın bütünlüğünü doğrulamak için kullanılır.
+                        <span className="font-semibold text-slate-800 dark:text-slate-200">{file.name}</span> dosyası için benzersiz imzalar oluşturuldu. Bu imzalar dosyanın bütünlüğünü doğrulamak için kullanılır.
                     </>
                 ) : (
                     'İmzasını (hash) hesaplamak istediğiniz dosyayı seçin. Dosya içeriği asla sunucuya yüklenmez, işlem tarayıcınızda yapılır.'
@@ -89,7 +91,7 @@ export const HashGenerator: React.FC<HashGeneratorProps> = ({ file: initialFile,
                         <Fingerprint size={36} />
                     </div>
                     <div className="text-center px-4">
-                        <p className="font-bold text-xl mb-1 text-slate-200">Hash Hesaplamak İçin Dosya Seçin</p>
+                        <p className="font-bold text-xl mb-1 text-slate-800 dark:text-slate-200">Hash Hesaplamak İçin Dosya Seçin</p>
                         <p className="text-sm text-slate-500">Herhangi bir dosya türü desteklenir</p>
                     </div>
                     <input
@@ -121,7 +123,7 @@ export const HashGenerator: React.FC<HashGeneratorProps> = ({ file: initialFile,
                                             readOnly
                                             value={hashes.sha1}
                                             title="SHA-1 Hash"
-                                            className="w-full bg-black/40 border border-white/10 rounded-xl py-3.5 px-4 text-[13px] font-mono text-emerald-200/90 leading-none focus:outline-none focus:border-emerald-500/30 transition-all select-all scrollbar-hide"
+                                            className="w-full bg-slate-50 dark:bg-black/40 border border-slate-200 dark:border-white/10 rounded-xl py-3.5 px-4 text-[13px] font-mono text-emerald-700 dark:text-emerald-200/90 leading-none focus:outline-none focus:border-emerald-500/30 transition-all select-all scrollbar-hide"
                                         />
                                         <div className="absolute inset-0 rounded-xl bg-emerald-500/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
                                     </div>
@@ -151,7 +153,7 @@ export const HashGenerator: React.FC<HashGeneratorProps> = ({ file: initialFile,
                                             value={hashes.sha256}
                                             title="SHA-256 Hash"
                                             rows={2}
-                                            className="w-full bg-black/40 border border-white/10 rounded-xl py-3.5 px-4 text-[13px] font-mono text-emerald-200/90 leading-relaxed focus:outline-none focus:border-emerald-500/30 transition-all select-all resize-none scrollbar-hide"
+                                            className="w-full bg-slate-50 dark:bg-black/40 border border-slate-200 dark:border-white/10 rounded-xl py-3.5 px-4 text-[13px] font-mono text-emerald-700 dark:text-emerald-200/90 leading-relaxed focus:outline-none focus:border-emerald-500/30 transition-all select-all resize-none scrollbar-hide"
                                         />
                                         <div className="absolute inset-0 rounded-xl bg-emerald-500/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
                                     </div>

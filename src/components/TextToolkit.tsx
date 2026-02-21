@@ -163,39 +163,45 @@ export const TextToolkit: React.FC<TextToolkitProps> = ({ view, onBack }) => {
             </div>
             {/* Mini Guide / FAQ */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-12 pb-10">
-                <div className="p-8 bg-slate-900 border border-white/5 rounded-[2.5rem] space-y-4">
-                    <h3 className="text-lg font-black text-white flex items-center gap-2">
-                        <RefreshCw size={20} className="text-blue-500" /> Metin İşleme İpuçları
+                <div className="p-8 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-white/5 rounded-[2.5rem] space-y-4 shadow-xl shadow-slate-200/50 dark:shadow-none">
+                    <h3 className="text-lg font-black text-slate-800 dark:text-white flex items-center gap-2">
+                        <RefreshCw size={20} className="text-blue-600 dark:text-blue-500" /> Metin İşleme İpuçları
                     </h3>
                     <div className="space-y-4 text-left">
-                        <details className="group border-b border-white/5 pb-4">
-                            <summary className="list-none font-bold text-slate-300 cursor-pointer flex justify-between items-center group-open:text-blue-400 transition-colors">
+                        <details className="group border-b border-slate-200 dark:border-white/5 pb-4">
+                            <summary className="list-none font-bold text-slate-600 dark:text-slate-300 cursor-pointer flex justify-between items-center group-open:text-blue-600 dark:group-open:text-blue-400 transition-colors">
                                 "Normalize TR" ne işe yarar?
-                                <span className="group-open:rotate-180 transition-transform">↓</span>
+                                <span className="group-open:rotate-180 transition-transform text-slate-400 dark:text-slate-500">↓</span>
                             </summary>
-                            <p className="text-sm text-slate-400 mt-2 leading-relaxed">
+                            <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">
                                 Türkçe karakterleri (ç, ğ, ı, ö, ş, ü) İngilizce karşılıklarına dönüştürür. Özellikle dosya isimlendirmeleri veya URL yapıları için metin hazırlarken hayat kurtarır.
                             </p>
                         </details>
-                        <details className="group border-b border-white/5 pb-4">
-                            <summary className="list-none font-bold text-slate-300 cursor-pointer flex justify-between items-center group-open:text-blue-400 transition-colors">
+                        <details className="group border-b border-slate-200 dark:border-white/5 pb-4">
+                            <summary className="list-none font-bold text-slate-600 dark:text-slate-300 cursor-pointer flex justify-between items-center group-open:text-blue-600 dark:group-open:text-blue-400 transition-colors">
                                 Güvenlik ve Gizlilik
-                                <span className="group-open:rotate-180 transition-transform">↓</span>
+                                <span className="group-open:rotate-180 transition-transform text-slate-400 dark:text-slate-500">↓</span>
                             </summary>
-                            <p className="text-sm text-slate-400 mt-2 leading-relaxed">
+                            <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">
                                 Metinleriniz hiçbir sunucuya gönderilmez. Gravity Utils ile yaptığınız tüm metin düzenleme işlemleri doğrudan tarayıcınızın JavaScript motorunda gerçekleşir. %100 gizlidir.
                             </p>
                         </details>
                     </div>
                 </div>
 
-                <div className="p-8 bg-blue-600 rounded-[2.5rem] text-white space-y-4 shadow-xl shadow-blue-500/20">
-                    <h3 className="text-lg font-black flex items-center gap-2">
+                <div className="p-8 bg-blue-600 dark:bg-blue-600 rounded-[2.5rem] text-white space-y-4 shadow-xl shadow-blue-500/20 relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform">
+                        <CaseSensitive size={20} />
+                    </div>
+                    <h3 className="text-lg font-black flex items-center gap-2 relative z-10">
                         <CaseSensitive size={20} /> Pro İpucu
                     </h3>
-                    <p className="text-blue-50 text-sm leading-relaxed">
+                    <p className="text-blue-50 text-sm leading-relaxed relative z-10">
                         Instagram veya LinkedIn için metin hazırlarken karakter limitlerini kontrol altında tutun. "Emoji Sil" ve "Boşlukları Temizle" özellikleri ile mesajınızın okunabilirliğini artırın.
                     </p>
+                    <div className="pt-4 border-t border-white/10 italic text-[11px] text-blue-100 relative z-10">
+                        * Tüm işlemler tarayıcınızda ve yerel olarak tamamlanır.
+                    </div>
                 </div>
             </div>
         </div>

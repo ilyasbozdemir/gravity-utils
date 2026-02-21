@@ -417,49 +417,52 @@ export function ColorToolkit({ onBack }: { onBack: () => void }) {
 
 const ColorGuide = () => (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-12 pb-10">
-        <div className="p-8 bg-slate-900 border border-white/5 rounded-[2.5rem] space-y-4 text-left">
-            <h3 className="text-lg font-black text-white flex items-center gap-2">
-                <Info size={20} className="text-purple-500" /> Renk Rehberi & FAQ
+        <div className="p-8 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-white/5 rounded-[2.5rem] space-y-4 shadow-xl shadow-slate-200/50 dark:shadow-none text-left">
+            <h3 className="text-lg font-black text-slate-800 dark:text-white flex items-center gap-2">
+                <Info size={20} className="text-purple-600 dark:text-purple-400" /> Renk Rehberi & FAQ
             </h3>
             <div className="space-y-4">
-                <details className="group border-b border-white/5 pb-4">
-                    <summary className="list-none font-bold text-slate-300 cursor-pointer flex justify-between items-center group-open:text-purple-400 transition-colors">
+                <details className="group border-b border-slate-200 dark:border-white/5 pb-4">
+                    <summary className="list-none font-bold text-slate-600 dark:text-slate-300 cursor-pointer flex justify-between items-center group-open:text-purple-600 dark:group-open:text-purple-400 transition-colors">
                         Kontrast oranı (WCAG) nedir?
-                        <span className="group-open:rotate-180 transition-transform">↓</span>
+                        <span className="group-open:rotate-180 transition-transform text-slate-400 dark:text-slate-500">↓</span>
                     </summary>
-                    <p className="text-sm text-slate-400 mt-2 leading-relaxed">
+                    <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">
                         Web Erişilebilirlik Kılavuzu (WCAG), metin ile arka plan arasındaki zıtlığın en az 4.5:1 (AA) olmasını önerir. Bu, görme zorluğu çeken kişilerin içeriği okuyabilmesi için kritiktir.
                     </p>
                 </details>
-                <details className="group border-b border-white/5 pb-4">
-                    <summary className="list-none font-bold text-slate-300 cursor-pointer flex justify-between items-center group-open:text-purple-400 transition-colors">
+                <details className="group border-b border-slate-200 dark:border-white/5 pb-4">
+                    <summary className="list-none font-bold text-slate-600 dark:text-slate-300 cursor-pointer flex justify-between items-center group-open:text-purple-600 dark:group-open:text-purple-400 transition-colors">
                         RGB ve HSL arasındaki fark nedir?
-                        <span className="group-open:rotate-180 transition-transform">↓</span>
+                        <span className="group-open:rotate-180 transition-transform text-slate-400 dark:text-slate-500">↓</span>
                     </summary>
-                    <p className="text-sm text-slate-400 mt-2 leading-relaxed">
+                    <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">
                         RGB (Kırmızı, Yeşil, Mavi) ışığın karışımını temsil ederken; HSL (Hue, Saturation, Lightness) rengi bir insan gibi tanımlar: Hangi renk? Ne kadar canlı? Ne kadar parlak? HSL ile bir rengin tonlarını üretmek çok daha kolaydır.
                     </p>
                 </details>
-                <details className="group border-b border-white/5 pb-4">
-                    <summary className="list-none font-bold text-slate-300 cursor-pointer flex justify-between items-center group-open:text-purple-400 transition-colors">
+                <details className="group border-b border-slate-200 dark:border-white/5 pb-4">
+                    <summary className="list-none font-bold text-slate-600 dark:text-slate-300 cursor-pointer flex justify-between items-center group-open:text-purple-600 dark:group-open:text-purple-400 transition-colors">
                         Luminance (Parlaklık) değeri ne işe yarar?
-                        <span className="group-open:rotate-180 transition-transform">↓</span>
+                        <span className="group-open:rotate-180 transition-transform text-slate-400 dark:text-slate-500">↓</span>
                     </summary>
-                    <p className="text-sm text-slate-400 mt-2 leading-relaxed">
+                    <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">
                         Relative Luminance, bir rengin insan gözü tarafından ne kadar parlak algılandığını ölçer. Kontrast hesaplamalarının temelidir. Yeşil renk her zaman aynı değerdeki maviye göre daha "parlak" algılanır.
                     </p>
                 </details>
             </div>
         </div>
 
-        <div className="p-8 bg-purple-600 rounded-[2.5rem] text-white space-y-4 shadow-xl shadow-purple-500/20">
-            <h3 className="text-lg font-black flex items-center gap-2">
+        <div className="p-8 bg-purple-600 dark:bg-purple-600 rounded-[2.5rem] text-white space-y-4 shadow-xl shadow-purple-500/20 relative overflow-hidden group">
+            <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform">
+                <Palette size={24} />
+            </div>
+            <h3 className="text-lg font-black flex items-center gap-2 relative z-10">
                 <Palette size={20} /> Tasarım İpucu
             </h3>
-            <p className="text-purple-50 text-sm leading-relaxed">
+            <p className="text-purple-50 text-sm leading-relaxed relative z-10">
                 Bir arayüz tasarlarken <b>60-30-10</b> kuralını uygulayın: %60 ana renk (genelde beyaz/gri), %30 ikincil renk ve %10 vurgu (accent) rengi. Bu denge gözü yormayan profesyonel bir görünüm sağlar.
             </p>
-            <div className="pt-4 border-t border-white/10 flex items-center gap-3">
+            <div className="pt-4 border-t border-white/10 flex items-center gap-3 relative z-10">
                 <div className="p-2 bg-white/20 rounded-lg"><Sun size={16} /></div>
                 <p className="text-[11px] font-bold">Gradyanlarda birbirine yakın renkler kullanarak (Analog) daha yumuşak geçişler elde edebilirsiniz.</p>
             </div>

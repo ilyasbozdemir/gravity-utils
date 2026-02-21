@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useEffect, useState, useCallback } from 'react';
 import JSZip from 'jszip';
 import { File as FileIcon, Folder, Download, ArrowLeft, X, Eye, ChevronLeft, ChevronRight, Copy, Check, Code, Archive } from 'lucide-react';
@@ -374,29 +376,29 @@ export const ZipInspector: React.FC<ZipInspectorProps> = ({ file: initialFile, o
     };
 
     return (
-        <div className="max-w-[800px] mx-auto p-8 animate-[fadeIn_0.5s_ease] rounded-3xl bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl">
-            <div className="flex items-center justify-start gap-4 mb-6">
+        <div className="max-w-[1000px] mx-auto p-4 lg:p-8 animate-[fadeIn_0.5s_ease] bg-white dark:bg-white/5 backdrop-blur-xl border border-slate-200 dark:border-white/10 rounded-[2.5rem] shadow-2xl transition-colors duration-300">
+            <div className="flex items-center justify-start gap-4 mb-8">
                 <button
                     onClick={onBack}
-                    className="p-2 bg-pink-500/20 border border-pink-500/40 text-white rounded-lg hover:bg-pink-500/40 transition-all shadow-[0_0_15px_rgba(236,72,153,0.2)]"
+                    className="p-3 bg-pink-500/10 border border-pink-500/20 text-pink-600 dark:text-pink-400 rounded-2xl hover:bg-pink-500/20 transition-all shadow-sm"
                     title="Geri Dön"
                 >
-                    <ArrowLeft size={18} />
+                    <ArrowLeft size={20} />
                 </button>
                 <div className="text-left">
-                    <h2 className="m-0 text-2xl font-bold tracking-tight">
+                    <h2 className="m-0 text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
                         {file && /\.(docx|xlsx|pptx|odt|ods|odp)$/i.test(file.name) ? 'Belge İçeriği' : 'Arşiv İnceleyici'}
                     </h2>
                     {file && /\.(docx|xlsx|pptx|odt|ods|odp)$/i.test(file.name) && (
-                        <p className="text-sm text-pink-400 font-medium">Office dosya yapısı ayrıştırıldı</p>
+                        <p className="text-sm text-pink-600 dark:text-pink-400 font-medium">Office dosya yapısı ayrıştırıldı</p>
                     )}
                 </div>
             </div>
 
-            <p className="text-sm text-slate-400 text-left mb-6 leading-relaxed">
+            <p className="text-sm text-slate-500 dark:text-slate-400 text-left mb-6 leading-relaxed">
                 {file ? (
                     <>
-                        <span className="font-semibold text-slate-200">{file.name}</span> dosyasının içeriği görüntüleniyor. Önizlemek için bir dosyaya tıklayın.
+                        <span className="font-semibold text-slate-800 dark:text-slate-200">{file.name}</span> dosyasının içeriği görüntüleniyor. Önizlemek için bir dosyaya tıklayın.
                     </>
                 ) : (
                     'İncelemek istediğiniz arşivi (zip, docx, vb.) seçin. Dosyaları sunucuya yüklemeden tarayıcınızda görüntüleyin.'
@@ -406,13 +408,13 @@ export const ZipInspector: React.FC<ZipInspectorProps> = ({ file: initialFile, o
             {!file ? (
                 <div
                     onClick={() => fileInputRef.current?.click()}
-                    className="w-full py-24 border-2 border-dashed border-white/10 rounded-2xl flex flex-col items-center justify-center gap-4 hover:border-pink-500/50 hover:bg-white/5 transition-all cursor-pointer group"
+                    className="w-full py-24 border-2 border-dashed border-slate-300 dark:border-white/10 rounded-2xl flex flex-col items-center justify-center gap-4 hover:border-pink-500/50 hover:bg-slate-50 dark:hover:bg-white/5 transition-all cursor-pointer group shadow-inner"
                 >
-                    <div className="p-5 bg-pink-500/10 rounded-full text-pink-400 group-hover:scale-110 transition-transform shadow-[0_0_20px_rgba(236,72,153,0.1)]">
+                    <div className="p-5 bg-pink-500/10 rounded-full text-pink-600 dark:text-pink-400 group-hover:scale-110 transition-transform shadow-[0_0_20px_rgba(236,72,153,0.1)]">
                         <Archive size={36} />
                     </div>
                     <div className="text-center px-4">
-                        <p className="font-bold text-xl mb-1">İncelemek için Arşiv Seçin</p>
+                        <p className="font-bold text-xl mb-1 text-slate-800 dark:text-slate-200">İncelemek için Arşiv Seçin</p>
                         <p className="text-sm text-slate-500">Zip, Docx, Xlsx ve daha fazlasını tarayıcınızda açın</p>
                     </div>
                     <input
@@ -439,7 +441,7 @@ export const ZipInspector: React.FC<ZipInspectorProps> = ({ file: initialFile, o
                     )}
 
                     {!loading && !error && (
-                        <div className="max-h-[600px] overflow-y-auto text-left bg-black/30 rounded-2xl border border-white/5 custom-scrollbar">
+                        <div className="max-h-[600px] overflow-y-auto text-left bg-slate-50 dark:bg-black/30 rounded-2xl border border-slate-200 dark:border-white/5 custom-scrollbar">
                             {items.length === 0 && (
                                 <div className="p-12 text-center text-slate-500 italic">
                                     Arşiv boş veya bu format desteklenmiyor.
