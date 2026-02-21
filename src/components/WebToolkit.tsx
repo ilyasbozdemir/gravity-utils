@@ -3,7 +3,7 @@
 import React, { useState, useCallback } from 'react';
 import {
     ArrowLeft, Copy, Check, Globe, Code2, Hash,
-    Link2, RefreshCw, Trash2, ChevronRight, AlertCircle, Monitor
+    Link2, RefreshCw, Trash2, ChevronRight, AlertCircle, Monitor, Zap, Info
 } from 'lucide-react';
 
 type ToolTab = 'url' | 'html' | 'base64-text' | 'url-parse' | 'user-agent';
@@ -607,6 +607,90 @@ export function WebToolkit({ onBack }: { onBack: () => void }) {
                 {activeTab === 'url-parse' && <UrlParseTab />}
                 {activeTab === 'user-agent' && <UserAgentTab />}
             </div>
+
+            {/* Contextual Guide */}
+            <WebToolkitGuide activeTab={activeTab} />
         </div>
     );
 }
+
+const WebToolkitGuide = ({ activeTab }: { activeTab: ToolTab }) => {
+    const guides = {
+        url: {
+            faq: [
+                { q: 'Hangi karakterler encode edilmeli?', a: 'URL içindeki özel anlam taşıyan (space, ?, #, &, =) veya ASCII olmayan tüm karakterler encode edilmelidir.' },
+                { q: 'Encode ve EncodeComponent farkı?', a: 'URIComponent, / ve : gibi karakterleri de kodlayarak veriyi bir parametre içine güvenle gömmenizi sağlar.' }
+            ],
+            tip: 'Tarayıcılar boşlukları bazen + bazen %20 olarak kodlar. Modern API\'lar genelde %20 bekler.'
+        },
+        html: {
+            faq: [
+                { q: 'Neden HTML escape kullanılır?', a: 'Kullanıcıdan alınan veriyi ekrana basarken XSS (Cross Site Scripting) saldırılarını engellemek için <, > gibi karakterler temizlenmelidir.' },
+                { q: 'Named entity nedir?', a: '&nbsp; veya &amp; gibi isimli tanımlardır. Her karakterin karşılığı olmayabilir.' }
+            ],
+            tip: 'Tüm metni değil, sadece kullanıcı girdilerini escape etmeniz güvenli ve yeterlidir.'
+        },
+        'base64-text': {
+            faq: [
+                { q: 'Base64 bir şifreleme mi?', a: 'HAYIR. Base64 bir kodlama (encoding) yöntemidir, şifreleme (encryption) değildir. Verinin formunun değişmesi onu gizli kılmaz.' },
+                { q: 'Neden dosya boyutu artıyor?', a: 'Base64, her 3 byte veriyi 4 karaktere dönüştürür. Bu da dosya boyutunda %33\'lük bir artışa neden olur.' }
+            ],
+            tip: 'Base64 verisinin sonundaki == ekleri dolgu (padding) amaçlıdır ve verinin boyutuna göre değişir.'
+        },
+        'url-parse': {
+            faq: [
+                { q: 'Origin ve Host farkı nedir?', a: 'Host sadece api.example.com iken, Origin protokolü ve portu da içerir (https://api.example.com:443).' },
+                { q: 'Fragment (#) sunucuya gider mi?', a: 'Hayır, # karakterinden sonrası tarayıcı tarafında kalır ve HTTP isteğiyle sunucuya gönderilmez.' }
+            ],
+            tip: 'Single Page Application (SPA) yönlendirmeleri genelde Pathname veya Hash üzerinden yapılır.'
+        },
+        'user-agent': {
+            faq: [
+                { q: 'User Agent neden bu kadar karışık?', a: 'Tarayıcıların birbirini taklit etme geçmişinden dolayı (compatibility) tüm diziler "Mozilla/5.0" ile başlar.' },
+                { q: 'UA dizisi güvenilir mi?', a: 'Tam olarak değil. Kullanıcılar veya botlar UA dizilerini kolayca değiştirebilir (UA spoofing).' }
+            ],
+            tip: 'Modern web geliştirmede UA parsing yerine Feature Detection (yakın zamanda User-Agent Client Hints) önerilir.'
+        }
+    };
+
+    const g = guides[activeTab];
+
+    return (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-12 pb-10 border-t border-slate-100 dark:border-white/5 pt-10">
+            <div className="p-8 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-white/5 rounded-[2.5rem] space-y-4 shadow-xl shadow-slate-200/50 dark:shadow-none text-left">
+                <h3 className="text-lg font-black text-slate-800 dark:text-white flex items-center gap-2">
+                    <Info size={20} className="text-blue-600 dark:text-blue-400" /> Web Mühendisliği Rehberi
+                </h3>
+                <div className="space-y-4">
+                    {g.faq.map((item, i) => (
+                        <details key={i} className="group border-b border-slate-200 dark:border-white/5 pb-4">
+                            <summary className="list-none font-bold text-slate-600 dark:text-slate-300 cursor-pointer flex justify-between items-center group-open:text-blue-600 dark:group-open:text-blue-400 transition-colors uppercase tracking-tight text-[11px]">
+                                {item.q}
+                                <span className="group-open:rotate-180 transition-transform text-slate-400 dark:text-slate-500">↓</span>
+                            </summary>
+                            <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">
+                                {item.a}
+                            </p>
+                        </details>
+                    ))}
+                </div>
+            </div>
+
+            <div className="p-8 bg-blue-600 dark:bg-blue-600 rounded-[2.5rem] text-white space-y-4 shadow-xl shadow-blue-500/20 relative overflow-hidden group">
+                <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform">
+                    <Zap size={24} />
+                </div>
+                <h3 className="text-lg font-black flex items-center gap-2 relative z-10">
+                    <Zap size={20} /> Pro İpucu
+                </h3>
+                <p className="text-blue-50 text-sm leading-relaxed relative z-10">
+                    {g.tip}
+                </p>
+                <div className="pt-4 border-t border-white/10 flex items-center gap-3 relative z-10">
+                    <div className="p-2 bg-white/20 rounded-lg"><Info size={16} /></div>
+                    <p className="text-[11px] font-bold">Web geliştiriciler için temel araçlar.</p>
+                </div>
+            </div>
+        </div>
+    );
+};
