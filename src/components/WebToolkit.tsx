@@ -166,8 +166,9 @@ function UrlTab() {
                         value={input}
                         onChange={e => { setInput(e.target.value); setOutput(''); }}
                         placeholder="https://example.com/search?q=merhaba dünya&lang=tr"
-                        className="w-full h-40 p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl resize-none font-mono text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/40 text-slate-800 dark:text-slate-200"
+                        className="w-full h-40 p-4 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl resize-none font-mono text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/40 text-slate-800 dark:text-slate-200"
                         spellCheck={false}
+                        title="URL Girdisi"
                     />
                 </div>
                 <div>
@@ -248,8 +249,9 @@ function HtmlTab() {
                         value={input}
                         onChange={e => { setInput(e.target.value); setOutput(''); }}
                         placeholder={mode === 'encode' ? '<h1>Merhaba & Günaydın!</h1>' : '&lt;h1&gt;Merhaba &amp; G&#252;nayd&#305;n!&lt;/h1&gt;'}
-                        className="w-full h-48 p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl resize-none font-mono text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/40 text-slate-800 dark:text-slate-200"
+                        className="w-full h-48 p-4 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl resize-none font-mono text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/40 text-slate-800 dark:text-slate-200"
                         spellCheck={false}
+                        title="HTML Girdisi"
                     />
                 </div>
                 <div>
@@ -344,8 +346,9 @@ function Base64TextTab() {
                         value={input}
                         onChange={e => { setInput(e.target.value); setOutput(''); setError(''); }}
                         placeholder={mode === 'encode' ? 'Kodlanacak metni girin...' : 'SGVsbG8gV29ybGQ='}
-                        className="w-full h-40 p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl resize-none font-mono text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/40 text-slate-800 dark:text-slate-200"
+                        className="w-full h-40 p-4 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl resize-none font-mono text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/40 text-slate-800 dark:text-slate-200"
                         spellCheck={false}
+                        title="Base64 Girdisi"
                     />
                 </div>
                 <div>
@@ -421,7 +424,8 @@ function UrlParseTab() {
                         onChange={e => setInput(e.target.value)}
                         onKeyDown={e => e.key === 'Enter' && parse()}
                         placeholder="https://user:pass@api.example.com:8080/search?q=test&lang=tr#results"
-                        className="flex-1 px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl font-mono text-sm focus:outline-none focus:ring-2 focus:ring-green-500/40 text-slate-800 dark:text-slate-200"
+                        title="URL Parser Girdisi"
+                        className="flex-1 px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl font-mono text-sm focus:outline-none focus:ring-2 focus:ring-green-500/40 text-slate-800 dark:text-slate-200"
                     />
                     <button
                         onClick={parse}
@@ -505,7 +509,7 @@ function UserAgentTab() {
                 <div className="flex gap-2">
                     <textarea id="ua-input" value={input} onChange={e => setInput(e.target.value)}
                         placeholder="Mozilla/5.0..." title="User Agent"
-                        className="flex-1 h-24 p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl font-mono text-xs focus:outline-none focus:ring-2 focus:ring-pink-500/40 text-slate-800 dark:text-slate-200" />
+                        className="flex-1 h-24 p-4 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl font-mono text-xs focus:outline-none focus:ring-2 focus:ring-pink-500/40 text-slate-800 dark:text-slate-200" />
                 </div>
                 <div className="flex gap-2">
                     <button onClick={parseUA} className="flex-1 py-3 bg-pink-600 hover:bg-pink-700 text-white rounded-xl font-bold transition-all shadow-lg shadow-pink-500/20">
@@ -600,7 +604,7 @@ export function WebToolkit({ onBack }: { onBack: () => void }) {
             </div>
 
             {/* Tab content */}
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
+            <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-xl shadow-slate-200/50 dark:shadow-none transition-colors">
                 {activeTab === 'url' && <UrlTab />}
                 {activeTab === 'html' && <HtmlTab />}
                 {activeTab === 'base64-text' && <Base64TextTab />}
