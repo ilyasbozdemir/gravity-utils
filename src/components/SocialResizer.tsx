@@ -13,7 +13,6 @@ type Area = { width: number; height: number; x: number; y: number };
 
 interface SocialResizerProps {
     file: File | null;
-    onBack: () => void;
 }
 
 const PRESETS = [
@@ -29,7 +28,8 @@ const PRESETS = [
     { name: 'TikTok', w: 1080, h: 1920, ratio: 9 / 16, icon: '🎵' },
 ];
 
-export const SocialResizer: React.FC<SocialResizerProps> = ({ file: initialFile, onBack }) => {
+export const SocialResizer: React.FC<SocialResizerProps> = ({ file: initialFile }) => {
+    const handleBack = () => { window.location.hash = ''; };
     const [imageSrc, setImageSrc] = useState<string | null>(null);
     const [imageDimensions, setImageDimensions] = useState<{ width: number, height: number } | null>(null);
     const [crop, setCrop] = useState<Point>({ x: 0, y: 0 });
@@ -40,10 +40,37 @@ export const SocialResizer: React.FC<SocialResizerProps> = ({ file: initialFile,
     const [isProcessing, setIsProcessing] = useState(false);
     const [quality, setQuality] = useState(0.92);
 
-    // Modes
-    const [fitMode, setFitMode] = useState(false);
-    const [carouselMode, setCarouselMode] = useState(false);
-    const [carouselParts, setCarouselParts] = useState(0);
+    const fitPreviewRef = useRef<HTMLDivElement>(null);
+    const carouselContainerRef = useRef<HTMLDivElement>(null);
+    const sliceRefs = useRef<Record<number, HTMLDivElement | null>>({});
+
+    useEffect(() => {
+        if (fitMode && fitPreviewRef.current) {
+            fitPreviewRef.current.style.aspectRatio = `${selectedPreset.ratio}`;
+            fitPreviewRef.current.style.maxHeight = '90%';
+            fitPreviewRef.current.style.maxWidth = '90%';
+        }
+    }, [fitMode, selectedPreset.ratio]);
+
+    useEffect(() => {
+        if (carouselMode && carouselParts > 1) {
+            Array.from({ length: carouselParts }).forEach((_, i) => {
+                const el = sliceRefs.current[i];
+                if (el) {
+                    el.style.aspectRatio = `${selectedPreset.ratio}`;
+                    el.style.height = '60%';
+                    el.style.flexShrink = '0';
+
+                    const sliceImg = el.querySelector('.slice-bg') as HTMLDivElement;
+                    if (sliceImg) {
+                        sliceImg.style.backgroundImage = `url(${imageSrc})`;
+                        sliceImg.style.backgroundSize = `${carouselParts * 100}% 100%`;
+                        sliceImg.style.backgroundPosition = `${(i / (carouselParts - 1 || 1)) * 100}% center`;
+                    }
+                }
+            });
+        }
+    }, [carouselMode, carouselParts, selectedPreset.ratio, imageSrc]);
 
     // Initial file load
     React.useEffect(() => {
@@ -164,7 +191,7 @@ export const SocialResizer: React.FC<SocialResizerProps> = ({ file: initialFile,
         <div className="max-w-6xl mx-auto p-4 md:p-8 animate-in fade-in zoom-in duration-300">
             <div className="flex items-center gap-4 mb-8">
                 <button
-                    onClick={onBack}
+                    onClick={handleBack}
                     title="Geri Dön"
                     aria-label="Geri Dön"
                     className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
@@ -382,11 +409,7 @@ export const SocialResizer: React.FC<SocialResizerProps> = ({ file: initialFile,
 
                                 {/* Image Preview with aspect ratio constraint */}
                                 <div
-                                    style={{
-                                        aspectRatio: `${selectedPreset.ratio}`,
-                                        maxHeight: '90%',
-                                        maxWidth: '90%'
-                                    }}
+                                    ref={fitPreviewRef}
                                     className="relative z-10 shadow-2xl"
                                 >
                                     <img
@@ -399,29 +422,18 @@ export const SocialResizer: React.FC<SocialResizerProps> = ({ file: initialFile,
                         ) : carouselMode ? (
                             // Carousel Mode Preview
                             <div className="w-full h-full flex items-center justify-center relative overflow-hidden bg-slate-900 p-8">
-                                <div className="flex gap-2 w-full h-full items-center overflow-x-auto custom-scrollbar">
+                                <div ref={carouselContainerRef} className="flex gap-2 w-full h-full items-center overflow-x-auto custom-scrollbar">
                                     {Array.from({ length: carouselParts }).map((_, i) => (
                                         <div
                                             key={i}
-                                            style={{
-                                                aspectRatio: `${selectedPreset.ratio}`,
-                                                height: '60%',
-                                                flexShrink: 0
-                                            }}
+                                            ref={el => { sliceRefs.current[i] = el; }}
                                             className="relative border-2 border-purple-500/50 rounded-lg overflow-hidden bg-black"
                                         >
                                             <div className="absolute top-2 left-2 bg-purple-500 text-white text-xs font-bold px-2 py-0.5 rounded shadow z-10">
                                                 {i + 1}
                                             </div>
                                             {/* Simulate the slice */}
-                                            <div
-                                                className="w-full h-full relative"
-                                                style={{
-                                                    backgroundImage: `url(${imageSrc})`,
-                                                    backgroundSize: `${carouselParts * 100}% 100%`,
-                                                    backgroundPosition: `${(i / (carouselParts - 1 || 1)) * 100}% center` // Approximation for preview
-                                                }}
-                                            />
+                                            <div className="w-full h-full relative slice-bg" />
                                         </div>
                                     ))}
                                 </div>

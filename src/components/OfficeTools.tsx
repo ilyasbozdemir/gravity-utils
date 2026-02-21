@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import {
     ArrowLeft, FileText, Upload, X, AlertCircle, Download,
     FileSpreadsheet, Image as ImageIcon, FileType,
@@ -24,7 +24,6 @@ export type OfficeToolMode = 'word-pdf' | 'pdf-word' | 'excel-pdf' | 'pdf-excel'
 
 interface OfficeToolsProps {
     mode: OfficeToolMode;
-    onBack: () => void;
 }
 
 interface FileState {
@@ -69,18 +68,27 @@ const PAGE_SIZES: Record<PageSize, string> = {
 
 // ─── Progress Bar (no inline style) ──────────────────────────────────────────
 function ProgressBar({ value, color = 'bg-blue-500' }: { value: number; color?: string }) {
+    const barRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (barRef.current) {
+            barRef.current.style.width = `${value}%`;
+        }
+    }, [value]);
+
     return (
         <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden">
             <div
+                ref={barRef}
                 className={`h-full transition-all duration-300 rounded-full ${color}`}
-                style={{ width: `${value}%` }}
             />
         </div>
     );
 }
 
 // ─── Multi-Image → PDF Component ─────────────────────────────────────────────
-function ImageToPdfTool({ onBack }: { onBack: () => void }) {
+function ImageToPdfTool() {
+    const handleBack = () => { window.location.hash = ''; };
     const [images, setImages] = useState<ImageItem[]>([]);
     const [dragOver, setDragOver] = useState(false);
     const [dragItemId, setDragItemId] = useState<string | null>(null);
@@ -244,7 +252,7 @@ function ImageToPdfTool({ onBack }: { onBack: () => void }) {
     return (
         <div className="max-w-5xl mx-auto p-6 animate-in fade-in zoom-in duration-300">
             <div className="flex items-center gap-4 mb-8">
-                <button onClick={onBack} title="Geri Dön" aria-label="Geri Dön"
+                <button onClick={handleBack} title="Geri Dön" aria-label="Geri Dön"
                     className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">
                     <ArrowLeft className="w-6 h-6 text-slate-600 dark:text-slate-400" />
                 </button>
@@ -446,8 +454,9 @@ function ImageToPdfTool({ onBack }: { onBack: () => void }) {
 }
 
 // ─── Standard Office Tool ────────────────────────────────────────────────────
-export const OfficeTools: React.FC<OfficeToolsProps> = ({ mode, onBack }) => {
-    if (mode === 'imagetopdf') return <ImageToPdfTool onBack={onBack} />;
+export const OfficeTools: React.FC<OfficeToolsProps> = ({ mode }) => {
+    const handleBack = () => { window.location.hash = ''; };
+    if (mode === 'imagetopdf') return <ImageToPdfTool />;
 
     const config = TOOL_CONFIG[mode];
     const isMock = !config.real;
@@ -656,8 +665,8 @@ export const OfficeTools: React.FC<OfficeToolsProps> = ({ mode, onBack }) => {
                 className="fixed -left-[9999px] top-0 w-[800px] bg-white text-black pointer-events-none overflow-hidden font-sans" />
 
             {/* Header */}
-            <div className="flex items-center gap-4 mb-6">
-                <button onClick={onBack} title="Geri Dön" aria-label="Geri Dön"
+            <div className="flex items-center gap-4 mb-8">
+                <button onClick={handleBack} title="Geri Dön" aria-label="Geri Dön"
                     className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">
                     <ArrowLeft className="w-6 h-6 text-slate-600 dark:text-slate-400" />
                 </button>

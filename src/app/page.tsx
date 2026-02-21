@@ -198,7 +198,7 @@ export default function Home() {
                             {view === 'qr' && <QrManager file={file} onBack={() => setView('home')} />}
                             {view === 'social' && <SocialResizer file={file} onBack={() => setView('home')} />}
                             {view === 'favicon' && <FaviconGenerator file={file} onBack={() => setView('home')} />}
-                            {view === 'units' && <UnitConverter file={file} onBack={() => setView('home')} />}
+                            {view === 'units' && <UnitConverter file={file} />}
                             {view === 'uuid' && <UuidGenerator onBack={() => setView('home')} />}
                             {view === 'yaml' && <YamlConverter onBack={() => setView('home')} />}
                             {view === 'jwt' && <JwtDebugger onBack={() => setView('home')} />}
@@ -208,13 +208,13 @@ export default function Home() {
                             {view === 'json-xml' && <JsonXmlConverter onBack={() => setView('home')} />}
                             {view === 'date-time' && <DateTimeConverter onBack={() => setView('home')} />}
                             {view === 'sql-formatter' && <SqlFormatter onBack={() => setView('home')} />}
-                            {view === 'web-toolkit' && <WebToolkit onBack={() => setView('home')} />}
+                            {view === 'web-toolkit' && <WebToolkit />}
                             {view === 'network-toolkit' && <NetworkToolkit onBack={() => setView('home')} />}
-                            {view === 'password-generator' && <PasswordGenerator onBack={() => setView('home')} />}
+                            {view === 'password-generator' && <PasswordGenerator />}
                             {view === 'svg-optimizer' && <SvgOptimizer onBack={() => setView('home')} />}
                             {view === 'cron-builder' && <CronBuilder onBack={() => setView('home')} />}
                             {view === 'timezone-converter' && <TimezoneConverter onBack={() => setView('home')} />}
-                            {view === 'color-toolkit' && <ColorToolkit onBack={() => setView('home')} />}
+                            {view === 'color-toolkit' && <ColorToolkit />}
                             {view === 'regex-tester' && <RegexTester onBack={() => setView('home')} />}
                             {view === 'csv-viewer' && <CsvViewer onBack={() => setView('home')} />}
                             {view === 'markdown-editor' && <MarkdownEditor onBack={() => setView('home')} />}
@@ -223,7 +223,7 @@ export default function Home() {
                             {view === 'lorem-ipsum' && <LoremIpsumGenerator onBack={() => setView('home')} />}
                             {view === 'aspect-ratio' && <AspectRatioCalculator onBack={() => setView('home')} />}
                             {view === 'social-guide' && <SocialGuide onBack={() => setView('home')} />}
-                            {view === 'http-status' && <HttpStatusCodes onBack={() => setView('home')} />}
+                            {view === 'http-status' && <HttpStatusCodes />}
                             {view === 'json-csv' && <JsonCsvConverter onBack={() => setView('home')} />}
 
                             {/* Core Developer & File Tools */}

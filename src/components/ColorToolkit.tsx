@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { ArrowLeft, Copy, Check, Palette, RefreshCw, Shuffle, Sun, Moon, Info } from 'lucide-react';
 
 // ─── Color Math ───────────────────────────────────────────────────────────────
@@ -79,7 +79,8 @@ function CopyBtn({ text }: { text: string }) {
 }
 
 // ─── Main Component ───────────────────────────────────────────────────────────
-export function ColorToolkit({ onBack }: { onBack: () => void }) {
+export function ColorToolkit() {
+    const handleBack = () => { window.location.hash = ''; };
     const [hex, setHex] = useState('#6366F1');
     const [hexInput, setHexInput] = useState('#6366F1');
     const [r, setR] = useState(99); const [g, setG] = useState(102); const [b, setB] = useState(241);
@@ -115,12 +116,30 @@ export function ColorToolkit({ onBack }: { onBack: () => void }) {
     const wcagAA = ratio >= 4.5, wcagAAA = ratio >= 7, wcagLarge = ratio >= 3;
     const shades = generateShades(hex);
     const gradCss = `linear-gradient(${gradAngle}deg, ${hex}, ${gradColor2})`;
+    const containerRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (containerRef.current) {
+            const el = containerRef.current;
+            el.style.setProperty('--hex', hex);
+            el.style.setProperty('--fg', fg);
+            el.style.setProperty('--grad', gradCss);
+            shades.forEach((s, i) => el.style.setProperty(`--shade-${i}`, s));
+
+            const presets = [
+                ['#6366F1', '#EC4899'], ['#06B6D4', '#3B82F6'], ['#F59E0B', '#EF4444'],
+                ['#10B981', '#06B6D4'], ['#8B5CF6', '#6366F1'], ['#F97316', '#F59E0B'],
+                ['#EC4899', '#8B5CF6'], ['#0F172A', '#1E293B'],
+            ];
+            presets.forEach(([c1, c2], i) => el.style.setProperty(`--preset-${i}`, `linear-gradient(135deg, ${c1}, ${c2})`));
+        }
+    }, [hex, fg, gradCss, shades]);
 
     return (
-        <div className="max-w-4xl mx-auto p-6 animate-in fade-in zoom-in duration-300">
+        <div ref={containerRef} className="max-w-4xl mx-auto p-6 animate-in fade-in zoom-in duration-300">
             {/* Header */}
             <div className="flex items-center gap-4 mb-8">
-                <button onClick={onBack} title="Geri Dön" aria-label="Geri Dön"
+                <button onClick={handleBack} title="Geri Dön" aria-label="Geri Dön"
                     className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">
                     <ArrowLeft className="w-6 h-6 text-slate-600 dark:text-slate-400" />
                 </button>
@@ -134,14 +153,14 @@ export function ColorToolkit({ onBack }: { onBack: () => void }) {
 
             {/* Color preview + hex input */}
             <div className="flex items-center gap-4 mb-6">
-                <div className="w-20 h-20 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 shrink-0 transition-colors"
-                    style={{ backgroundColor: hex }} />
+                <div className="w-20 h-20 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 shrink-0 transition-colors bg-[var(--hex)]" />
                 <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2">
                         <input value={hexInput} onChange={e => { setHexInput(e.target.value); if (/^#[0-9a-fA-F]{6}$/.test(e.target.value)) applyHex(e.target.value); }}
                             onBlur={() => applyHex(hexInput)}
                             placeholder="#6366F1"
-                            className="flex-1 px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl font-mono text-lg font-bold focus:outline-none focus:ring-2 focus:ring-purple-500/40 text-slate-800 dark:text-slate-200 uppercase" />
+                            title="Hex Renk Değeri"
+                            className="flex-1 px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl font-mono text-lg font-bold focus:outline-none focus:ring-2 focus:ring-purple-500/40 text-slate-800 dark:text-slate-200 uppercase" />
                         <input type="color" value={hex} onChange={e => applyHex(e.target.value)}
                             title="Renk seçici" aria-label="Renk seçici"
                             className="w-12 h-12 rounded-xl border border-slate-200 dark:border-slate-700 cursor-pointer bg-transparent p-1" />
@@ -209,7 +228,7 @@ export function ColorToolkit({ onBack }: { onBack: () => void }) {
                             ))}
                             <div className="flex items-center gap-2 mt-2">
                                 <code className="flex-1 text-sm font-mono text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-800 px-3 py-2 rounded-lg">hsl({h}, {s}%, {l}%)</code>
-                                <CopyBtn text={`hsl(${h}, ${s}%, ${l}%)`} />
+                                <CopyBtn text={`hsl(${h}, ${s}%, {l}%)`} />
                             </div>
                         </div>
                         {/* Outputs */}
@@ -240,8 +259,7 @@ export function ColorToolkit({ onBack }: { onBack: () => void }) {
                                 <button key={shade} onClick={() => applyHex(shade)}
                                     title={shade} aria-label={`${shade} tonunu seç`}
                                     className="group flex flex-col items-center gap-1">
-                                    <div className="w-full aspect-square rounded-xl border-2 border-transparent group-hover:border-white transition-all shadow-sm"
-                                        style={{ backgroundColor: shade }} />
+                                    <div className={`w-full aspect-square rounded-xl border-2 border-transparent group-hover:border-white transition-all shadow-sm bg-[var(--shade-${i})]`} />
                                     <span className="text-[9px] font-mono text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300">{(i + 1) * 100}</span>
                                 </button>
                             ))}
@@ -251,7 +269,7 @@ export function ColorToolkit({ onBack }: { onBack: () => void }) {
                                 const rgb = hexToRgb(shade)!;
                                 return (
                                     <div key={shade} className="flex items-center gap-3 p-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
-                                        <div className="w-8 h-8 rounded-lg shrink-0" style={{ backgroundColor: shade }} />
+                                        <div className={`w-8 h-8 rounded-lg shrink-0 bg-[var(--shade-${i})]`} />
                                         <span className="text-xs text-slate-500 w-8">{(i + 1) * 100}</span>
                                         <code className="text-xs font-mono text-slate-700 dark:text-slate-300 flex-1">{shade}</code>
                                         <code className="text-xs font-mono text-slate-400 hidden sm:block">rgb({rgb[0]}, {rgb[1]}, {rgb[2]})</code>
@@ -270,7 +288,7 @@ export function ColorToolkit({ onBack }: { onBack: () => void }) {
                             <div>
                                 <p className="text-xs font-bold uppercase text-slate-500 mb-2">Arka Plan</p>
                                 <div className="flex items-center gap-2">
-                                    <div className="w-8 h-8 rounded-lg" style={{ backgroundColor: hex }} />
+                                    <div className="w-8 h-8 rounded-lg bg-[var(--hex)]" />
                                     <code className="text-sm font-mono text-slate-700 dark:text-slate-300">{hex}</code>
                                 </div>
                             </div>
@@ -288,9 +306,9 @@ export function ColorToolkit({ onBack }: { onBack: () => void }) {
                         </div>
 
                         {/* Preview */}
-                        <div className="rounded-xl p-6 text-center" style={{ backgroundColor: hex }}>
-                            <p className="text-2xl font-bold mb-1" style={{ color: fg }}>Örnek Metin Aa Bb</p>
-                            <p className="text-sm" style={{ color: fg }}>Bu metin kontrast önizlemesidir. 123 ABC xyz</p>
+                        <div className="rounded-xl p-6 text-center bg-[var(--hex)]">
+                            <p className="text-2xl font-bold mb-1 text-[var(--fg)]">Örnek Metin Aa Bb</p>
+                            <p className="text-sm text-[var(--fg)]">Bu metin kontrast önizlemesidir. 123 ABC xyz</p>
                         </div>
 
                         {/* Ratio */}
@@ -323,9 +341,10 @@ export function ColorToolkit({ onBack }: { onBack: () => void }) {
                                     const r = contrastRatio(lum, relativeLuminance(...rgb));
                                     return (
                                         <button key={c} onClick={() => setFg(c)}
+                                            data-color={c}
                                             title={`${c} (${r.toFixed(1)}:1)`} aria-label={`${c} rengi seç`}
-                                            className="flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
-                                            <div className="w-8 h-8 rounded-lg border border-slate-200 dark:border-slate-700" style={{ backgroundColor: c }} />
+                                            className="flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors font-mono suggestion-btn">
+                                            <div className="w-8 h-8 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-200 dark:bg-slate-700" />
                                             <span className="text-[9px] text-slate-400">{r.toFixed(1)}:1</span>
                                         </button>
                                     );
@@ -338,12 +357,12 @@ export function ColorToolkit({ onBack }: { onBack: () => void }) {
                 {/* Gradient Tab */}
                 {tab === 'gradient' && (
                     <div className="space-y-6">
-                        <div className="h-32 rounded-2xl shadow-inner" style={{ background: gradCss }} />
+                        <div className="h-32 rounded-2xl shadow-inner bg-[var(--grad)]" />
                         <div className="grid sm:grid-cols-2 gap-4">
                             <div>
                                 <p className="text-xs font-bold uppercase text-slate-500 mb-2">Renk 1</p>
                                 <div className="flex items-center gap-2">
-                                    <div className="w-8 h-8 rounded-lg" style={{ backgroundColor: hex }} />
+                                    <div className="w-8 h-8 rounded-lg bg-[var(--hex)]" />
                                     <code className="text-sm font-mono text-slate-700 dark:text-slate-300">{hex}</code>
                                 </div>
                             </div>
@@ -398,11 +417,17 @@ export function ColorToolkit({ onBack }: { onBack: () => void }) {
                                     ['#6366F1', '#EC4899'], ['#06B6D4', '#3B82F6'], ['#F59E0B', '#EF4444'],
                                     ['#10B981', '#06B6D4'], ['#8B5CF6', '#6366F1'], ['#F97316', '#F59E0B'],
                                     ['#EC4899', '#8B5CF6'], ['#0F172A', '#1E293B'],
-                                ].map(([c1, c2]) => (
-                                    <button key={c1 + c2} onClick={() => { applyHex(c1); setGradColor2(c2); }}
-                                        title={`${c1} → ${c2}`} aria-label={`Gradyan: ${c1} den ${c2} ye`}
-                                        className="w-full aspect-square rounded-xl hover:scale-110 transition-transform shadow-sm"
-                                        style={{ background: `linear-gradient(135deg, ${c1}, ${c2})` }} />
+                                ].map((_, i) => (
+                                    <button key={i} onClick={() => {
+                                        const presets = [
+                                            ['#6366F1', '#EC4899'], ['#06B6D4', '#3B82F6'], ['#F59E0B', '#EF4444'],
+                                            ['#10B981', '#06B6D4'], ['#8B5CF6', '#6366F1'], ['#F97316', '#F59E0B'],
+                                            ['#EC4899', '#8B5CF6'], ['#0F172A', '#1E293B'],
+                                        ];
+                                        applyHex(presets[i][0]); setGradColor2(presets[i][1]);
+                                    }}
+                                        title={`Gradient ${i}`} aria-label={`Hazır gradyan ${i}`}
+                                        className={`w-full aspect-square rounded-xl hover:scale-110 transition-transform shadow-sm bg-[var(--preset-${i})]`} />
                                 ))}
                             </div>
                         </div>
@@ -469,3 +494,4 @@ const ColorGuide = () => (
         </div>
     </div>
 );
+

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { ArrowLeft, Download, Copy, Check, Upload, Wand2 } from 'lucide-react';
 
 // ─── SVG Optimizer (client-side SVGO-lite logic) ───────────────────────────────
@@ -66,7 +66,8 @@ function toBase64DataUrl(svg: string): string {
     return `data:image/svg+xml;base64,${btoa(unescape(encodeURIComponent(svg)))}`;
 }
 
-export function SvgOptimizer({ onBack }: { onBack: () => void }) {
+export function SvgOptimizer() {
+    const handleBack = () => { window.location.hash = ''; };
     const [input, setInput] = useState('');
     const [output, setOutput] = useState('');
     const [savings, setSavings] = useState(0);
@@ -108,6 +109,15 @@ export function SvgOptimizer({ onBack }: { onBack: () => void }) {
 
     const newSize = output ? new Blob([output]).size : 0;
     const info = input ? parseSvgInfo(input) : {};
+    const previewRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (previewRef.current && tab === 'preview') {
+            previewRef.current.style.backgroundImage = 'linear-gradient(45deg, #f0f0f0 25%, transparent 25%, transparent 75%, #f0f0f0 75%), linear-gradient(45deg, #f0f0f0 25%, transparent 25%, transparent 75%, #f0f0f0 75%)';
+            previewRef.current.style.backgroundSize = '20px 20px';
+            previewRef.current.style.backgroundPosition = '0 0, 10px 10px';
+        }
+    }, [tab]);
 
     const toReact = (svg: string) => svg
         .replace(/class="/g, 'className="')
@@ -120,7 +130,7 @@ export function SvgOptimizer({ onBack }: { onBack: () => void }) {
         <div className="max-w-5xl mx-auto p-6 animate-in fade-in zoom-in duration-300">
             {/* Header */}
             <div className="flex items-center gap-4 mb-8">
-                <button onClick={onBack} title="Geri Dön" aria-label="Geri Dön"
+                <button onClick={handleBack} title="Geri Dön" aria-label="Geri Dön"
                     className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">
                     <ArrowLeft className="w-6 h-6 text-slate-600 dark:text-slate-400" />
                 </button>
@@ -221,8 +231,7 @@ export function SvgOptimizer({ onBack }: { onBack: () => void }) {
                                 </div>
                             )}
                             {tab === 'preview' && (
-                                <div className="w-full h-64 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl flex items-center justify-center p-6"
-                                    style={{ backgroundImage: 'linear-gradient(45deg, #f0f0f0 25%, transparent 25%, transparent 75%, #f0f0f0 75%), linear-gradient(45deg, #f0f0f0 25%, transparent 25%, transparent 75%, #f0f0f0 75%)', backgroundSize: '20px 20px', backgroundPosition: '0 0, 10px 10px' }}>
+                                <div ref={previewRef} className="w-full h-64 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl flex items-center justify-center p-6">
                                     <div dangerouslySetInnerHTML={{ __html: output }}
                                         className="max-w-full max-h-full [&_svg]:max-w-full [&_svg]:max-h-full" />
                                 </div>

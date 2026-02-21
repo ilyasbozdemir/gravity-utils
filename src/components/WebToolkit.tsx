@@ -542,7 +542,8 @@ function UserAgentTab() {
 }
 
 // ─── Main Component ───────────────────────────────────────────────────────────
-export function WebToolkit({ onBack }: { onBack: () => void }) {
+export function WebToolkit() {
+    const handleBack = () => { window.location.hash = ''; };
     const [activeTab, setActiveTab] = useState<ToolTab>('url');
 
     const tabColorMap: Record<ToolTab, string> = {
@@ -567,12 +568,8 @@ export function WebToolkit({ onBack }: { onBack: () => void }) {
         <div className="max-w-4xl mx-auto p-6 animate-in fade-in zoom-in duration-300">
             {/* Header */}
             <div className="flex items-center gap-4 mb-8">
-                <button
-                    onClick={onBack}
-                    title="Geri Dön"
-                    aria-label="Geri Dön"
-                    className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
-                >
+                <button onClick={handleBack} title="Geri Dön" aria-label="Geri Dön"
+                    className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">
                     <ArrowLeft className="w-6 h-6 text-slate-600 dark:text-slate-400" />
                 </button>
                 <div>

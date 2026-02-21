@@ -5,7 +5,6 @@ import { ArrowLeft, Calculator, Ruler, Box, Map, Calendar, Clock, Globe, Navigat
 
 interface UnitConverterProps {
     file?: File | null;
-    onBack: () => void;
 }
 
 type TabType = 'units' | 'date' | 'map' | 'finance' | 'coords';
@@ -493,7 +492,8 @@ const CoordTool = () => {
 
 // --- MAIN COMPONENT ---
 
-export const UnitConverter: React.FC<UnitConverterProps> = ({ onBack }) => {
+export const UnitConverter: React.FC<UnitConverterProps> = () => {
+    const handleBack = () => { window.location.hash = ''; };
     const [activeTab, setActiveTab] = useState<TabType>('units');
     const [isOfflineMode, setIsOfflineMode] = useState(false);
 
@@ -517,7 +517,7 @@ export const UnitConverter: React.FC<UnitConverterProps> = ({ onBack }) => {
         <div className="max-w-[900px] mx-auto p-8 animate-[fadeIn_0.5s_ease] relative bg-white dark:bg-white/5 backdrop-blur-xl border border-slate-200 dark:border-white/10 rounded-3xl shadow-xl dark:shadow-2xl transition-colors duration-300">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
                 <div className="flex items-center gap-4">
-                    <button onClick={onBack} title="Geri Dön" className="glass-button p-2"><ArrowLeft size={18} /></button>
+                    <button onClick={handleBack} title="Geri Dön" aria-label="Geri Dön" className="glass-button p-2"><ArrowLeft size={18} /></button>
                     <h2 className="text-xl font-bold m-0 flex items-center gap-2 text-slate-800 dark:text-white">
                         <Calculator className="text-indigo-600 dark:text-indigo-400" />
                         Mühendislik ve Hesaplama

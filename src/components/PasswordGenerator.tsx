@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { ArrowLeft, RefreshCw, Copy, Check, Eye, EyeOff, Shield, AlertTriangle, Lock, ShieldCheck, Info } from 'lucide-react';
 
 const CHAR_SETS = {
@@ -67,7 +67,8 @@ function analyzePassword(pwd: string) {
     return { has, entropy, strength: strengthLabel(entropy) };
 }
 
-export function PasswordGenerator({ onBack }: { onBack: () => void }) {
+export function PasswordGenerator() {
+    const handleBack = () => { window.location.hash = ''; };
     const [length, setLength] = useState(20);
     const [opts, setOpts] = useState({ upper: true, lower: true, digits: true, symbols: true });
     const [excludeSimilar, setExcludeSimilar] = useState(false);
@@ -76,6 +77,11 @@ export function PasswordGenerator({ onBack }: { onBack: () => void }) {
     const [copied, setCopied] = useState(false);
     const [history, setHistory] = useState<string[]>([]);
     const [analyzeInput, setAnalyzeInput] = useState('');
+
+    const strengthBarRef = useRef<HTMLDivElement>(null);
+    const analysisBarRef = useRef<HTMLDivElement>(null);
+
+
 
     const gen = useCallback(() => {
         const pwd = generate(length, opts, excludeSimilar);
@@ -98,11 +104,23 @@ export function PasswordGenerator({ onBack }: { onBack: () => void }) {
     const strength = strengthLabel(entropy);
     const analysis = analyzeInput ? analyzePassword(analyzeInput) : null;
 
+    useEffect(() => {
+        if (strengthBarRef.current) {
+            strengthBarRef.current.style.width = `${strength.pct}%`;
+        }
+    }, [strength.pct]);
+
+    useEffect(() => {
+        if (analysisBarRef.current && analysis) {
+            analysisBarRef.current.style.width = `${analysis.strength.pct}%`;
+        }
+    }, [analysis]);
+
     return (
-        <div className="max-w-2xl mx-auto p-6 animate-in fade-in zoom-in duration-300">
+        <div className="max-w-4xl mx-auto p-6 animate-in fade-in zoom-in duration-300">
             {/* Header */}
             <div className="flex items-center gap-4 mb-8">
-                <button onClick={onBack} title="Geri Dön" aria-label="Geri Dön"
+                <button onClick={handleBack} title="Geri Dön" aria-label="Geri Dön"
                     className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">
                     <ArrowLeft className="w-6 h-6 text-slate-600 dark:text-slate-400" />
                 </button>
@@ -143,7 +161,7 @@ export function PasswordGenerator({ onBack }: { onBack: () => void }) {
                             <span className="text-slate-400">{entropy.toFixed(0)} bit entropi</span>
                         </div>
                         <div className="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                            <div className={`h-full rounded-full transition-all duration-500 ${strength.color}`} style={{ width: `${strength.pct}%` }} />
+                            <div ref={strengthBarRef} className={`h-full rounded-full transition-all duration-500 ${strength.color}`} />
                         </div>
                     </div>
                 </div>
@@ -216,7 +234,7 @@ export function PasswordGenerator({ onBack }: { onBack: () => void }) {
                             <span className="text-slate-400">{analysis.entropy.toFixed(0)} bit</span>
                         </div>
                         <div className="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                            <div className={`h-full rounded-full transition-all ${analysis.strength.color}`} style={{ width: `${analysis.strength.pct}%` }} />
+                            <div ref={analysisBarRef} className={`h-full rounded-full transition-all ${analysis.strength.color}`} />
                         </div>
                         <div className="grid grid-cols-2 gap-2">
                             {[

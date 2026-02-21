@@ -54,7 +54,8 @@ const STATUS_CODES = [
     { code: 511, phrase: 'Network Authentication Required', category: 'Server Error', desc: 'Ağa erişmek için kimlik doğrulaması gerekiyor.' },
 ];
 
-export function HttpStatusCodes({ onBack }: { onBack: () => void }) {
+export function HttpStatusCodes() {
+    const handleBack = () => { window.location.hash = ''; };
     const [search, setSearch] = useState('');
 
     const filtered = STATUS_CODES.filter(s =>
@@ -84,11 +85,12 @@ export function HttpStatusCodes({ onBack }: { onBack: () => void }) {
     };
 
     return (
-        <div className="max-w-5xl mx-auto p-4 lg:p-6 animate-in fade-in zoom-in duration-300">
+        <div className="max-w-4xl mx-auto p-6 animate-in fade-in zoom-in duration-300">
+            {/* Header */}
             <div className="flex items-center gap-4 mb-8">
-                <button onClick={onBack} title="Geri Dön"
-                    className="p-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-xl transition-all shadow-sm">
-                    <ArrowLeft className="w-5 h-5 text-slate-600 dark:text-slate-400" />
+                <button onClick={handleBack} title="Geri Dön" aria-label="Geri Dön"
+                    className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">
+                    <ArrowLeft className="w-6 h-6 text-slate-600 dark:text-slate-400" />
                 </button>
                 <div className="flex-1">
                     <h2 className="text-2xl font-black text-slate-800 dark:text-white flex items-center gap-2 tracking-tight">
