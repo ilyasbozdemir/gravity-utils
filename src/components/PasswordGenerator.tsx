@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useCallback } from 'react';
-import { ArrowLeft, RefreshCw, Copy, Check, Eye, EyeOff, Shield, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, RefreshCw, Copy, Check, Eye, EyeOff, Shield, AlertTriangle, Lock, ShieldCheck, Info } from 'lucide-react';
 
 const CHAR_SETS = {
     upper: { label: 'A–Z', chars: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' },
