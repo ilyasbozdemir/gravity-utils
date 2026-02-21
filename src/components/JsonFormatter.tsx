@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Copy, Check, RefreshCw, Download } from 'lucide-react';
 import { saveAs } from 'file-saver';
@@ -71,7 +73,7 @@ export const JsonFormatter: React.FC<JsonFormatterProps> = ({ file: initialFile,
     };
 
     return (
-        <div className="max-w-[800px] mx-auto p-8 animate-[fadeIn_0.5s_ease] bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl shadow-2xl">
+        <div className="max-w-[800px] mx-auto p-8 animate-[fadeIn_0.5s_ease] bg-white dark:bg-white/5 backdrop-blur-xl border border-slate-200 dark:border-white/10 rounded-3xl shadow-2xl">
             <div className="flex items-center justify-start gap-4 mb-8">
                 <button
                     onClick={onBack}
@@ -81,12 +83,12 @@ export const JsonFormatter: React.FC<JsonFormatterProps> = ({ file: initialFile,
                     <ArrowLeft size={18} />
                 </button>
                 <div className="text-left">
-                    <h2 className="m-0 text-2xl font-bold tracking-tight text-white">JSON Formatlayıcı</h2>
-                    <p className="text-sm text-indigo-400 font-medium tracking-wide">Düzenle, Doğrula ve Güzelleştir</p>
+                    <h2 className="m-0 text-2xl font-bold tracking-tight text-slate-900 dark:text-white">JSON Formatlayıcı</h2>
+                    <p className="text-sm text-indigo-600 dark:text-indigo-400 font-medium tracking-wide">Düzenle, Doğrula ve Güzelleştir</p>
                 </div>
             </div>
 
-            <p className="text-sm text-slate-400 text-left mb-6 leading-relaxed">
+            <p className="text-sm text-slate-500 dark:text-slate-400 text-left mb-6 leading-relaxed">
                 JSON metninizi buraya yapıştırın veya bir dosya yükleyin. Otomatik olarak doğrulanacak ve okunaklı hale getirilecektir.
             </p>
 
@@ -116,7 +118,7 @@ export const JsonFormatter: React.FC<JsonFormatterProps> = ({ file: initialFile,
                             }
                         }}
                         placeholder='{"mesaj": "JSON metnini buraya yapıştırın..."}'
-                        className={`w-full h-[400px] bg-black/40 border ${error ? 'border-red-500/30' : 'border-white/10'} rounded-2xl p-6 font-mono text-[13px] leading-relaxed text-slate-200 focus:outline-none focus:border-indigo-500/50 transition-all resize-none custom-scrollbar`}
+                        className={`w-full h-[400px] bg-slate-50 dark:bg-black/40 border ${error ? 'border-red-500/30' : 'border-slate-200 dark:border-white/10'} rounded-2xl p-6 font-mono text-[13px] leading-relaxed text-slate-700 dark:text-slate-200 focus:outline-none focus:border-indigo-500/50 transition-all resize-none custom-scrollbar`}
                     />
                 </div>
 
@@ -155,7 +157,7 @@ export const JsonFormatter: React.FC<JsonFormatterProps> = ({ file: initialFile,
                             onClick={handleDownload}
                             disabled={!jsonContent || !!error}
                             title="İndir (.json)"
-                            className="p-2.5 bg-white/5 hover:bg-white/10 border border-white/5 text-slate-400 hover:text-white rounded-xl transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                            className="p-2.5 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 border border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-xl transition-all disabled:opacity-30 disabled:cursor-not-allowed"
                         >
                             <Download size={18} />
                         </button>

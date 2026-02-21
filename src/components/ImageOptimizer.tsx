@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState } from 'react';
 import { ArrowLeft, RefreshCw, Download, Image as ImageIcon } from 'lucide-react';
 import { saveAs } from 'file-saver';

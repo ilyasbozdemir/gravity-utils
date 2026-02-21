@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, BarChart } from 'lucide-react';
 
@@ -55,7 +57,7 @@ export const TextAnalyzer: React.FC<TextAnalyzerProps> = ({ file: initialFile, o
             <p className="text-sm text-slate-400 text-left mb-8 leading-relaxed">
                 {file ? (
                     <>
-                        <span className="font-semibold text-slate-200">{file.name}</span> dosyası analiz edildi. Aşağıda dosya içeriğine dair detaylı istatistikleri görebilirsiniz.
+                        <span className="font-semibold text-slate-800 dark:text-slate-200">{file.name}</span> dosyası analiz edildi. Aşağıda dosya içeriğine dair detaylı istatistikleri görebilirsiniz.
                     </>
                 ) : (
                     'Metin belgenizin kelime, karakter, satır ve boşluk sayılarını analiz edin. Dosyanızı seçerek başlayın.'
@@ -71,7 +73,7 @@ export const TextAnalyzer: React.FC<TextAnalyzerProps> = ({ file: initialFile, o
                         <BarChart size={36} />
                     </div>
                     <div className="text-center px-4">
-                        <p className="font-bold text-xl mb-1 text-slate-200">Analiz İçin Belge Seçin</p>
+                        <p className="font-bold text-xl mb-1 text-slate-800 dark:text-slate-200">Analiz İçin Belge Seçin</p>
                         <p className="text-sm text-slate-500">TXT, MD, PDF veya Kod dosyaları</p>
                     </div>
                     <input

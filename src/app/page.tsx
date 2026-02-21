@@ -13,48 +13,48 @@ const ZipInspector = dynamic(() => import('@/components/ZipInspector').then(mod 
 const Base64Viewer = dynamic(() => import('@/components/Base64Viewer').then(mod => mod.Base64Viewer));
 const ImageOptimizer = dynamic(() => import('@/components/ImageOptimizer').then(mod => mod.ImageOptimizer));
 const HashGenerator = dynamic(() => import('@/components/HashGenerator').then(mod => mod.HashGenerator));
-const JsonFormatter = dynamic(() => import('@/components/JsonFormatter').then(mod => mod.JsonFormatter));
-const TextAnalyzer = dynamic(() => import('@/components/TextAnalyzer').then(mod => mod.TextAnalyzer));
-const PdfManager = dynamic(() => import('@/components/PdfManager').then(mod => mod.PdfManager));
-const ExifCleaner = dynamic(() => import('@/components/ExifCleaner').then(mod => mod.ExifCleaner));
-const QrManager = dynamic(() => import('@/components/QrManager').then(mod => mod.QrManager));
-const FileEncryptor = dynamic(() => import('@/components/FileEncryptor').then(mod => mod.FileEncryptor));
-const SocialResizer = dynamic(() => import('@/components/SocialResizer').then(mod => mod.SocialResizer));
-const FaviconGenerator = dynamic(() => import('@/components/FaviconGenerator').then(mod => mod.FaviconGenerator));
-const UnitConverter = dynamic(() => import('@/components/UnitConverter').then(mod => mod.UnitConverter));
-const UuidGenerator = dynamic(() => import('@/components/UuidGenerator').then(mod => mod.UuidGenerator));
-const YamlConverter = dynamic(() => import('@/components/YamlConverter').then(mod => mod.YamlConverter));
-const JwtDebugger = dynamic(() => import('@/components/JwtDebugger').then(mod => mod.JwtDebugger));
-const UrlEncoder = dynamic(() => import('@/components/UrlEncoder').then(mod => mod.UrlEncoder));
-const CaseConverter = dynamic(() => import('@/components/CaseConverter').then(mod => mod.CaseConverter));
-const JsonXmlConverter = dynamic(() => import('@/components/JsonXmlConverter').then(mod => mod.JsonXmlConverter));
-const DateTimeConverter = dynamic(() => import('@/components/DateTimeConverter').then(mod => mod.DateTimeConverter));
-const SqlFormatter = dynamic(() => import('@/components/SqlFormatter').then(mod => mod.SqlFormatter));
-const StringInspector = dynamic(() => import('@/components/StringInspector').then(mod => mod.StringInspector));
-const OfficeTools = dynamic(() => import('@/components/OfficeTools').then(mod => mod.OfficeTools));
-const WebToolkit = dynamic(() => import('@/components/WebToolkit').then(mod => mod.WebToolkit));
-const NetworkToolkit = dynamic(() => import('@/components/NetworkToolkit').then(mod => mod.NetworkToolkit));
-const PasswordGenerator = dynamic(() => import('@/components/PasswordGenerator').then(mod => mod.PasswordGenerator));
-const SvgOptimizer = dynamic(() => import('@/components/SvgOptimizer').then(mod => mod.SvgOptimizer));
-const CronBuilder = dynamic(() => import('@/components/CronBuilder').then(mod => mod.CronBuilder));
-const TimezoneConverter = dynamic(() => import('@/components/TimezoneConverter').then(mod => mod.TimezoneConverter));
-const ColorToolkit = dynamic(() => import('@/components/ColorToolkit').then(mod => mod.ColorToolkit));
-const RegexTester = dynamic(() => import('@/components/RegexTester').then(mod => mod.RegexTester));
-const CsvViewer = dynamic(() => import('@/components/CsvViewer').then(mod => mod.CsvViewer));
-const MarkdownEditor = dynamic(() => import('@/components/MarkdownEditor').then(mod => mod.MarkdownEditor));
-const JsonLdEditor = dynamic(() => import('@/components/JsonLdEditor').then(mod => mod.JsonLdEditor));
-const NetworkCableTester = dynamic(() => import('@/components/NetworkCableTester').then(mod => mod.NetworkCableTester));
-const LoremIpsumGenerator = dynamic(() => import('@/components/LoremIpsumGenerator').then(mod => mod.LoremIpsumGenerator));
-const AspectRatioCalculator = dynamic(() => import('@/components/AspectRatioCalculator').then(mod => mod.AspectRatioCalculator));
-const SocialGuide = dynamic(() => import('@/components/SocialGuide').then(mod => mod.SocialGuide));
-const HttpStatusCodes = dynamic(() => import('@/components/HttpStatusCodes').then(mod => mod.HttpStatusCodes));
-const JsonCsvConverter = dynamic(() => import('@/components/JsonCsvConverter').then(mod => mod.JsonCsvConverter));
-const TextToolkit = dynamic(() => import('@/components/TextToolkit').then(mod => mod.TextToolkit));
-const SmartCalculator = dynamic(() => import('@/components/SmartCalculator').then(mod => mod.SmartCalculator));
-const MediaToolkit = dynamic(() => import('@/components/MediaToolkit').then(mod => mod.MediaToolkit));
-const IdentifierConverter = dynamic(() => import('@/components/IdentifierConverter').then(mod => mod.IdentifierConverter));
-const SchemaGenerator = dynamic(() => import('@/components/SchemaGenerator').then(mod => mod.SchemaGenerator));
-const MetadataGenerator = dynamic(() => import('@/components/MetadataGenerator').then(mod => mod.MetadataGenerator));
+const JsonFormatter = dynamic(() => import('@/components/JsonFormatter').then(mod => mod.JsonFormatter), { ssr: false });
+const TextAnalyzer = dynamic(() => import('@/components/TextAnalyzer').then(mod => mod.TextAnalyzer), { ssr: false });
+const PdfManager = dynamic(() => import('@/components/PdfManager').then(mod => mod.PdfManager), { ssr: false });
+const ExifCleaner = dynamic(() => import('@/components/ExifCleaner').then(mod => mod.ExifCleaner), { ssr: false });
+const QrManager = dynamic(() => import('@/components/QrManager').then(mod => mod.QrManager), { ssr: false });
+const FileEncryptor = dynamic(() => import('@/components/FileEncryptor').then(mod => mod.FileEncryptor), { ssr: false });
+const SocialResizer = dynamic(() => import('@/components/SocialResizer').then(mod => mod.SocialResizer), { ssr: false });
+const FaviconGenerator = dynamic(() => import('@/components/FaviconGenerator').then(mod => mod.FaviconGenerator), { ssr: false });
+const UnitConverter = dynamic(() => import('@/components/UnitConverter').then(mod => mod.UnitConverter), { ssr: false });
+const UuidGenerator = dynamic(() => import('@/components/UuidGenerator').then(mod => mod.UuidGenerator), { ssr: false });
+const YamlConverter = dynamic(() => import('@/components/YamlConverter').then(mod => mod.YamlConverter), { ssr: false });
+const JwtDebugger = dynamic(() => import('@/components/JwtDebugger').then(mod => mod.JwtDebugger), { ssr: false });
+const UrlEncoder = dynamic(() => import('@/components/UrlEncoder').then(mod => mod.UrlEncoder), { ssr: false });
+const CaseConverter = dynamic(() => import('@/components/CaseConverter').then(mod => mod.CaseConverter), { ssr: false });
+const JsonXmlConverter = dynamic(() => import('@/components/JsonXmlConverter').then(mod => mod.JsonXmlConverter), { ssr: false });
+const DateTimeConverter = dynamic(() => import('@/components/DateTimeConverter').then(mod => mod.DateTimeConverter), { ssr: false });
+const SqlFormatter = dynamic(() => import('@/components/SqlFormatter').then(mod => mod.SqlFormatter), { ssr: false });
+const StringInspector = dynamic(() => import('@/components/StringInspector').then(mod => mod.StringInspector), { ssr: false });
+const OfficeTools = dynamic(() => import('@/components/OfficeTools').then(mod => mod.OfficeTools), { ssr: false });
+const WebToolkit = dynamic(() => import('@/components/WebToolkit').then(mod => mod.WebToolkit), { ssr: false });
+const NetworkToolkit = dynamic(() => import('@/components/NetworkToolkit').then(mod => mod.NetworkToolkit), { ssr: false });
+const PasswordGenerator = dynamic(() => import('@/components/PasswordGenerator').then(mod => mod.PasswordGenerator), { ssr: false });
+const SvgOptimizer = dynamic(() => import('@/components/SvgOptimizer').then(mod => mod.SvgOptimizer), { ssr: false });
+const CronBuilder = dynamic(() => import('@/components/CronBuilder').then(mod => mod.CronBuilder), { ssr: false });
+const TimezoneConverter = dynamic(() => import('@/components/TimezoneConverter').then(mod => mod.TimezoneConverter), { ssr: false });
+const ColorToolkit = dynamic(() => import('@/components/ColorToolkit').then(mod => mod.ColorToolkit), { ssr: false });
+const RegexTester = dynamic(() => import('@/components/RegexTester').then(mod => mod.RegexTester), { ssr: false });
+const CsvViewer = dynamic(() => import('@/components/CsvViewer').then(mod => mod.CsvViewer), { ssr: false });
+const MarkdownEditor = dynamic(() => import('@/components/MarkdownEditor').then(mod => mod.MarkdownEditor), { ssr: false });
+const JsonLdEditor = dynamic(() => import('@/components/JsonLdEditor').then(mod => mod.JsonLdEditor), { ssr: false });
+const NetworkCableTester = dynamic(() => import('@/components/NetworkCableTester').then(mod => mod.NetworkCableTester), { ssr: false });
+const LoremIpsumGenerator = dynamic(() => import('@/components/LoremIpsumGenerator').then(mod => mod.LoremIpsumGenerator), { ssr: false });
+const AspectRatioCalculator = dynamic(() => import('@/components/AspectRatioCalculator').then(mod => mod.AspectRatioCalculator), { ssr: false });
+const SocialGuide = dynamic(() => import('@/components/SocialGuide').then(mod => mod.SocialGuide), { ssr: false });
+const HttpStatusCodes = dynamic(() => import('@/components/HttpStatusCodes').then(mod => mod.HttpStatusCodes), { ssr: false });
+const JsonCsvConverter = dynamic(() => import('@/components/JsonCsvConverter').then(mod => mod.JsonCsvConverter), { ssr: false });
+const TextToolkit = dynamic(() => import('@/components/TextToolkit').then(mod => mod.TextToolkit), { ssr: false });
+const SmartCalculator = dynamic(() => import('@/components/SmartCalculator').then(mod => mod.SmartCalculator), { ssr: false });
+const MediaToolkit = dynamic(() => import('@/components/MediaToolkit').then(mod => mod.MediaToolkit), { ssr: false });
+const IdentifierConverter = dynamic(() => import('@/components/IdentifierConverter').then(mod => mod.IdentifierConverter), { ssr: false });
+const SchemaGenerator = dynamic(() => import('@/components/SchemaGenerator').then(mod => mod.SchemaGenerator), { ssr: false });
+const MetadataGenerator = dynamic(() => import('@/components/MetadataGenerator').then(mod => mod.MetadataGenerator), { ssr: false });
 const EmailHeaderAnalyzer = dynamic(() => import('@/components/EmailHeaderAnalyzer').then(mod => mod.EmailHeaderAnalyzer), { ssr: false });
 const DocumentToolkit = dynamic(() => import('@/components/DocumentToolkit').then(mod => mod.DocumentToolkit), { ssr: false });
 const CheckToolkit = dynamic(() => import('@/components/CheckToolkit').then(mod => mod.CheckToolkit), { ssr: false });
@@ -190,17 +190,9 @@ export default function Home() {
                             )}
 
                             {/* Dynamic Components Rendering */}
-                            {/* Note: In a full Next.js App Router migration, these should be separate routes (pages).
-                  For this step, we keep the SPA behavior within the main page for quick migration. */}
+                            {(view === 'pdf' || view === 'pdf-word' || view === 'word-pdf' || view === 'pdf-image' || view === 'pdf-split' || view === 'pdf-text' || view === 'imagetopdf') &&
+                                <DocumentToolkit view={view} onBack={() => setView('home')} />}
 
-                            {(view === 'pdf' || view === 'pdf-word' || view === 'word-pdf' || view === 'pdf-image' || view === 'imagetopdf') &&
-                                <PdfManager
-                                    file={file}
-                                    onBack={() => setView('home')}
-                                    initialTab={
-                                        (view === 'pdf-word' || view === 'word-pdf' || view === 'pdf-image' || view === 'imagetopdf') ? 'convert' : 'merge'
-                                    }
-                                />}
                             {view === 'encrypt' && <FileEncryptor file={file} onBack={() => setView('home')} />}
                             {view === 'exif' && <ExifCleaner file={file} onBack={() => setView('home')} />}
                             {view === 'qr' && <QrManager file={file} onBack={() => setView('home')} />}
@@ -234,6 +226,14 @@ export default function Home() {
                             {view === 'http-status' && <HttpStatusCodes onBack={() => setView('home')} />}
                             {view === 'json-csv' && <JsonCsvConverter onBack={() => setView('home')} />}
 
+                            {/* Core Developer & File Tools */}
+                            {view === 'json' && <JsonFormatter file={file} onBack={() => setView('home')} />}
+                            {view === 'text' && <TextAnalyzer file={file} onBack={() => setView('home')} />}
+                            {view === 'optimize' && <ImageOptimizer file={file} onBack={() => setView('home')} />}
+                            {view === 'hash' && <HashGenerator file={file} onBack={() => setView('home')} />}
+                            {view === 'inspect' && <ZipInspector file={file} onBack={() => setView('home')} />}
+                            {view === 'base64' && <Base64Viewer file={file} onBack={() => setView('home')} />}
+
                             {/* New Toolkit Views */}
                             {(view === 'text-cleaner' || view === 'case-converter-pro') &&
                                 <TextToolkit view={view} onBack={() => setView('home')} />}
@@ -242,7 +242,7 @@ export default function Home() {
                                 view === 'iban-checker' || view === 'tckn-checker' || view === 'css-units' || view === 'viewport-calc') &&
                                 <SmartCalculator view={view} onBack={() => setView('home')} />}
 
-                            {(view === 'exif-viewer' || view === 'bulk-rename' || view === 'social') &&
+                            {(view === 'exif-viewer' || view === 'bulk-rename') &&
                                 <MediaToolkit view={view} onBack={() => setView('home')} />}
 
                             {view === 'identifier-converter' && <IdentifierConverter onBack={() => setView('home')} />}
@@ -252,13 +252,6 @@ export default function Home() {
                             {view === 'document-toolkit' && <DocumentToolkit onBack={() => setView('home')} />}
                             {view === 'check-toolkit' && <CheckToolkit onBack={() => setView('home')} />}
                             {view === 'convert' && <FileConverter file={file} onBack={() => setView('home')} />}
-
-                            {/* Compatibility for old office routes */}
-                            {(view === 'word-pdf' || view === 'pdf-word' || view === 'pdf-split' || view === 'pdf-text' || view === 'pdf') &&
-                                <DocumentToolkit onBack={() => setView('home')} />}
-
-                            {(view === 'iban-checker' || view === 'tckn-checker' || view === 'email-header-analyzer') &&
-                                <CheckToolkit onBack={() => setView('home')} />}
                         </div>
                     )}
 
