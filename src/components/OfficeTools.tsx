@@ -368,6 +368,27 @@ function ImageToPdfTool({ onBack }: { onBack: () => void }) {
                             <CheckCircle2 size={16} /> PDF başarıyla indirildi!
                         </div>
                     )}
+
+                    {/* Expert Tips */}
+                    <div className="bg-blue-50/50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900/30 rounded-2xl p-5 space-y-3">
+                        <h4 className="flex items-center gap-2 text-xs font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest">
+                            <Info size={14} /> Uzman İpuçları
+                        </h4>
+                        <ul className="space-y-2">
+                            <li className="text-[11px] text-slate-600 dark:text-slate-400 leading-relaxed flex gap-2">
+                                <span className="text-blue-500 font-bold">•</span>
+                                <b>Yüksek Kalite:</b> Baskı alacaksanız görsellerinizin <b>300 DPI</b> olduğundan emin olun.
+                            </li>
+                            <li className="text-[11px] text-slate-600 dark:text-slate-400 leading-relaxed flex gap-2">
+                                <span className="text-blue-500 font-bold">•</span>
+                                <b>Dosya Boyutu:</b> Çok fazla görseliniz varsa JPEG kalitesini <b>%70-%80</b> bandına çekmek kaliteyi bozmadan boyutu ciddi oranda düşürür.
+                            </li>
+                            <li className="text-[11px] text-slate-600 dark:text-slate-400 leading-relaxed flex gap-2">
+                                <span className="text-blue-500 font-bold">•</span>
+                                <b>Sayfa Yapısı:</b> Eğer taradığınız dökümanlar farklı boyutlardaysa sayfa boyutunu <b>"Otomatik"</b> yapmanız dökümanın orijinal yapısını korur.
+                            </li>
+                        </ul>
+                    </div>
                 </div>
 
                 {/* Image List */}

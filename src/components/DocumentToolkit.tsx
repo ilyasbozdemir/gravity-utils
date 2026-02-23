@@ -5,14 +5,16 @@ import {
     ArrowLeft, FileText, Layers, Scissors, Minimize2, Stamp,
     RefreshCw, Globe, FileType, Search, ChevronRight, Zap,
     FileStack, Image as ImageIcon, FileSpreadsheet, PlayCircle,
-    Plus, X, Upload
+    Plus, X, Upload,
+    HelpCircle
 } from 'lucide-react';
 import { PdfManager } from './PdfManager';
 import { OfficeTools, OfficeToolMode } from './OfficeTools';
 import { FileConverter } from './FileConverter';
+import { ExamGenerator } from './ExamGenerator';
 import { getAvailableFormats, type Format } from '../utils/formats';
 
-type DocToolSubView = 'dashboard' | 'pdf-manager' | 'office-tools' | 'general-converter';
+type DocToolSubView = 'dashboard' | 'pdf-manager' | 'office-tools' | 'general-converter' | 'exam-generator';
 
 interface DocumentToolkitProps {
     onBack: () => void;
@@ -82,6 +84,10 @@ export const DocumentToolkit: React.FC<DocumentToolkitProps> = ({ onBack, initia
 
     if (view === 'general-converter') {
         return <FileConverter file={smartFile} onBack={() => setView('dashboard')} initialFormat={selectedSmartFormat} />;
+    }
+
+    if (view === 'exam-generator') {
+        return <ExamGenerator onBack={() => setView('dashboard')} />;
     }
 
     return (
@@ -235,17 +241,16 @@ export const DocumentToolkit: React.FC<DocumentToolkitProps> = ({ onBack, initia
                         onClick={() => handleOfficeTool('ppt-pdf')}
                     />
                     <ToolCard
-                        title="Dosya Dönüştürücü"
-                        desc="Genel amaçlı akıllı format çevirici"
-                        icon={<RefreshCw className="text-indigo-500" />}
-                        onClick={() => setView('general-converter')}
-                        highlight
-                    />
-                    <ToolCard
                         title="PDF → Metin"
                         desc="Dökümandan metinleri ayıkla"
                         icon={<FileType className="text-slate-500" />}
                         onClick={() => handlePdfTool('convert')}
+                    />
+                    <ToolCard
+                        title="Sınav Hazırlayıcı"
+                        desc="Sorulardan PDF test oluştur"
+                        icon={<HelpCircle className="text-amber-500" />}
+                        onClick={() => setView('exam-generator')}
                     />
                 </div>
             </section>
@@ -339,7 +344,7 @@ const BigActionCard = ({ title, desc, icon, color, onClick }: {
     return (
         <button
             onClick={onClick}
-            className={`p-6 rounded-[2rem] border-2 transition-all hover:scale-[1.02] text-left flex flex-col items-center text-center gap-4 ${colors[color]}`}
+            className={`p-6 rounded-[2rem] border-2 transition-all hover:scale-[1.02] text-left flex flex-col items-center gap-4 ${colors[color]}`}
         >
             <div className={`p-4 rounded-2xl ${color === 'red' ? 'bg-red-500 text-white' : color === 'blue' ? 'bg-blue-500 text-white' : color === 'orange' ? 'bg-orange-500 text-white' : 'bg-purple-500 text-white'}`}>
                 {icon}
