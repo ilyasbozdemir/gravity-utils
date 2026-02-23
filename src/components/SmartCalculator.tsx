@@ -1,5 +1,7 @@
+'use client';
+
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Calculator, Clock, Zap, ShieldCheck, Mail, Smartphone, Layers, Info, RefreshCw } from 'lucide-react';
+import { ArrowLeft, Calculator, Clock, Zap, ShieldCheck, Mail, Smartphone, Layers, Info, RefreshCw, Type, Maximize2, Move, Layout, Box, Ruler, CheckCircle2, AlertTriangle, BookOpen, ExternalLink, HelpCircle, Terminal, Code2, Rocket } from 'lucide-react';
 
 interface SmartCalculatorProps {
     view: 'date-calculator' | 'internet-speed' | 'file-size-calc' | 'iban-checker' | 'tckn-checker' | 'css-units' | 'viewport-calc';
@@ -11,30 +13,36 @@ export const SmartCalculator: React.FC<SmartCalculatorProps> = ({ view, onBack }
         <div className="max-w-4xl mx-auto p-6 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
             {/* Header */}
             <div className="flex items-center gap-4">
-                <button onClick={onBack} title="Geri Dön" className="p-2.5 rounded-xl hover:bg-slate-100 dark:hover:bg-white/5 transition-colors group">
-                    <ArrowLeft className="group-hover:-translate-x-1 transition-transform" />
+                <button onClick={onBack} title="Geri Dön" className="p-3 rounded-2xl hover:bg-slate-100 dark:hover:bg-white/5 transition-all group border border-transparent hover:border-slate-200 dark:hover:border-white/10 shadow-sm">
+                    <ArrowLeft className="group-hover:-translate-x-1 transition-transform w-6 h-6" />
                 </button>
                 <div>
-                    <h1 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight">
-                        {view === 'date-calculator' && 'Tarih & Gün Hesaplayıcı'}
-                        {view === 'internet-speed' && 'İnternet Hız & Süre'}
-                        {view === 'file-size-calc' && 'Dosya Boyutu Tahmin'}
-                        {view === 'iban-checker' && 'IBAN Kontrol'}
-                        {view === 'tckn-checker' && 'TC Kimlik Kontrol'}
-                        {view === 'css-units' && 'CSS Birim Çevirici'}
-                        {view === 'viewport-calc' && 'Viewport Calculator'}
+                    <h1 className="text-3xl font-black text-slate-900 dark:text-white uppercase tracking-tighter italic flex items-center gap-3">
+                        {view === 'date-calculator' && <><Clock className="text-blue-500" /> Tarih & Gün</>}
+                        {view === 'internet-speed' && <><Zap className="text-amber-500" /> İnternet Hız</>}
+                        {view === 'file-size-calc' && <><Box className="text-indigo-500" /> Dosya Boyutu</>}
+                        {view === 'iban-checker' && <><ShieldCheck className="text-emerald-500" /> IBAN Kontrol</>}
+                        {view === 'tckn-checker' && <><ShieldCheck className="text-rose-500" /> TC Kimlik</>}
+                        {view === 'css-units' && <><Type className="text-indigo-500" /> CSS Studio</>}
+                        {view === 'viewport-calc' && <><Maximize2 className="text-amber-500" /> Viewport Calc</>}
                     </h1>
+                    <p className="text-slate-500 dark:text-slate-400 text-xs font-bold tracking-wider uppercase opacity-70">
+                        {view === 'css-units' ? 'Pixel, REM, EM ve Tailwind Profesyonel Çevirici' : 'Akıllı Hesaplama ve Doğrulama Araçları'}
+                    </p>
                 </div>
             </div>
 
-            <div className="bg-white dark:bg-[#0b101b] border-2 border-slate-100 dark:border-white/5 rounded-[2.5rem] p-8 shadow-2xl shadow-slate-200/50 dark:shadow-none">
-                {view === 'date-calculator' && <DateCalc />}
-                {view === 'internet-speed' && <InternetCalc />}
-                {view === 'file-size-calc' && <FileSizeCalc />}
-                {view === 'iban-checker' && <IbanChecker />}
-                {view === 'tckn-checker' && <TcknChecker />}
-                {view === 'css-units' && <CssUnits />}
-                {view === 'viewport-calc' && <ViewportCalc />}
+            <div className="bg-white dark:bg-[#0b101b] border-2 border-slate-100 dark:border-white/5 rounded-[3rem] p-8 lg:p-12 shadow-2xl shadow-slate-200/50 dark:shadow-none relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/5 rounded-full blur-3xl -mr-32 -mt-32" />
+                <div className="relative z-10">
+                    {view === 'date-calculator' && <DateCalc />}
+                    {view === 'internet-speed' && <InternetCalc />}
+                    {view === 'file-size-calc' && <FileSizeCalc />}
+                    {view === 'iban-checker' && <IbanChecker />}
+                    {view === 'tckn-checker' && <TcknChecker />}
+                    {view === 'css-units' && <CssUnits />}
+                    {view === 'viewport-calc' && <ViewportCalc />}
+                </div>
             </div>
 
             <CalculatorGuide view={view} />
@@ -85,8 +93,6 @@ const InternetCalc = () => {
     const [unit, setUnit] = useState<'MB' | 'GB'>('MB');
     const [speed, setSpeed] = useState(16); // Mbps
     const [mode, setMode] = useState<'download' | 'upload'>('download');
-
-    // Quality Metrics
     const [ping, setPing] = useState(20);
     const [jitter, setJitter] = useState(2);
 
@@ -94,11 +100,9 @@ const InternetCalc = () => {
         const sizeInMB = unit === 'GB' ? size * 1024 : size;
         const speedMBps = speed / 8;
         const totalSeconds = sizeInMB / speedMBps;
-
         const hours = Math.floor(totalSeconds / 3600);
         const mins = Math.floor((totalSeconds % 3600) / 60);
         const secs = Math.floor(totalSeconds % 60);
-
         if (hours > 0) return `${hours} sa ${mins} dk ${secs} sn`;
         return `${mins} dk ${secs} sn`;
     };
@@ -118,7 +122,6 @@ const InternetCalc = () => {
                 <button onClick={() => setMode('download')} className={`px-6 py-2 rounded-lg text-sm font-bold transition-all ${mode === 'download' ? 'bg-white dark:bg-slate-700 text-blue-600 shadow-sm' : 'text-slate-500'}`}>İndirme (Download)</button>
                 <button onClick={() => setMode('upload')} className={`px-6 py-2 rounded-lg text-sm font-bold transition-all ${mode === 'upload' ? 'bg-white dark:bg-slate-700 text-blue-600 shadow-sm' : 'text-slate-500'}`}>Yükleme (Upload)</button>
             </div>
-
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-4">
                     <label htmlFor="fileSizeInput" className="block text-sm font-bold text-slate-500 uppercase tracking-wider">Dosya Boyutu</label>
@@ -135,13 +138,10 @@ const InternetCalc = () => {
                     <input id="speedInput" title="İnternet Hızı (Mbps)" placeholder="16" type="number" value={speed} onChange={e => setSpeed(Number(e.target.value))} className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-3 focus:outline-none focus:border-blue-500" />
                 </div>
             </div>
-
             <div className="p-8 bg-emerald-50 dark:bg-emerald-500/10 rounded-[2.5rem] border border-emerald-100 dark:border-emerald-500/20 text-center">
                 <p className="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest mb-2">Tahmini {mode === 'download' ? 'İndirme' : 'Yükleme'} Süresi</p>
                 <p className="text-5xl font-black text-emerald-700 dark:text-emerald-300">≈ {calculateTime()}</p>
             </div>
-
-            {/* Quality Analysis */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t border-slate-100 dark:border-white/5">
                 <div className="space-y-4">
                     <h4 className="text-sm font-black text-slate-700 dark:text-slate-300 flex items-center gap-2">
@@ -174,18 +174,14 @@ const FileSizeCalc = () => {
     const [type, setType] = useState('video-4k');
     const [duration, setDuration] = useState(10); // dk
     const [result, setResult] = useState('');
-
     useEffect(() => {
         let mbPerMin = 0;
         if (type === 'video-4k') mbPerMin = 350;
         if (type === 'video-1080p') mbPerMin = 130;
         if (type === 'audio-high') mbPerMin = 2;
-        if (type === 'photo-raw') mbPerMin = 25 * 6; // roughly 6 photos per min? no, let's just do per unit
-
         const total = mbPerMin * duration;
         setResult(total > 1024 ? `${(total / 1024).toFixed(2)} GB` : `${total} MB`);
     }, [type, duration]);
-
     return (
         <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -217,16 +213,8 @@ const IbanChecker = () => {
     return (
         <div className="space-y-4">
             <label htmlFor="ibanInput" className="block text-sm font-bold text-slate-500 mb-2">IBAN Numarası</label>
-            <input
-                id="ibanInput"
-                type="text"
-                value={iban}
-                onChange={e => setIban(e.target.value)}
-                placeholder="TR00 0000..."
-                className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-4 text-xl font-mono tracking-widest"
-                title="Kontrol etmek istediğiniz IBAN numarasını girin"
-            />
-            <div className={`p-4 rounded-xl flex items-center gap-3 ${isValid ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'}`}>
+            <input id="ibanInput" type="text" value={iban} onChange={e => setIban(e.target.value)} placeholder="TR00 0000..." className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-4 text-xl font-mono tracking-widest" title="IBAN girin" />
+            <div className={`p-4 rounded-xl flex items-center gap-3 ${isValid ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400' : 'bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-400'}`}>
                 <ShieldCheck size={20} />
                 <span className="font-bold text-sm uppercase">{isValid ? 'Format Geçerli' : 'Format Hatalı veya Eksik'}</span>
             </div>
@@ -238,296 +226,212 @@ const TcknChecker = () => {
     const [tckn, setTckn] = useState('');
     const [status, setStatus] = useState<{ isValid: boolean; message: string; steps?: any }>({ isValid: false, message: '11 hane girmelisiniz' });
     const [showAdvanced, setShowAdvanced] = useState(false);
-
     useEffect(() => {
         if (tckn.length === 11) {
             const digits = tckn.split('').map(Number);
             const steps: any = {};
-
-            // Rule 1: First digit cannot be 0
-            if (digits[0] === 0) {
-                setStatus({ isValid: false, message: 'İlk hane 0 olamaz' });
-                return;
-            }
-
-            // Rule 3: (Sum of 1,3,5,7,9 * 7 - Sum of 2,4,6,8) % 10 == 10th digit
+            if (digits[0] === 0) { setStatus({ isValid: false, message: 'İlk hane 0 olamaz' }); return; }
             const oddSum = digits[0] + digits[2] + digits[4] + digits[6] + digits[8];
             const evenSum = digits[1] + digits[3] + digits[5] + digits[7];
             let tenthDigit = ((oddSum * 7) - evenSum) % 10;
             if (tenthDigit < 0) tenthDigit += 10;
-
-            steps.oddSum = oddSum;
-            steps.evenSum = evenSum;
-            steps.calculatedTenth = tenthDigit;
-            steps.actualTenth = digits[9];
-
-            if (tenthDigit !== digits[9]) {
-                setStatus({ isValid: false, message: '10. hane uyumsuz (Algoritma Hatası)', steps });
-                return;
-            }
-
-            // Rule 4: Sum of first 10 digits % 10 == 11th digit
+            steps.oddSum = oddSum; steps.evenSum = evenSum; steps.calculatedTenth = tenthDigit; steps.actualTenth = digits[9];
+            if (tenthDigit !== digits[9]) { setStatus({ isValid: false, message: '10. hane uyumsuz', steps }); return; }
             const totalSum = digits.slice(0, 10).reduce((a, b) => a + b, 0);
             const calculatedEleventh = totalSum % 10;
-
-            steps.totalSum = totalSum;
-            steps.calculatedEleventh = calculatedEleventh;
-            steps.actualEleventh = digits[10];
-
-            if (calculatedEleventh !== digits[10]) {
-                setStatus({ isValid: false, message: '11. hane uyumsuz (Algoritma Hatası)', steps });
-                return;
-            }
-
+            steps.totalSum = totalSum; steps.calculatedEleventh = calculatedEleventh; steps.actualEleventh = digits[10];
+            if (calculatedEleventh !== digits[10]) { setStatus({ isValid: false, message: '11. hane uyumsuz', steps }); return; }
             setStatus({ isValid: true, message: 'TCKN Algoritması Geçerli', steps });
-        } else {
-            setStatus({ isValid: false, message: '11 hane girmelisiniz' });
-        }
+        } else { setStatus({ isValid: false, message: '11 hane girmelisiniz' }); }
     }, [tckn]);
-
     return (
         <div className="space-y-6 text-left">
             <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                    <label htmlFor="tcknInput" className="block text-sm font-bold text-slate-500">TC Kimlik Numarası</label>
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest bg-slate-100 dark:bg-white/5 px-2 py-1 rounded-md">
-                        Algoritma: Checksum v1.0
-                    </span>
-                </div>
-                <div className="relative">
-                    <input
-                        id="tcknInput"
-                        type="text"
-                        maxLength={11}
-                        value={tckn}
-                        onChange={e => setTckn(e.target.value.replace(/\D/g, ''))}
-                        className="w-full bg-slate-50 dark:bg-white/5 border-2 border-slate-200 dark:border-white/10 rounded-2xl p-5 text-4xl font-black text-center tracking-[0.8rem] focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500/50 outline-none transition-all shadow-inner"
-                        title="Kontrol etmek istediğiniz TC Kimlik numarasını girin"
-                        placeholder="00000000000"
-                    />
-                </div>
-                <div className={`p-5 rounded-2xl flex items-center justify-between transition-all ${status.isValid ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400 border border-emerald-200/50' : 'bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-400 border border-rose-200/50'}`}>
-                    <div className="flex items-center gap-3">
-                        <ShieldCheck size={24} />
-                        <span className="font-black text-sm uppercase tracking-tight">{status.message}</span>
-                    </div>
-                    {tckn.length === 11 && (
-                        <button
-                            onClick={() => setShowAdvanced(!showAdvanced)}
-                            className="text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 bg-white dark:bg-white/5 rounded-lg border border-current opacity-70 hover:opacity-100 transition-opacity"
-                        >
-                            {showAdvanced ? 'Özeti Göster' : 'Çözüm Adımları'}
-                        </button>
-                    )}
+                <input id="tcknInput" type="text" maxLength={11} value={tckn} onChange={e => setTckn(e.target.value.replace(/\D/g, ''))} className="w-full bg-slate-50 dark:bg-white/5 border-2 border-slate-200 dark:border-white/10 rounded-2xl p-5 text-4xl font-black text-center tracking-[0.8rem] outline-none" title="TCKN girin" placeholder="00000000000" />
+                <div className={`p-5 rounded-2xl flex items-center justify-between ${status.isValid ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400' : 'bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-400'}`}>
+                    <div className="flex items-center gap-3"><ShieldCheck size={24} /> <span className="font-black text-sm uppercase tracking-tight">{status.message}</span></div>
+                    {tckn.length === 11 && <button onClick={() => setShowAdvanced(!showAdvanced)} className="text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 bg-white dark:bg-white/5 rounded-lg border border-current">Detay</button>}
                 </div>
             </div>
-
             {showAdvanced && status.steps && (
                 <div className="p-6 bg-slate-50 dark:bg-white/5 rounded-3xl border border-slate-200 dark:border-white/10 space-y-4 animate-in fade-in zoom-in-95 duration-300">
-                    <h4 className="text-xs font-black uppercase text-slate-500 tracking-widest flex items-center gap-2">
-                        <Zap size={14} className="text-amber-500" /> Ayrıntılı Çözüm Aşamaları
-                    </h4>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="p-4 bg-white dark:bg-black/20 rounded-xl border border-slate-100 dark:border-white/5">
-                            <p className="text-[10px] font-bold text-slate-400 uppercase mb-2">Adım 1: 10. Hane Kontrolü</p>
-                            <div className="text-xs space-y-1 font-medium text-slate-600 dark:text-slate-300">
-                                <p>(Tekler Toplamı × 7 - Çiftler Toplamı) mod 10</p>
-                                <p className="font-mono text-blue-500 italic">({status.steps.oddSum} × 7 - {status.steps.evenSum}) % 10 = {status.steps.calculatedTenth}</p>
-                                <p className="flex items-center gap-2">
-                                    Sonuç: <span className={status.steps.calculatedTenth === status.steps.actualTenth ? 'text-emerald-500 font-bold' : 'text-rose-500 font-bold'}>{status.steps.calculatedTenth}</span>
-                                    (Girdi: {status.steps.actualTenth})
-                                </p>
-                            </div>
-                        </div>
-
-                        <div className="p-4 bg-white dark:bg-black/20 rounded-xl border border-slate-100 dark:border-white/5">
-                            <p className="text-[10px] font-bold text-slate-400 uppercase mb-2">Adım 2: 11. Hane Kontrolü</p>
-                            <div className="text-xs space-y-1 font-medium text-slate-600 dark:text-slate-300">
-                                <p>İlk 10 Hane Toplamı mod 10</p>
-                                <p className="font-mono text-blue-500 italic">{status.steps.totalSum} % 10 = {status.steps.calculatedEleventh}</p>
-                                <p className="flex items-center gap-2">
-                                    Sonuç: <span className={status.steps.calculatedEleventh === status.steps.actualEleventh ? 'text-emerald-500 font-bold' : 'text-rose-500 font-bold'}>{status.steps.calculatedEleventh}</span>
-                                    (Girdi: {status.steps.actualEleventh})
-                                </p>
-                            </div>
-                        </div>
+                    <p className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Algoritma Kontrolü</p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-medium">
+                        <div className="p-3 bg-white dark:bg-black/20 rounded-xl">10. Hane: ({status.steps.oddSum}*7 - {status.steps.evenSum})%10 = {status.steps.calculatedTenth}</div>
+                        <div className="p-3 bg-white dark:bg-black/20 rounded-xl">11. Hane: {status.steps.totalSum}%10 = {status.steps.calculatedEleventh}</div>
                     </div>
                 </div>
             )}
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="p-5 bg-blue-50/50 dark:bg-blue-500/5 rounded-2xl border border-blue-100 dark:border-blue-500/10">
-                    <div className="flex items-center gap-3 text-blue-600 dark:text-blue-400 mb-2">
-                        <Info size={16} />
-                        <h4 className="text-[10px] font-bold uppercase tracking-widest">Algoritma Hakkında</h4>
-                    </div>
-                    <p className="text-[11px] text-slate-600 dark:text-slate-400 leading-relaxed font-medium">
-                        TC Kimlik No algoritması; ilk 9 hane ile son 2 haneyi (kontrol basamaklarını) birbirine bağlar.
-                        <strong> Toplamda 900.000.000 (900 Milyon)</strong> farklı geçerli kombinasyon üretilebilir.
-                    </p>
-                </div>
-
-                <div className="p-5 bg-slate-50 dark:bg-white/5 rounded-2xl border border-slate-100 dark:border-white/10">
-                    <div className="flex items-center gap-3 text-slate-500 dark:text-slate-400 mb-2">
-                        <ShieldCheck size={16} />
-                        <h4 className="text-[10px] font-bold uppercase tracking-widest">Local-First Güvenlik</h4>
-                    </div>
-                    <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed font-medium">
-                        Bu kontrol <strong>%100 tarayıcıda</strong> yapılır. Girdiğiniz numara internete veya herhangi bir veritabanına asla gönderilmez.
-                    </p>
-                </div>
-            </div>
         </div>
     );
 };
 
+// --- CSS STUDIO (Master Units) ---
+
 const CssUnits = () => {
-    const [base, setBase] = useState(16);
+    // Bases
+    const [rootBase, setRootBase] = useState(16); // rem foundation
+    const [parentBase, setParentBase] = useState(16); // em foundation
+
+    // Values
     const [px, setPx] = useState<string>('16');
     const [rem, setRem] = useState<string>('1');
     const [em, setEm] = useState<string>('1');
     const [tw, setTw] = useState<string>('4');
-    const [lastSource, setLastSource] = useState<'px' | 'rem' | 'em' | 'tw'>('px');
+    const [pt, setPt] = useState<string>('12');
+
+    const [lastSource, setLastSource] = useState<'px' | 'rem' | 'em' | 'tw' | 'pt'>('px');
 
     const format = (num: number) => {
         if (isNaN(num)) return '';
         return parseFloat(num.toFixed(4)).toString();
     };
 
-    const updateAll = (val: number, source: 'px' | 'rem' | 'em' | 'tw', baseVal: number) => {
-        let pixels = 0;
-        if (source === 'px') pixels = val;
-        if (source === 'rem' || source === 'em') pixels = val * baseVal;
-        if (source === 'tw') pixels = val * (baseVal / 4);
+    // 1 pt = 1.333 px (usually on 96dpi)
+    const PT_FACTOR = 1.3333;
 
+    const updateAll = (val: number, source: 'px' | 'rem' | 'em' | 'tw' | 'pt', rB: number, pB: number) => {
+        let pixels = 0;
+
+        // Step 1: Normalize everything to pixels
+        if (source === 'px') pixels = val;
+        if (source === 'rem') pixels = val * rB;
+        if (source === 'em') pixels = val * pB;
+        if (source === 'tw') pixels = val * (rB / 4);
+        if (source === 'pt') pixels = val * PT_FACTOR;
+
+        // Step 2: Update all states except the source
         if (source !== 'px') setPx(format(pixels));
-        if (source !== 'rem') setRem(format(pixels / baseVal));
-        if (source !== 'em') setEm(format(pixels / baseVal));
-        if (source !== 'tw') setTw(format(pixels / (baseVal / 4)));
+        if (source !== 'rem') setRem(format(pixels / rB));
+        if (source !== 'em') setEm(format(pixels / pB));
+        if (source !== 'tw') setTw(format(pixels / (rB / 4)));
+        if (source !== 'pt') setPt(format(pixels / PT_FACTOR));
 
         setLastSource(source);
     };
 
-    const handleBaseChange = (newBase: number) => {
-        setBase(newBase);
-        if (lastSource === 'px') updateAll(Number(px), 'px', newBase);
-        else if (lastSource === 'rem') updateAll(Number(rem), 'rem', newBase);
-        else if (lastSource === 'em') updateAll(Number(em), 'em', newBase);
-        else if (lastSource === 'tw') updateAll(Number(tw), 'tw', newBase);
+    const handleRootBaseChange = (newBase: number) => {
+        const b = Math.max(1, newBase);
+        setRootBase(b);
+        // Anchor calculation to the last source or px
+        const currentPx = lastSource === 'px' ? Number(px) :
+            lastSource === 'rem' ? Number(rem) * rootBase :
+                lastSource === 'em' ? Number(em) * parentBase :
+                    lastSource === 'pt' ? Number(pt) * PT_FACTOR :
+                        Number(tw) * (rootBase / 4);
+        updateAll(currentPx, 'px', b, parentBase);
+    };
+
+    const handleParentBaseChange = (newBase: number) => {
+        const b = Math.max(1, newBase);
+        setParentBase(b);
+        const currentPx = lastSource === 'px' ? Number(px) :
+            lastSource === 'rem' ? Number(rem) * rootBase :
+                lastSource === 'em' ? Number(em) * parentBase :
+                    lastSource === 'pt' ? Number(pt) * PT_FACTOR :
+                        Number(tw) * (rootBase / 4);
+        updateAll(currentPx, 'px', rootBase, b);
     };
 
     return (
-        <div className="space-y-8">
-            <div className="flex items-center gap-4 p-4 bg-slate-50 dark:bg-white/5 rounded-2xl border border-slate-100 dark:border-white/10">
-                <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg text-blue-600 dark:text-blue-400">
-                    <Info size={16} />
+        <div className="space-y-10">
+            {/* Base Settings */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="group flex items-center gap-4 p-4 bg-indigo-50 dark:bg-indigo-500/5 rounded-3xl border border-indigo-100 dark:border-indigo-500/10 transition-all hover:border-indigo-500/30">
+                    <div className="p-3 bg-white dark:bg-black/20 rounded-2xl text-indigo-500 shadow-sm"><Info size={20} /></div>
+                    <div className="flex-1 text-left">
+                        <label htmlFor="rootBase" className="text-[10px] font-black uppercase text-indigo-400 tracking-widest block mb-0.5">Root Font Size (REM)</label>
+                        <div className="flex items-center gap-2">
+                            <input id="rootBase" type="number" value={rootBase} onChange={e => handleRootBaseChange(Number(e.target.value))} className="bg-transparent font-black text-2xl text-slate-800 dark:text-white focus:outline-none w-20" title="Root Base" />
+                            <span className="text-sm font-bold text-slate-400">px</span>
+                        </div>
+                    </div>
                 </div>
-                <div className="flex-1 text-left">
-                    <label htmlFor="baseFontSize" className="text-[10px] font-black uppercase text-slate-500 tracking-wider">Base Font Size (Root)</label>
-                    <div className="flex items-center gap-2">
-                        <input
-                            id="baseFontSize"
-                            type="number"
-                            value={base}
-                            onChange={e => handleBaseChange(Number(e.target.value))}
-                            className="bg-transparent font-black text-slate-800 dark:text-white focus:outline-none w-16"
-                            title="Base Font Size ayarı"
-                        />
-                        <span className="text-xs font-bold text-slate-400">px</span>
+
+                <div className="group flex items-center gap-4 p-4 bg-sky-50 dark:bg-sky-500/5 rounded-3xl border border-sky-100 dark:border-sky-500/10 transition-all hover:border-sky-500/30">
+                    <div className="p-3 bg-white dark:bg-black/20 rounded-2xl text-sky-500 shadow-sm"><Layers size={20} /></div>
+                    <div className="flex-1 text-left">
+                        <label htmlFor="parentBase" className="text-[10px] font-black uppercase text-sky-400 tracking-widest block mb-0.5">Parent Font Size (EM)</label>
+                        <div className="flex items-center gap-2">
+                            <input id="parentBase" type="number" value={parentBase} onChange={e => handleParentBaseChange(Number(e.target.value))} className="bg-transparent font-black text-2xl text-slate-800 dark:text-white focus:outline-none w-20" title="Parent Base" />
+                            <span className="text-sm font-bold text-slate-400">px</span>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <UnitInput
-                    id="px-input"
-                    label="Piksel (px)"
-                    value={px}
-                    onChange={(v: string) => { setPx(v); updateAll(Number(v), 'px', base); }}
-                    icon={<span className="text-[10px] font-bold">PX</span>}
-                    color="blue"
-                />
-                <UnitInput
-                    id="rem-input"
-                    label="REM (root em)"
-                    value={rem}
-                    onChange={(v: string) => { setRem(v); updateAll(Number(v), 'rem', base); }}
-                    icon={<span className="text-[10px] font-bold">REM</span>}
-                    color="purple"
-                />
-                <UnitInput
-                    id="em-input"
-                    label="EM (parent em)"
-                    value={em}
-                    onChange={(v: string) => { setEm(v); updateAll(Number(v), 'em', base); }}
-                    icon={<span className="text-[10px] font-bold">EM</span>}
-                    color="indigo"
-                />
-                <UnitInput
-                    id="tw-input"
-                    label="Tailwind Spacing"
-                    value={tw}
-                    onChange={(v: string) => { setTw(v); updateAll(Number(v), 'tw', base); }}
-                    prefix="w-"
-                    desc={`örnek: w-${tw} = ${px}px`}
-                    icon={<span className="text-[10px] font-bold">TW</span>}
-                    color="sky"
-                />
+            {/* Main Converter Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <UnitBox label="Pixels" value={px} unit="px" color="indigo" icon={<Move size={18} />} onChange={v => { setPx(v); updateAll(Number(v), 'px', rootBase, parentBase); }} />
+                <UnitBox label="Root EM" value={rem} unit="rem" color="purple" icon={<Type size={18} />} onChange={v => { setRem(v); updateAll(Number(v), 'rem', rootBase, parentBase); }} />
+                <UnitBox label="Element EM" value={em} unit="em" color="sky" icon={<Box size={18} />} onChange={v => { setEm(v); updateAll(Number(v), 'em', rootBase, parentBase); }} />
+                <UnitBox label="Tailwind" value={tw} unit="tw" color="cyan" icon={<Terminal size={18} />} prefix="w-" onChange={v => { setTw(v); updateAll(Number(v), 'tw', rootBase, parentBase); }} />
+                <UnitBox label="Points" value={pt} unit="pt" color="amber" icon={<Ruler size={18} />} onChange={v => { setPt(v); updateAll(Number(v), 'pt', rootBase, parentBase); }} />
+
+                {/* Visual Preview */}
+                <div className="p-6 bg-slate-50 dark:bg-white/5 rounded-[2.5rem] border border-slate-200 dark:border-white/10 flex flex-col items-center justify-center space-y-3 min-h-[160px]">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Görsel Önizleme</p>
+                    <div className="flex-1 flex items-center justify-center w-full">
+                        <div
+                            style={{ width: `${Math.min(200, Number(px))}px`, height: `${Math.min(100, Number(px))}px` }}
+                            className="bg-indigo-500/20 border-2 border-indigo-500 rounded-xl transition-all duration-300 flex items-center justify-center text-[10px] font-bold text-indigo-500"
+                        >
+                            {Math.round(Number(px))}px
+                        </div>
+                    </div>
+                    <p className="text-[9px] font-bold text-slate-400 italic">Boyut: {px}px x {px}px</p>
+                </div>
             </div>
 
-            <div className="p-4 bg-slate-50 dark:bg-white/5 rounded-2xl border border-dashed border-slate-200 dark:border-white/10">
-                <p className="text-[11px] text-center text-slate-500 font-medium">
-                    <b>Çift Yönlü Kontrol:</b> Herhangi bir değeri değiştirdiğinizde diğerleri otomatik hesaplanır.
-                    Root font size değiştiğinde son düzenlediğiniz birim baz alınır.
-                </p>
+            {/* Smart Tips */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="p-6 bg-slate-50 dark:bg-white/5 rounded-[2.5rem] border-2 border-dashed border-slate-200 dark:border-white/10 text-left relative group">
+                    <Rocket className="absolute top-4 right-4 text-indigo-500/20 group-hover:scale-110 transition-transform" />
+                    <h4 className="text-xs font-black uppercase text-slate-800 dark:text-white mb-3">Masterclass: REM vs EM</h4>
+                    <ul className="space-y-2">
+                        <li className="text-[11px] font-medium text-slate-500 dark:text-slate-400 flex items-start gap-2">
+                            <span className="text-indigo-500 font-bold">•</span>
+                            <span><strong>REM:</strong> Root HTML font size\'ına bağlıdır. Responsive genel fontlar için en sağlıklısıdır.</span>
+                        </li>
+                        <li className="text-[11px] font-medium text-slate-500 dark:text-slate-400 flex items-start gap-2">
+                            <span className="text-sky-500 font-bold">•</span>
+                            <span><strong>EM:</strong> Bulunduğu elementin parent font size\'ına bağlıdır. Padding ve margin için lokal ölçekleme sağlar.</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div className="p-6 bg-slate-50 dark:bg-white/5 rounded-[2.5rem] border-2 border-dashed border-slate-200 dark:border-white/10 text-left relative group">
+                    <Code2 className="absolute top-4 right-4 text-emerald-500/20 group-hover:scale-110 transition-transform" />
+                    <h4 className="text-xs font-black uppercase text-slate-800 dark:text-white mb-3">Tailwind Notu</h4>
+                    <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400 leading-relaxed italic">
+                        "Tailwind spacing sistemi standart olarak <strong>1 birim = 4px</strong> (0.25rem) kuralına dayanır. CSS\'e dökerken <code>w-{tw}</code> yazdığınızda tarayıcı bunu <code>{px}px</code> olarak yorumlar."
+                    </p>
+                </div>
             </div>
         </div>
     );
 };
 
-interface UnitInputProps {
-    id: string;
-    label: string;
-    value: string;
-    onChange: (v: string) => void;
-    icon: React.ReactNode;
-    color: 'blue' | 'purple' | 'indigo' | 'sky';
-    prefix?: string;
-    desc?: string;
-}
-
-const UnitInput = ({ id, label, value, onChange, icon, color, prefix, desc }: UnitInputProps) => {
-    const colorClasses = {
-        blue: 'focus-within:border-blue-500/50 bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400',
-        purple: 'focus-within:border-purple-500/50 bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400',
-        indigo: 'focus-within:border-indigo-500/50 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400',
-        sky: 'focus-within:border-sky-500/50 bg-sky-50 dark:bg-sky-500/10 text-sky-600 dark:text-sky-400',
-    };
-
-    const activeClass = colorClasses[color] || colorClasses.blue;
-
+const UnitBox = ({ label, value, unit, color, icon, prefix, onChange }: {
+    label: string, value: string, unit: string, color: string, icon: React.ReactNode, prefix?: string, onChange: (v: string) => void
+}) => {
     return (
-        <div className="space-y-2">
-            <label htmlFor={id} className="block text-xs font-black text-slate-500 uppercase tracking-widest">{label}</label>
-            <div className={`flex items-center gap-3 p-4 bg-white dark:bg-white/5 border-2 rounded-2xl transition-all border-slate-100 dark:border-white/5 ${activeClass.split(' ')[0]}`}>
-                <div className={`p-2 rounded-lg ${activeClass.split(' ').slice(1).join(' ')}`}>
-                    {icon}
+        <div className="group space-y-2">
+            <label className="text-[10px] font-black uppercase text-slate-500 tracking-widest ml-2">{label}</label>
+            <div className={`flex flex-col p-6 rounded-[2rem] bg-white dark:bg-black/20 border-2 border-slate-100 dark:border-white/5 transition-all focus-within:border-${color}-500/50 shadow-sm hover:shadow-md h-full`}>
+                <div className="flex items-center justify-between mb-4">
+                    <div className={`p-2.5 rounded-xl bg-${color}-500/10 text-${color}-500`}>{icon}</div>
+                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-tighter">{unit}</span>
                 </div>
-                <div className="flex-1 flex flex-col">
-                    <div className="flex items-center">
-                        {prefix && <span className="text-lg font-black text-slate-400">{prefix}</span>}
-                        <input
-                            id={id}
-                            type="number"
-                            value={value}
-                            onChange={e => onChange(e.target.value)}
-                            className="w-full bg-transparent text-lg font-black text-slate-800 dark:text-white focus:outline-none"
-                            title={label}
-                            placeholder="0"
-                        />
-                    </div>
-                    {desc && <p className="text-[9px] font-bold text-slate-400 mt-0.5">{desc}</p>}
+                <div className="flex items-baseline gap-1">
+                    {prefix && <span className="text-2xl font-black text-slate-300 dark:text-slate-600">{prefix}</span>}
+                    <input
+                        type="number"
+                        value={value}
+                        onChange={e => onChange(e.target.value)}
+                        className="w-full bg-transparent text-3xl font-black text-slate-800 dark:text-white focus:outline-none"
+                        title={label}
+                    />
                 </div>
             </div>
         </div>
@@ -539,192 +443,77 @@ const ViewportCalc = () => {
     const [width, setWidth] = useState<string>('375');
     const [px, setPx] = useState<string>('18.8');
     const [lastSource, setLastSource] = useState<'vw' | 'px'>('vw');
-
-    const format = (num: number) => {
-        if (isNaN(num)) return '';
-        return parseFloat(num.toFixed(2)).toString();
-    };
-
+    const format = (num: number) => { if (isNaN(num)) return ''; return parseFloat(num.toFixed(2)).toString(); };
     const updateAll = (val: number, source: 'vw' | 'px', w: number) => {
-        if (source === 'vw') {
-            setPx(format((w * val) / 100));
-        } else {
-            setVw(format((val / w) * 100));
-        }
+        if (source === 'vw') setPx(format((w * val) / 100));
+        else setVw(format((val / w) * 100));
         setLastSource(source);
     };
-
     return (
         <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="text-left">
                     <label htmlFor="screenWidth" className="block text-sm font-bold text-slate-500 mb-2 uppercase tracking-wider">Ekran Genişliği (px)</label>
-                    <input
-                        id="screenWidth"
-                        type="number"
-                        value={width}
-                        onChange={e => {
-                            const w = Number(e.target.value);
-                            setWidth(e.target.value);
-                            if (lastSource === 'vw') updateAll(Number(vw), 'vw', w);
-                            else updateAll(Number(px), 'px', w);
-                        }}
-                        className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-3 focus:ring-2 focus:ring-blue-500/20 outline-none"
-                        title="Ekran genişliğini piksel cinsinden girin"
-                    />
+                    <input id="screenWidth" type="number" value={width} onChange={e => { const w = Number(e.target.value); setWidth(e.target.value); if (lastSource === 'vw') updateAll(Number(vw), 'vw', w); else updateAll(Number(px), 'px', w); }} className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-3" title="Ekran" />
                 </div>
                 <div className="text-left">
                     <label htmlFor="vwValue" className="block text-sm font-bold text-slate-500 mb-2 uppercase tracking-wider">VW Değeri (%)</label>
                     <div className="relative">
-                        <input
-                            id="vwValue"
-                            type="number"
-                            value={vw}
-                            onChange={e => {
-                                setVw(e.target.value);
-                                updateAll(Number(e.target.value), 'vw', Number(width));
-                            }}
-                            className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-3 pr-10 focus:ring-2 focus:ring-blue-500/20 outline-none"
-                            title="VW değerini girin"
-                        />
+                        <input id="vwValue" type="number" value={vw} onChange={e => { setVw(e.target.value); updateAll(Number(e.target.value), 'vw', Number(width)); }} className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-3" title="VW" />
                         <span className="absolute right-4 top-1/2 -translate-y-1/2 font-bold text-slate-400">%</span>
                     </div>
                 </div>
             </div>
-
             <div className="p-8 bg-amber-50 dark:bg-amber-500/10 rounded-[2.5rem] border border-amber-100 dark:border-amber-500/20 text-center relative overflow-hidden group">
-                <div className="relative z-10">
-                    <p className="text-xs font-bold text-amber-600 dark:text-amber-400 uppercase tracking-widest mb-2">Piksel Karşılığı</p>
-                    <div className="flex items-center justify-center gap-2">
-                        <input
-                            type="number"
-                            value={px}
-                            onChange={e => {
-                                setPx(e.target.value);
-                                updateAll(Number(e.target.value), 'px', Number(width));
-                            }}
-                            className="bg-transparent text-5xl font-black text-amber-700 dark:text-amber-300 w-48 text-center focus:outline-none"
-                            title="Piksel değerini girerek VW hesaplayın"
-                        />
-                        <span className="text-2xl font-black text-amber-600/50">px</span>
-                    </div>
-                </div>
-                <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
-                    <Smartphone size={80} />
+                <p className="text-xs font-bold text-amber-600 dark:text-amber-400 uppercase tracking-widest mb-2">Piksel Karşılığı</p>
+                <div className="flex items-center justify-center gap-2">
+                    <input type="number" value={px} onChange={e => { setPx(e.target.value); updateAll(Number(e.target.value), 'px', Number(width)); }} className="bg-transparent text-5xl font-black text-amber-700 dark:text-amber-300 w-48 text-center outline-none" title="Piksel" />
+                    <span className="text-2xl font-black text-amber-600/50">px</span>
                 </div>
             </div>
-
-            <p className="text-[10px] text-slate-400 font-medium text-center italic">
-                * Artık çift yönlü! Pikselleri değiştirerek VW yüzdesini bulabilir veya tersini yapabilirsiniz.
-            </p>
         </div>
     );
 };
 
 const CalculatorGuide = ({ view }: { view: SmartCalculatorProps['view'] }) => {
-    const guides: Record<SmartCalculatorProps['view'], { title: string; content: { q: string; a: string }[]; tip: string; tipIcon: React.ReactNode }> = {
-        'date-calculator': {
-            title: 'Tarih Rehberi',
-            content: [
-                { q: 'İki tarih arası nasıl hesaplanır?', a: 'Başlangıç ve bitiş tarihlerini seçtiğinizde, aralarındaki fark gün bazında otomatik olarak hesaplanır.' },
-                { q: 'Takvim formatı nedir?', a: 'Sistem yerel tarayıcı takviminizi kullanır. Yıllık izin, proje teslim süreleri gibi hesaplamalar için idealdir.' }
-            ],
-            tip: 'Tarih hesaplamaları proje planlama süreçlerinde kritik öneme sahiptir. İş günlerini hesaplarken resmi tatilleri manuel düşmeyi unutmayın.',
-            tipIcon: <Clock size={20} />
-        },
-        'internet-speed': {
-            title: 'İnternet & Hız Rehberi',
-            content: [
-                { q: '"Mbps" ve "MB/s" farkı nedir?', a: 'Mbps (Megabit) servis hız birimidir. MB/s (Megabyte) indirme hızıdır. 1 Byte = 8 Bit olduğu için, 80 Mbps hız ile saniyede 10 MB indirebilirsiniz.' },
-                { q: 'Jitter neden önemlidir?', a: 'Jitter, ping dalgalanmasıdır. Oyun ve video konferanslarda düşük (10ms altı) olması istenir.' }
-            ],
-            tip: 'Upload hızınız, video konferans kalitenizi ve dosya gönderme sürenizi doğrudan etkiler. Yayıncılar için yüksek upload kritiktir.',
-            tipIcon: <Zap size={20} />
-        },
-        'file-size-calc': {
-            title: 'Dosya Boyutu Rehberi',
-            content: [
-                { q: 'Video boyutları neden değişir?', a: 'Bitrate ve sıkıştırma algoritması boyutu belirler. 4K videolar standart HD videolara göre 5-10 kat daha fazla yer kaplar.' },
-                { q: 'Tahminler ne kadar doğru?', a: 'Bu değerler ortalama bitrate değerlerine dayanır. Kayıt kalitenize göre gerçek boyut %20-30 sapma gösterebilir.' }
-            ],
-            tip: 'Gmail/E-posta limiti genellikle 25MB\'tır. Daha büyük dosyaları göndermek için dosya sıkıştırıcı veya bulut depolama kullanmalısınız.',
-            tipIcon: <Layers size={20} />
-        },
-        'iban-checker': {
-            title: 'IBAN & Güvenlik',
-            content: [
-                { q: 'Verilerim güvende mi?', a: 'Evet! IBAN veya TCKN verileri asla sunucuya gitmez. Analiz %100 tarayıcınızda (offline) yapılır.' },
-                { q: 'IBAN yapısı nasıldır?', a: 'Türkiye için IBAN 26 hanelidir ve "TR" ile başlar. İlk hane ülke kodu, sonrakiler kontrol basamakları ve banka kodudur.' }
-            ],
-            tip: 'Para transferi yapmadan önce IBAN\'ın doğru kişiye ait olduğunu banka uygulamanızdan da teyit etmelisiniz.',
-            tipIcon: <ShieldCheck size={20} />
-        },
-        'tckn-checker': {
-            title: 'Kimlik Doğrulama Rehberi',
-            content: [
-                { q: 'Doğrulama algoritması nasıl çalışır?', a: 'TCKN, özel bir matematiksel algoritmaya dayanır. Son iki hane, ilk 9 haneden türetilen kontrol basamaklarıdır.' },
-                { q: 'Kişisel veri gizliliği?', a: 'Bu araç kişisel verinizi kaydetmez. Sadece girdiğiniz numaranın matematiksel kurala uyup uymadığını kontrol eder.' }
-            ],
-            tip: 'Bu araç Nüfus Müdürlüğü sistemine bağlı değildir, sadece matematiksel geçerlilik kontrolü (checksum) yapar.',
-            tipIcon: <Info size={20} />
-        },
+    const guides: any = {
         'css-units': {
-            title: 'Web Tasarım Rehberi',
+            title: 'CSS Studio & Birim Rehberi',
             content: [
-                { q: 'Neden REM kullanmalıyım?', a: 'Erişilebilirlik için! Kullanıcı tarayıcı fontunu büyüttüğünde, REM kullanan tüm tasarım ona göre ölçeklenir.' },
-                { q: 'Tailwind birimleri nedir?', a: 'Tailwind spacing sistemi varsayılan olarak 4px katlarına (1 birim = 0.25rem = 4px) dayanır.' }
+                { q: 'REM ve EM arasındaki fark nedir?', a: 'REM (Root EM) sadece ana font büyüklüğüne bağlıyken, EM bulunduğu kabın font büyüklüğüne göre ölçeklenir.' },
+                { q: 'Tailwind spacing nasıl çalışır?', a: 'Tailwind varsayılan olarak her 1 birim için 0.25rem (4px) kuralını kullanır. w-4 demek 16px demektir.' }
             ],
-            tip: 'Responsive tasarımlarda piksel (px) yerine REM veya EM birimlerini kullanmak kodunuzu daha modern ve esnek kılar.',
-            tipIcon: <Layers size={20} />
+            tip: 'Responsive projelerde REM kullanmak, kullanıcı tarayıcı fontunu büyüttüğünde tasarımın düzgün ölçeklenmesini sağlar.',
+            tipIcon: <Type size={20} />
         },
         'viewport-calc': {
             title: 'Viewport Rehberi',
             content: [
-                { q: 'VW birimi nedir?', a: 'Viewport Width (Ekran Genişliği). 100vw ekranın tam genişliğine, 1vw ise ekranın %1\'ine eşittir.' },
-                { q: 'Mobil uyumda nasıl kullanılır?', a: 'Özellikle büyük başlıkların her ekranda aynı görünmesi için VW birimi tercih edilebilir.' }
+                { q: 'VW neden kullanılır?', a: 'Tipografinin veya bir görselin daima ekrana göre % oranında kalmasını sağlar.' },
+                { q: 'Pikselden VW\'ye geçiş?', a: 'Tasarımınız 375px iken bir butonu 37.5px yaptıysanız, VW karşılığı %10 olacaktır.' }
             ],
-            tip: 'Pek çok mobil cihaz 375px ile 414px arası genişliğe sahiptir. Tasarım yaparken bu değerleri baz alabilirsiniz.',
+            tip: 'Genellikle 100vw, scrollbar dahil genişliği kapsar. Tasarımlarda taşma olmamasına dikkat edin.',
             tipIcon: <Smartphone size={20} />
         }
     };
-
-    const guide = guides[view];
-
+    const guide = guides[view] || { title: 'Hesaplayıcı Rehberi', content: [], tip: '', tipIcon: <Info size={20} /> };
     return (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-12 pb-10 overflow-hidden">
-            <div className="p-8 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-white/5 rounded-[2.5rem] space-y-4 shadow-xl shadow-slate-200/50 dark:shadow-none">
-                <h3 className="text-lg font-black text-slate-800 dark:text-white flex items-center gap-2">
-                    <Info size={20} className="text-blue-600 dark:text-blue-400" /> {guide.title}
-                </h3>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-12 pb-10">
+            <div className="p-8 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-white/5 rounded-[2.5rem] space-y-4">
+                <h3 className="text-lg font-black text-slate-800 dark:text-white flex items-center gap-2"><Info size={20} className="text-blue-600 dark:text-blue-400" /> {guide.title}</h3>
                 <div className="space-y-4 text-left">
-                    {guide.content.map((item, i) => (
+                    {guide.content.map((item: any, i: number) => (
                         <details key={i} className="group border-b border-slate-200 dark:border-white/5 pb-4">
-                            <summary className="list-none font-bold text-slate-600 dark:text-slate-300 cursor-pointer flex justify-between items-center group-open:text-blue-600 dark:group-open:text-blue-400 transition-colors">
-                                {item.q}
-                                <span className="group-open:rotate-180 transition-transform text-slate-400 dark:text-slate-500">↓</span>
-                            </summary>
-                            <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">
-                                {item.a}
-                            </p>
+                            <summary className="list-none font-bold text-slate-600 dark:text-slate-300 cursor-pointer flex justify-between items-center group-open:text-blue-600 dark:group-open:text-blue-400">{item.q}<span>↓</span></summary>
+                            <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">{item.a}</p>
                         </details>
                     ))}
                 </div>
             </div>
-
-            <div className="p-8 bg-indigo-600 dark:bg-indigo-600 rounded-[2.5rem] text-white space-y-4 shadow-xl shadow-indigo-500/20 relative overflow-hidden group">
-                <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform">
-                    {guide.tipIcon}
-                </div>
-                <h3 className="text-lg font-black flex items-center gap-2 relative z-10">
-                    <Zap size={20} /> Uzman İpucu
-                </h3>
-                <p className="text-indigo-50 text-sm leading-relaxed relative z-10">
-                    {guide.tip}
-                </p>
-                <div className="pt-4 border-t border-white/10 flex items-center gap-3 relative z-10">
-                    <div className="p-2 bg-white/20 rounded-lg"><Info size={16} /></div>
-                    <p className="text-[11px] font-bold">Bu hesaplama tamamen tarayıcınızda ve gizli bir şekilde tamamlanır.</p>
-                </div>
+            <div className="p-8 bg-indigo-600 rounded-[2.5rem] text-white space-y-4 relative overflow-hidden group">
+                <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform">{guide.tipIcon}</div>
+                <h3 className="text-lg font-black flex items-center gap-2"><Zap size={20} /> Uzman İpucu</h3>
+                <p className="text-indigo-50 text-sm leading-relaxed">{guide.tip}</p>
             </div>
         </div>
     );
