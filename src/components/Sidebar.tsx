@@ -18,7 +18,9 @@ import {
     Scissors,
     Minimize2,
     Stamp,
-    Sparkles
+    Sparkles,
+    Camera,
+    Repeat
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 
@@ -32,7 +34,8 @@ export type ToolView =
     | 'json-csv' | 'text-cleaner' | 'case-converter-pro' | 'css-units' | 'date-calculator' | 'internet-speed'
     | 'iban-checker' | 'tckn-checker' | 'file-size-calc' | 'viewport-calc' | 'exif-viewer' | 'bulk-rename'
     | 'email-header-analyzer' | 'identifier-converter' | 'schema-generator' | 'metadata-generator' | 'document-toolkit' | 'check-toolkit'
-    | 'json-to-code' | 'text-diff' | 'exam-generator' | 'pdf-merge' | 'pdf-split' | 'pdf-compress' | 'pdf-watermark' | 'mermaid';
+    | 'json-to-code' | 'text-diff' | 'exam-generator' | 'pdf-merge' | 'pdf-split' | 'pdf-compress' | 'pdf-watermark' | 'mermaid'
+    | 'codesnap' | 'mock-generator' | 'sql-converter';
 
 interface SidebarProps {
     currentView: ToolView;
@@ -94,6 +97,9 @@ const NAV_ITEMS: NavItem[] = [
     { id: 'sql-formatter', title: 'SQL Formatlayıcı', icon: <Database size={18} />, category: 'dev' },
     { id: 'json-to-code', title: 'JSON ↔ Code Generator', icon: <FileCode size={18} />, category: 'dev', addedAt: '2026-02-23' },
     { id: 'mermaid', title: 'Mermaid Diyagram Pro', icon: <Sparkles size={18} />, category: 'dev', addedAt: '2026-02-23' },
+    { id: 'codesnap', title: 'CodeSnap Pro', icon: <Camera size={18} />, category: 'dev', addedAt: '2026-02-23' },
+    { id: 'mock-generator', title: 'Smart Mock Generator', icon: <Database size={18} />, category: 'dev', addedAt: '2026-02-23' },
+    { id: 'sql-converter', title: 'SQL Schema Converter', icon: <Repeat size={18} />, category: 'dev', addedAt: '2026-02-23' },
     { id: 'text-diff', title: 'Metin Karşılaştırıcı', icon: <Split size={18} />, category: 'dev', addedAt: '2026-02-23' },
     { id: 'identifier-converter', title: 'Akıllı İsim Çevirici', icon: <Type size={18} />, category: 'dev', addedAt: '2026-02-20' },
     { id: 'schema-generator', title: 'Şema & Form Üretici', icon: <Layers size={18} />, category: 'dev', addedAt: '2026-02-20' },

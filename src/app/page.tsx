@@ -61,6 +61,9 @@ const CheckToolkit = dynamic(() => import('@/components/CheckToolkit').then(mod 
 const JsonToCode = dynamic(() => import('@/components/JsonToCode').then(mod => mod.JsonToCode), { ssr: false });
 const TextDiff = dynamic(() => import('@/components/TextDiff').then(mod => mod.TextDiff), { ssr: false });
 const MermaidEditor = dynamic(() => import('@/components/MermaidEditor').then(mod => mod.MermaidEditor), { ssr: false });
+const CodeSnap = dynamic(() => import('@/components/CodeSnap').then(mod => mod.CodeSnap), { ssr: false });
+const SmartMockGenerator = dynamic(() => import('@/components/SmartMockGenerator').then(mod => mod.SmartMockGenerator), { ssr: false });
+const SqlConverter = dynamic(() => import('@/components/SqlConverter').then(mod => mod.SqlConverter), { ssr: false });
 
 export default function Home() {
     const [file, setFile] = useState<File | null>(null);
@@ -256,6 +259,9 @@ export default function Home() {
                             {view === 'check-toolkit' && <CheckToolkit onBack={() => setView('home')} />}
                             {view === 'json-to-code' && <JsonToCode onBack={() => setView('home')} />}
                             {view === 'mermaid' && <MermaidEditor onBack={() => setView('home')} />}
+                            {view === 'codesnap' && <CodeSnap onBack={() => setView('home')} />}
+                            {view === 'mock-generator' && <SmartMockGenerator onBack={() => setView('home')} />}
+                            {view === 'sql-converter' && <SqlConverter onBack={() => setView('home')} />}
                             {view === 'text-diff' && <TextDiff onBack={() => setView('home')} />}
                             {view === 'convert' && <FileConverter file={file} onBack={() => setView('home')} />}
                         </div>
