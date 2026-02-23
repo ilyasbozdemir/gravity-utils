@@ -7,123 +7,256 @@ const STATUS_CODES = [
     // 1xx: Informational
     {
         code: 100, phrase: 'Continue', category: 'Informational',
-        desc: 'İstemci isteğe devam etmelidir.',
-        longDesc: 'Sunucu, isteğin ilk kısmını aldığını ve henüz geri çevrilmediğini belirtir. Büyük yüklemelerden önce "Expect: 100-continue" başlığı ile kullanılır.',
-        rootCause: 'Büyük boyutlu verilerin gönderilmesi öncesi yapılan ön kontrol.',
-        solution: 'İstemci, asıl veri gövdesini (body) göndermeye devam edebilir.'
+        desc: 'Devam Et.',
+        longDesc: 'İsteğin ilk kısmının sunucuya ulaştığını ve sunucunun henüz reddetmediğini gösterir. Genellikle büyük veri yüklemeleri öncesi "Expect: 100-continue" başlığı ile kullanılır.',
+        rootCause: 'Büyük boyutlu verilerin gönderilmesi öncesi yapılan ön kontrol isteği.',
+        solution: 'İstemci, asıl isteğin gövdesini (body) göndermeye devam edebilir.'
     },
     {
         code: 101, phrase: 'Switching Protocols', category: 'Informational',
-        desc: 'Protokol değişikliği (Örn: WebSocket).',
-        longDesc: 'Sunucu, istemcinin "Upgrade" başlığında belirttiği protokol değişikliğini kabul ettiğini bildirir.',
-        rootCause: 'HTTP\'den WebSocket\'e veya HTTP/2\'ye geçiş isteği.',
+        desc: 'Protokol Değişikliği.',
+        longDesc: 'Sunucunun, istemcinin "Upgrade" başlığında istediği protokol değişikliğini (örn: WebSocket) kabul ettiğini belirtir.',
+        rootCause: 'HTTP\'den WebSocket veya HTTP/2 gibi farklı bir protokole geçiş talebi.',
         solution: 'Bağlantı artık yeni protokol üzerinden devam edecektir.'
+    },
+    {
+        code: 102, phrase: 'Processing', category: 'Informational',
+        desc: 'İşleniyor.',
+        longDesc: 'Sunucunun isteği aldığını ancak işlemin henüz tamamlanmadığını belirtir (Genellikle WebDAV için).',
+        rootCause: 'Zaman alan sunucu tarafı operasyonları.',
+        solution: 'İstemci, işlem tamamlanana kadar yanıt beklemeye devam etmelidir.'
+    },
+    {
+        code: 103, phrase: 'Early Hints', category: 'Informational',
+        desc: 'Erken İpuçları.',
+        longDesc: 'Sunucunun asıl yanıttan önce bazı Link başlıklarını göndererek tarayıcının kaynak yüklemesini hızlandırmasını sağlar.',
+        rootCause: 'Performans optimizasyonu amacıyla yapılan erken sinyalleme.',
+        solution: 'Tarayıcı ana yanıtı beklerken belirtilen CSS/JS dosyalarını indirmeye başlayabilir.'
     },
 
     // 2xx: Success
     {
         code: 200, phrase: 'OK', category: 'Success',
-        desc: 'İstek başarıyla tamamlandı.',
-        longDesc: 'En yaygın başarı kodudur. Yanıtın içeriği kullanılan metoda bağlıdır (GET için kaynak, POST için işlem sonucu).',
-        rootCause: 'Standart başarılı işlem.',
-        solution: 'İşlem tamam, alınan veriler kullanılabilir.'
+        desc: 'Başarılı.',
+        longDesc: 'İstek sorunsuz tamamlandı. En yaygın başarı kodudur; GET için veri, POST için işlem sonucunu döner.',
+        rootCause: 'Hatasız, standart bir istemci-sunucu etkileşimi.',
+        solution: 'Gelen veriler doğrudan işlenebilir, işlem başarıyla noktalandı.'
     },
     {
         code: 201, phrase: 'Created', category: 'Success',
-        desc: 'Yeni bir kaynak oluşturuldu.',
-        longDesc: 'İstek başarılı oldu ve bir veya daha fazla yeni kaynak üretildi. Genellikle POST istekleri sonrası döner.',
-        rootCause: 'Yeni kayıt/dosya oluşturma başarısı.',
-        solution: 'Yeni kaynağa genellikle "Location" başlığındaki URL üzerinden erişilebilir.'
+        desc: 'Oluşturuldu.',
+        longDesc: 'İstek başarılı oldu ve sunucu tarafında yeni bir kaynak (data, dosya vb.) başarıyla üretildi.',
+        rootCause: 'Yeni kayıt ekleme, dosya yükleme veya kaynak oluşturma başarısı.',
+        solution: 'Yeni kaynağın adresine genellikle "Location" başlığından erişilebilir.'
+    },
+    {
+        code: 202, phrase: 'Accepted', category: 'Success',
+        desc: 'Kabul Edildi.',
+        longDesc: 'İstek işlenmek üzere kabul edildi ancak işlem henüz sonuçlanmadı. Asenkron işler için kullanılır.',
+        rootCause: 'Video convert, toplu mail gönderimi gibi arka plan görevleri.',
+        solution: 'İşlemin durumu sunucunun sağladığı takip ID\'si ile kontrol edilmelidir.'
     },
     {
         code: 204, phrase: 'No Content', category: 'Success',
-        desc: 'İçerik yok (Başarılı).',
-        longDesc: 'İstek başarılı ancak yanıtın gövdesi (body) boştur. Genellikle başarılı metin güncellemeleri veya silme (DELETE) işlemleri sonrası kullanılır.',
-        rootCause: 'Veri dönmeye gerek olmayan başarılı işlem.',
-        solution: 'Arayüzde sadece başarı bildirimi gösterilebilir, veri beklenmemelidir.'
+        desc: 'İçerik Yok.',
+        longDesc: 'İstek başarılı ancak yanıtın bir gövdesi (body) yok. Genellikle silme veya güncelleme sonrası döner.',
+        rootCause: 'Veri dönmeye gerek olmayan başarılı DELETE veya PUT işlemleri.',
+        solution: 'Body beklenmemeli, sadece işlemin başarılı olduğu kullanıcıya yansıtılmalıdır.'
+    },
+    {
+        code: 206, phrase: 'Partial Content', category: 'Success',
+        desc: 'Kısmi İçerik.',
+        longDesc: 'İstemcinin dosyanın sadece belirli bir aralığını ("Range" header) istediği ve sunucunun buna yanıt verdiği durumdur.',
+        rootCause: 'Büyük dosyaların parça parça indirilmesi veya video yayını.',
+        solution: 'Gelen veri parçası mevcut veri akışına eklenmeli/oynatılmalıdır.'
     },
 
     // 3xx: Redirection
     {
+        code: 300, phrase: 'Multiple Choices', category: 'Redirection',
+        desc: 'Çoklu Seçenek.',
+        longDesc: 'İstenen kaynak için birden fazla seçenek (dil, format vb.) olduğunu belirtir.',
+        rootCause: 'Tek URL altında farklı dosya formatları veya dil seçenekleri sunulması.',
+        solution: 'Kullanıcı veya tarayıcı sunulan seçeneklerden birini tercih edip yönlenmelidir.'
+    },
+    {
         code: 301, phrase: 'Moved Permanently', category: 'Redirection',
-        desc: 'Kalıcı olarak taşındı.',
-        longDesc: 'İstenen kaynak kalıcı olarak yeni bir URI\'ye taşınmıştır. Arama motorları ve istemciler bu yeni adresi hafızaya almalıdır.',
-        rootCause: 'URL yapısı değişikliği, domain taşıma.',
-        solution: 'Eski URL yerine yeni URL kullanılmalı (SEO için kritiktir).'
+        desc: 'Kalıcı Taşınma.',
+        longDesc: 'İstenen kaynak kalıcı olarak yeni bir URL\'ye taşınmıştır. SEO açısından en kritik yönlendirme budur.',
+        rootCause: 'Sayfa URL yapısının değişmesi veya tamamen başka bir domain\'e geçiş.',
+        solution: 'Eski URL yerine sistemdeki tüm linkler yeni URL ile güncellenmelidir.'
+    },
+    {
+        code: 302, phrase: 'Found / Redirect', category: 'Redirection',
+        desc: 'Geçici Yönlendirme.',
+        longDesc: 'Kaynak geçici olarak başka bir adrestedir. Gelecekte orijinal URL kullanılmaya devam edilmelidir.',
+        rootCause: 'Bakım çalışmaları veya geçici kampanya sayfaları.',
+        solution: 'Orijinal URL saklanmalı, bu seferlik yeni adresten veri alınmalıdır.'
     },
     {
         code: 304, phrase: 'Not Modified', category: 'Redirection',
-        desc: 'Değişiklik yok (Önbellek).',
-        longDesc: 'İstemciye, elindeki önbelleğe alınmış versiyonun hala güncel olduğu söylenir. Veri trafiği tasarrufu sağlar.',
-        rootCause: 'E-Tag veya Last-Modified kontrolü sonucu kaynağın aynı kalması.',
-        solution: 'Yerel önbellekteki (cache) veri kullanılmaya devam edilmelidir.'
+        desc: 'Değişiklik Yok.',
+        longDesc: 'İstemcinin elindeki cache verisi sunucudaki ile aynıdır. Veri trafiği yapmadan cache kullanılır.',
+        rootCause: 'ETag veya Last-Modified değerlerinin değişmemiş olması.',
+        solution: 'İstemci yerel cache\'indeki veriyi doğrudan kullanmaya devam etmelidir.'
+    },
+    {
+        code: 307, phrase: 'Temporary Redirect', category: 'Redirection',
+        desc: 'Geçici Yönlendirme (Metod Korumalı).',
+        longDesc: '302 gibidir ancak istemcinin HTTP metodunu (örn: POST ise yine POST kalarak) değiştirmesini şart koşar.',
+        rootCause: 'Metodun (POST/PUT) korunması gereken kritik yönlendirmeler.',
+        solution: 'İstek aynı metod ve verilerle otomatik olarak yeni URL\'ye yapılmalıdır.'
+    },
+    {
+        code: 308, phrase: 'Permanent Redirect', category: 'Redirection',
+        desc: 'Kalıcı Yönlendirme (Metod Korumalı).',
+        longDesc: '301 gibidir ancak metodun değişmesine (örn: POST\'un GET\'e dönüşmesine) izin vermez.',
+        rootCause: 'API endpoint değişikliklerinde metod koruması sağlamak.',
+        solution: 'Tüm gelecek istekler aynı metodla yeni adrese yönlendirilmelidir.'
     },
 
     // 4xx: Client Error
     {
         code: 400, phrase: 'Bad Request', category: 'Client Error',
-        desc: 'Geçersiz istek (Sözdizimi hatası).',
-        longDesc: 'Sunucu, gelen isteği yanlış format, hatalı JSON yapısı veya geçersiz parametreler nedeniyle anlayamadı.',
-        rootCause: 'Hatalı client-side kodu, eksik zorunlu alanlar, yanlış JSON formatı.',
-        solution: 'Gönderilen veri yapısı (Body, Params) API dökümanına göre kontrol edilmeli.'
+        desc: 'Hatalı İstek.',
+        longDesc: 'Sunucu, istemcinin gönderdiği veriyi/formatı anlayamadı. Muhtemelen sözdizimi hatalıdır.',
+        rootCause: 'Hatalı JSON, eksik parametre veya geçersiz karaktere sahip istek gövdesi.',
+        solution: 'Payload yapısı ve zorunlu alanlar API dokümantasyonuna göre düzeltilmeli.'
     },
     {
         code: 401, phrase: 'Unauthorized', category: 'Client Error',
-        desc: 'Kimlik doğrulama gerekiyor.',
-        longDesc: 'İstek için geçerli kimlik doğrulama bilgilerinin bulunmadığını veya yetersiz olduğunu belirtir.',
-        rootCause: 'Eksik Token (JWT), yanlış kullanıcı adı/şifre, süresi dolmuş oturum.',
-        solution: 'Kullanıcı giriş yapmalı veya Bearer Token başlığa eklenmeli.'
+        desc: 'Yetkisiz Erişim.',
+        longDesc: 'Oturum açılmamış veya kimlik doğrulama bilgileri geçersiz/eksik.',
+        rootCause: 'Bearer Token eksikliği, yanlış şifre veya süresi dolan JWT.',
+        solution: 'Kullanıcı login olmalı veya header kısmına geçerli "Authorization" eklemeli.'
     },
     {
         code: 403, phrase: 'Forbidden', category: 'Client Error',
-        desc: 'Erişim yasaklandı.',
-        longDesc: 'Kimlik doğrulanmış olabilir ancak kullanıcının bu işlemi yapmaya yetkisi yoktur (Örn: Admin paneline girmeye çalışan normal kullanıcı).',
-        rootCause: 'Yetersiz kullanıcı rolü, erişim izni (CORS) sorunları.',
-        solution: 'Kullanıcı yetkileri kontrol edilmeli veya erişim izinleri düzenlenmeli.'
+        desc: 'Erişim Yasak.',
+        longDesc: 'Kimlik doğrulansa dahi, bu işlemi yapma izni (yetki seviyesi) yok.',
+        rootCause: 'Rol kısıtlamaları (örn: Admin olmayan kullanıcı), IP bazlı engelleme.',
+        solution: 'Kullanıcının rolü/yetkileri kontrol edilmeli veya erişim izni talep edilmeli.'
     },
     {
         code: 404, phrase: 'Not Found', category: 'Client Error',
-        desc: 'Kaynak bulunamadı.',
-        longDesc: 'Sunucu istenen adreste bir içerik bulamadı. Hatalı URL veya silinmiş içerik durumunda döner.',
-        rootCause: 'Yanlış URL yolu, silinmiş veritabanı kaydı, ID hatası.',
-        solution: 'Endpoint adresi ve ID parametreleri kontrol edilmeli.'
+        desc: 'Bulunamadı.',
+        longDesc: 'Sunucu istenen adreste herhangi bir kaynak eşleştiremedi.',
+        rootCause: 'Yazım hatası URL, silinmiş veri, yanlış route tanımı veya ID hatası.',
+        solution: 'URL yolu ve gönderilen ID parametreleri mutlaka doğrulanmalı.'
+    },
+    {
+        code: 405, phrase: 'Method Not Allowed', category: 'Client Error',
+        desc: 'Metoda İzin Yok.',
+        longDesc: 'Kaynak mevcut ancak bu metod (örn: GET bekleyen yere DELETE atmak) desteklenmiyor.',
+        rootCause: 'Yanlış HTTP metodu kullanımı.',
+        solution: 'Söz konusu endpoint için desteklenen metod (GET, POST vb.) kullanılmalı.'
+    },
+    {
+        code: 408, phrase: 'Request Timeout', category: 'Client Error',
+        desc: 'İstek Zaman Aşımı.',
+        longDesc: 'İstemci isteği tamamlamakta çok yavaş kaldı, sunucu bağlantıyı kesti.',
+        rootCause: 'Çok yavaş network, timeout sürelerinin kısalığı veya yarım kalan payload.',
+        solution: 'İnternet bağlantısı kontrol edilip istek daha hızlı tekrar gönderilmeli.'
+    },
+    {
+        code: 409, phrase: 'Conflict', category: 'Client Error',
+        desc: 'Çakışma.',
+        longDesc: 'İstek, sunucudaki mevcut kaynakla (aynı email, aynı dosya adı vb.) çakışıyor.',
+        rootCause: 'Veritabanı benzersizlik (unique) kısıtlamalarının ihlali.',
+        solution: 'Veriler uniklik kontrolünden geçirilmeli, çakışan alan değiştirilmelidir.'
+    },
+    {
+        code: 410, phrase: 'Gone', category: 'Client Error',
+        desc: 'Kalıcı Olarak Yok.',
+        longDesc: 'Kaynak artık bulunmuyor ve geri gelmeyeceği (silindiği) doğrulanmış durumda.',
+        rootCause: 'Kalıcı olarak kapatılan mağaza sayfaları veya silinen hesaplar.',
+        solution: 'Bu URL\'ye olan tüm referanslar sistemden temizlenmeli.'
+    },
+    {
+        code: 413, phrase: 'Payload Too Large', category: 'Client Error',
+        desc: 'İstek Gövdesi Çok Büyük.',
+        longDesc: 'Yüklenen verinin/dosyanın boyutu sunucu limitlerinin üzerinde.',
+        rootCause: 'Upload limitlerinin (Nginx client_max_body_size vb.) küçük olması.',
+        solution: 'Dosya küçültülmeli veya sunucu tarafındaki limitler artırılmalıdır.'
+    },
+    {
+        code: 415, phrase: 'Unsupported Media Type', category: 'Client Error',
+        desc: 'Desteklenmeyen Medya Tipi.',
+        longDesc: 'Gönderilen verinin "Content-Type" formatı sunucu tarafından tanınmıyor.',
+        rootCause: 'JSON beklenen yere XML göndermek veya yanlış dosya uzantısı.',
+        solution: 'Header\'daki Content-Type değeri ve veri formatı eşleştirilmelidir.'
+    },
+    {
+        code: 418, phrase: "I'm a teapot", category: 'Client Error',
+        desc: "Ben bir çaydanlığım.",
+        longDesc: 'HTCPCP protokolü uyarınca (1 Nisan şakası) bir çaydanlığın kahve demlemesi reddedilince döner.',
+        rootCause: 'Sistemin yapamayacağı saçma/şaka amaçlı bir istek yapılması.',
+        solution: 'Mizahın tadını çıkarın ve mantıklı bir istek gönderin.'
+    },
+    {
+        code: 422, phrase: 'Unprocessable Entity', category: 'Client Error',
+        desc: 'İşlenemeyen Varlık.',
+        longDesc: 'İstek sözdizimi doğru olsa da mantıksal hatalar/validasyon hataları içeriyor.',
+        rootCause: 'Yaş sınırı, boş bırakılamaz alan ihlali gibi iş kuralları (business logic).',
+        solution: 'Validasyon hataları kullanıcıya bildirilip veriler düzeltilmelidir.'
     },
     {
         code: 429, phrase: 'Too Many Requests', category: 'Client Error',
-        desc: 'Çok fazla istek (Rate Limit).',
-        longDesc: 'İstemci belirlenen zaman dilimi içinde çok fazla istek gönderdi. Bir güvenlik ve performans önlemidir.',
-        rootCause: 'Botlar, kontrolsüz döngüler, paylaşılan IP üzerinden aşırı kullanım.',
-        solution: 'İstekler arası süre artırılmalı veya Retry-After başlığındaki süre beklenmeli.'
+        desc: 'Çok Fazla İstek.',
+        longDesc: 'İstemci belirlenen sürede çok fazla istek yaptı (Hız sınırı aşıldı).',
+        rootCause: 'Rate Limit koruması, bot hareketleri veya kontrolsüz döngüler.',
+        solution: 'İstekler seyreltilmeli, "Retry-After" header süresi beklenmelidir.'
     },
 
     // 5xx: Server Error
     {
         code: 500, phrase: 'Internal Server Error', category: 'Server Error',
-        desc: 'Sunucu hatası.',
-        longDesc: 'Sunucu tarafında kodsal bir çökme veya beklenmedik bir durum oluştuğunu belirten genel hata kodudur.',
-        rootCause: 'Handle edilmemiş exception\'lar, veritabanı bağlantı hataları, config sorunları.',
-        solution: 'Sunucu logları (error logs) incelenmeli, try-catch blokları kontrol edilmeli.'
+        desc: 'Genel Sunucu Hatası.',
+        longDesc: 'Sunucu tarafında her şeyi bozan ancak tipi tanımlanamayan beklenmedik bir hata oluştu.',
+        rootCause: 'Backend kodundaki buglar, handle edilmemiş exception\'lar.',
+        solution: 'Acil Backend log analizi yapılmalı, hata takibi devreye alınmalı.'
+    },
+    {
+        code: 501, phrase: 'Not Implemented', category: 'Server Error',
+        desc: 'Uygulanmadı.',
+        longDesc: 'Sunucu bu isteği yerine getirmek için gereken fonksiyonaliteye sahip değil.',
+        rootCause: 'Henüz geliştirilmemiş bir API metoduna erişmeye çalışmak.',
+        solution: 'İlgili özellik sunucuya eklenmeli veya alternatif yol izlenmelidir.'
     },
     {
         code: 502, phrase: 'Bad Gateway', category: 'Server Error',
-        desc: 'Geçersiz yanıt (Proxy hatası).',
-        longDesc: 'Ağ geçidi (Proxy) görevi gören sunucu, arkasındaki asıl sunucudan geçersiz bir yanıt aldı.',
-        rootCause: 'Nginx/Apache\'nin arkasındaki uygulamanın (Node, Python vb.) kapalı olması.',
-        solution: 'Arkadaki asıl uygulama servisinin çalışıp çalışmadığı kontrol edilmeli.'
+        desc: 'Hatalı Geçit.',
+        longDesc: 'Proxy/Gateway sunucusu, arkasındaki asıl sunucudan geçersiz bir yanıt aldı.',
+        rootCause: 'Arkadaki app serverın (Node, Python vb.) kapalı olması.',
+        solution: 'Alt servislerin (App, DB) çalışıp çalışmadığı denetlenmelidir.'
     },
     {
         code: 503, phrase: 'Service Unavailable', category: 'Server Error',
-        desc: 'Hizmet kullanılamıyor.',
-        longDesc: 'Sunucu şu anda isteği işleyemiyor. Genellikle bakım çalışması veya aşırı yüklenme nedeniyle olur.',
-        rootCause: 'Sunucu bakımı, kapasite aşımı, servis çökmesi.',
-        solution: 'Bir süre bekleyip tekrar denenmeli, sunucu kapasitesi artırılmalı.'
+        desc: 'Hizmet Kullanılamıyor.',
+        longDesc: 'Sunucu şu an aşırı yük altında veya bakım aşamasında olduğu için cevap veremiyor.',
+        rootCause: 'Trafik piki, veritabanı göçü (migration) veya planlı bakım.',
+        solution: 'Bir süre sonra tekrar denenmeli, sunucu kaynakları (CPU/RAM) artırılmalı.'
     },
     {
         code: 504, phrase: 'Gateway Timeout', category: 'Server Error',
-        desc: 'Zaman aşımı (Proxy).',
-        longDesc: 'Ağ geçidi sunucusu, asıl sunucudan zamanında yanıt alamadı. Uzun süren işlemler nedeniyle olur.',
-        rootCause: 'Çok yavaş çalışan veritabanı sorguları, dış servislerin geç yanıt vermesi.',
-        solution: 'İşlem süreleri optimize edilmeli, proxy timeout süreleri artırılmalı.'
+        desc: 'Geçit Zaman Aşımı.',
+        longDesc: 'Proxy sunucusu asıl sunucudan zamanında yanıt alamadı.',
+        rootCause: 'Çok uzun süren DB sorguları veya dış API\'lere erişim sorunları.',
+        solution: 'İşlem süreleri optimize edilmeli, timeout limitleri gözden geçirilmelidir.'
+    },
+    {
+        code: 505, phrase: 'HTTP Version Not Supported', category: 'Server Error',
+        desc: 'HTTP Sürümü Desteklenmiyor.',
+        longDesc: 'Sunucu isteğin yapıldığı HTTP protokol versiyonunu (örn: 1.0) desteklemiyor.',
+        rootCause: 'Eski veya çok yeni protokol sürümlerinin uyumsuzluğu.',
+        solution: 'Sunucu güncellenmeli veya istemci uygun sürüme düşürülmelidir.'
+    },
+    {
+        code: 511, phrase: 'Network Authentication Required', category: 'Server Error',
+        desc: 'Ağ Yetkilendirmesi Gerekli.',
+        longDesc: 'İnternete/Ağa çıkmak için bir portal üzerinden giriş yapılması gerektiğini belirtir.',
+        rootCause: 'Havaalanı/Otel Wi-Fi giriş ekranları (Captive Portal).',
+        solution: 'Kullanıcı bir tarayıcı açıp oturum açma işlemini tamamlamalıdır.'
     },
 ];
 
