@@ -21,7 +21,8 @@ import {
     Sparkles,
     Camera,
     Repeat,
-    Terminal
+    Terminal,
+    Palette
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 
@@ -36,7 +37,7 @@ export type ToolView =
     | 'iban-checker' | 'tckn-checker' | 'file-size-calc' | 'viewport-calc' | 'exif-viewer' | 'bulk-rename'
     | 'email-header-analyzer' | 'identifier-converter' | 'schema-generator' | 'metadata-generator' | 'document-toolkit' | 'check-toolkit'
     | 'json-to-code' | 'text-diff' | 'exam-generator' | 'pdf-merge' | 'pdf-split' | 'pdf-compress' | 'pdf-watermark' | 'mermaid'
-    | 'codesnap' | 'mock-generator' | 'sql-converter' | 'terminal-mastery';
+    | 'codesnap' | 'mock-generator' | 'sql-converter' | 'terminal-mastery' | 'color-toolkit';
 
 interface SidebarProps {
     currentView: ToolView;
@@ -83,6 +84,7 @@ const NAV_ITEMS: NavItem[] = [
 
     // Media
     { id: 'optimize', title: 'Resim Sıkıştırıcı', icon: <ImageIcon size={18} />, category: 'media' },
+    { id: 'color-toolkit', title: 'Renk Araç Seti (Pro)', icon: <Palette size={18} />, category: 'media', addedAt: '2026-02-23' },
     { id: 'social', title: 'Sosyal Medya Boyut', icon: <Smartphone size={18} />, category: 'media' },
     { id: 'exif-viewer', title: 'EXIF Görüntüleyici', icon: <Search size={18} />, category: 'media', addedAt: '2026-02-20' },
     { id: 'bulk-rename', title: 'Toplu İsimlendir', icon: <Type size={18} />, category: 'media', addedAt: '2026-02-20' },
