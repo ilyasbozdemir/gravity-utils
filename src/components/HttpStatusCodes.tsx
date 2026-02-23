@@ -627,6 +627,17 @@ const STATUS_CODES = [
             "Modern web API'lerinde en çok kullanılan hata kodlarından biridir.",
     },
     {
+        code: 425,
+        phrase: "Too Early",
+        category: "Client Error",
+        desc: "Çok Erken.",
+        longDesc: "Sunucu, isteğin daha sonra tekrarlanabileceği (replay attack) endişesiyle işlemi reddediyor.",
+        rootCause: "TLS Early Data (0-RTT) kullanımı sırasında oluşan güvenlik riski.",
+        solution: "İsteği normal bir bağlantı (0-RTT olmayan) üzerinden tekrar deneyin.",
+        example: "Bir banka işleminin güvenli olmayan hızlı bağlantı üzerinden yapılmasına izin verilmemesi.",
+        proTip: "HTTP/3 ve TLS 1.3 ile gelen performans özelliklerini korurken güvenliği elden bırakmamak içindir.",
+    },
+    {
         code: 423,
         phrase: "Locked",
         category: "Client Error",
@@ -740,6 +751,17 @@ const STATUS_CODES = [
         example: "NULL gelen bir veriyi işlemeye çalışırken kodun çökmesi.",
         proTip:
             'En kötü hata budur çünkü kullanıcıya "ne olduğunu biz de bilmiyoruz" demektir.',
+    },
+    {
+        code: 501,
+        phrase: "Not Implemented",
+        category: "Server Error",
+        desc: "Uygulanmadı.",
+        longDesc: "Sunucu, isteği yerine getirmek için gereken işlevselliğe sahip değil.",
+        rootCause: "Sunucunun tanımadığı bir metod veya desteklenmeyen bir özellik talebi.",
+        solution: "Sadece GET veya HEAD gibi standart metodları kullanın veya sunucu özelliklerini güncelleyin.",
+        example: "Eski bir sunucuya modern bir PATCH veya TRACE isteği göndermek.",
+        proTip: "API'nizde planlanan ama henüz kodlanmamış endpointler için geçici olarak dönebilirsiniz.",
     },
     {
         code: 502,
@@ -1179,6 +1201,32 @@ export function HttpStatusCodes() {
                                 </p>
                             </div>
                         </div>
+                        <div className="flex gap-5 items-start p-8 bg-white dark:bg-white/[0.02] rounded-[2.5rem] border border-slate-100 dark:border-white/5 shadow-xl shadow-slate-200/20 dark:shadow-none group hover:border-rose-500/30 transition-all">
+                            <div className="p-4 bg-rose-500/10 rounded-2xl text-rose-500 group-hover:bg-rose-500 group-hover:text-white transition-all">
+                                <Search size={24} />
+                            </div>
+                            <div>
+                                <h5 className="font-black text-slate-800 dark:text-slate-100 mb-2 uppercase tracking-tight italic">
+                                    410 vs 404 (SEO)
+                                </h5>
+                                <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed font-bold italic">
+                                    "Googlebot 404 gördüğünde sayfayı hemen silmez, 'belki teknik hatadır' deyip döner. Ama 410 Gone görürse sayfayı direkt indeksten şutlar. Temizlik için 410 candır."
+                                </p>
+                            </div>
+                        </div>
+                        <div className="flex gap-5 items-start p-8 bg-white dark:bg-white/[0.02] rounded-[2.5rem] border border-slate-100 dark:border-white/5 shadow-xl shadow-slate-200/20 dark:shadow-none group hover:border-sky-500/30 transition-all">
+                            <div className="p-4 bg-sky-500/10 rounded-2xl text-sky-500 group-hover:bg-sky-500 group-hover:text-white transition-all">
+                                <Globe size={24} />
+                            </div>
+                            <div>
+                                <h5 className="font-black text-slate-800 dark:text-slate-100 mb-2 uppercase tracking-tight italic">
+                                    301 vs 302 (Link Juice)
+                                </h5>
+                                <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed font-bold italic">
+                                    "301 tüm SEO gücünü yeni sayfaya aktarır. 302 ise geçicidir ve SEO gücü eski sayfada kalır. Kalıcı taşınmalarda 302 kullanmak SEO intiharıdır."
+                                </p>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -1204,6 +1252,50 @@ export function HttpStatusCodes() {
                             İpucu: JSON yanıtlarda hata koduna ek olarak mutlaka
                             bir 'message' ve 'error_code' alanı ekleyin.
                         </p>
+                    </div>
+                </div>
+            </div>
+
+            {/* Debugging & Tools Section */}
+            <div className="mt-20 p-12 bg-slate-100 dark:bg-white/[0.02] rounded-[3.5rem] border-2 border-dashed border-slate-200 dark:border-white/10 relative">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
+                    <div>
+                        <h4 className="text-2xl font-black uppercase italic tracking-tighter mb-8 flex items-center gap-3 text-slate-800 dark:text-white">
+                            <Terminal className="text-indigo-500" /> Analiz Araçları
+                        </h4>
+                        <div className="space-y-6">
+                            {[
+                                { t: "Browser DevTools", d: "Ağ (Network) sekmesi, her isteğin durum kodunu, boyutunu ve zamanlamasını anlık gösterir." },
+                                { t: "Curl -I", d: "Terminalden 'curl -I https://site.com' yazarak sadece header bilgilerini ve status kodunu hızlıca alabilirsiniz." },
+                                { t: "WebSniffer", d: "Online araçlar ile Googlebot gibi davranıp farklı crawlerların sitenizi nasıl gördüğünü test edin." }
+                            ].map((tool, idx) => (
+                                <div key={idx} className="flex gap-4">
+                                    <div className="w-2 h-2 rounded-full bg-indigo-500 mt-2 shrink-0" />
+                                    <div>
+                                        <p className="font-black text-sm uppercase italic text-slate-700 dark:text-slate-200">{tool.t}</p>
+                                        <p className="text-xs font-medium text-slate-500 dark:text-slate-400">{tool.d}</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                    <div>
+                        <h4 className="text-2xl font-black uppercase italic tracking-tighter mb-8 flex items-center gap-3 text-slate-800 dark:text-white">
+                            <Rocket className="text-emerald-500" /> Metod Eşleşmeleri
+                        </h4>
+                        <div className="grid grid-cols-2 gap-4">
+                            {[
+                                { m: "GET", s: "200 OK / 404" },
+                                { m: "POST", s: "201 Created" },
+                                { m: "PUT", s: "200 / 204" },
+                                { m: "DELETE", s: "204 No Content" }
+                            ].map((met, idx) => (
+                                <div key={idx} className="p-4 bg-white dark:bg-black/20 rounded-2xl border border-black/5 dark:border-white/5">
+                                    <p className="text-xs font-black text-indigo-500 mb-1">{met.m}</p>
+                                    <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 italic">Genelde: {met.s}</p>
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 </div>
             </div>
