@@ -151,9 +151,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onViewChange, isO
                                 <span className="text-lg font-black tracking-tight text-slate-900 dark:text-white uppercase italic">Gravity</span>
                                 <span className="text-lg font-black tracking-tight text-blue-600 uppercase italic ml-1">Utils</span>
                             </div>
-                            <div className="text-[10px] font-bold text-slate-400 dark:text-slate-500 tracking-wider -mt-1 hover:text-blue-500 transition-colors">
+                            <a href="https://ilyasbozdemir.dev" target="_blank" rel="noopener noreferrer" className="text-[10px] font-bold text-slate-400 dark:text-slate-500 tracking-wider -mt-1 hover:text-blue-500 transition-colors">
                                 ilyasbozdemir.dev
-                            </div>
+                            </a>
                         </div>
                     </div>
                     <button
