@@ -24,6 +24,7 @@ export type OfficeToolMode = 'word-pdf' | 'pdf-word' | 'excel-pdf' | 'pdf-excel'
 
 interface OfficeToolsProps {
     mode: OfficeToolMode;
+    onBack: () => void;
 }
 
 interface FileState {
@@ -87,8 +88,8 @@ function ProgressBar({ value, color = 'bg-blue-500' }: { value: number; color?: 
 }
 
 // ─── Multi-Image → PDF Component ─────────────────────────────────────────────
-function ImageToPdfTool() {
-    const handleBack = () => { window.location.hash = ''; };
+function ImageToPdfTool({ onBack }: { onBack: () => void }) {
+    const handleBack = onBack;
     const [images, setImages] = useState<ImageItem[]>([]);
     const [dragOver, setDragOver] = useState(false);
     const [dragItemId, setDragItemId] = useState<string | null>(null);
@@ -454,9 +455,9 @@ function ImageToPdfTool() {
 }
 
 // ─── Standard Office Tool ────────────────────────────────────────────────────
-export const OfficeTools: React.FC<OfficeToolsProps> = ({ mode }) => {
-    const handleBack = () => { window.location.hash = ''; };
-    if (mode === 'imagetopdf') return <ImageToPdfTool />;
+export const OfficeTools: React.FC<OfficeToolsProps> = ({ mode, onBack }) => {
+    const handleBack = onBack;
+    if (mode === 'imagetopdf') return <ImageToPdfTool onBack={onBack} />;
 
     const config = TOOL_CONFIG[mode];
     const isMock = !config.real;

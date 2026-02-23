@@ -338,21 +338,49 @@ const TcknChecker = () => {
                                     <span className="w-6 h-6 rounded-full bg-slate-200 dark:bg-white/10 flex items-center justify-center text-[10px]">1</span>
                                     10. Hane Analizi
                                 </div>
-                                <div className="p-5 bg-white dark:bg-black/20 rounded-2xl border border-slate-100 dark:border-white/5 space-y-3">
-                                    <div className="flex justify-between text-[11px] font-bold">
-                                        <span className="text-slate-500">Tek Haneler Toplamı (1,3,5,7,9):</span>
-                                        <span className="text-rose-500">{status.steps.oddSum}</span>
+                                <div className="p-5 bg-white dark:bg-black/20 rounded-2xl border border-slate-100 dark:border-white/5 space-y-4">
+                                    <div className="space-y-2">
+                                        <div className="flex justify-between text-[11px] font-bold">
+                                            <span className="text-slate-500">Tek Haneler (1,3,5,7,9)</span>
+                                            <span className="text-rose-500 font-black">{status.steps.oddSum}</span>
+                                        </div>
+                                        <div className="flex gap-1">
+                                            {status.steps.oddDigits.map((d: number, i: number) => (
+                                                <div key={i} className="flex-1 h-6 rounded-md bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-[10px] font-black text-rose-600">
+                                                    {d}
+                                                </div>
+                                            ))}
+                                        </div>
                                     </div>
-                                    <div className="flex justify-between text-[11px] font-bold">
-                                        <span className="text-slate-500">Çift Haneler Toplamı (2,4,6,8):</span>
-                                        <span className="text-indigo-500">{status.steps.evenSum}</span>
+
+                                    <div className="space-y-2">
+                                        <div className="flex justify-between text-[11px] font-bold">
+                                            <span className="text-slate-500">Çift Haneler (2,4,6,8)</span>
+                                            <span className="text-indigo-500 font-black">{status.steps.evenSum}</span>
+                                        </div>
+                                        <div className="flex gap-1">
+                                            {status.steps.evenDigits.map((d: number, i: number) => (
+                                                <div key={i} className="flex-1 h-6 rounded-md bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-[10px] font-black text-indigo-600">
+                                                    {d}
+                                                </div>
+                                            ))}
+                                            <div className="flex-1 h-6 rounded-md bg-slate-100 dark:bg-white/5 border border-dashed border-slate-300 dark:border-white/10 flex items-center justify-center text-[8px] font-bold text-slate-400">
+                                                -
+                                            </div>
+                                        </div>
                                     </div>
+
                                     <div className="pt-3 border-t border-slate-100 dark:border-white/5">
-                                        <p className="text-[10px] font-mono text-slate-400 mb-1">Formül: ((Tek*7) - Çift) % 10</p>
-                                        <p className="text-xs font-black">
-                                            ({status.steps.oddSum} × 7) - {status.steps.evenSum} =
-                                            <span className={status.steps.calculatedTenth === status.steps.actualTenth ? 'text-emerald-500' : 'text-rose-500'}> {status.steps.calculatedTenth}</span>
-                                        </p>
+                                        <p className="text-[10px] font-mono text-slate-400 mb-1">Formül: ((Tek × 7) - Çift) % 10</p>
+                                        <div className="flex items-center gap-2">
+                                            <p className="text-xs font-black">
+                                                ({status.steps.oddSum} × 7) - {status.steps.evenSum} =
+                                                <span className={status.steps.calculatedTenth === status.steps.actualTenth ? 'text-emerald-500' : 'text-rose-500'}> {status.steps.calculatedTenth}</span>
+                                            </p>
+                                            {status.steps.calculatedTenth === status.steps.actualTenth && (
+                                                <span className="text-[10px] bg-emerald-500/10 text-emerald-500 px-2 py-0.5 rounded-full font-black animate-bounce">Match!</span>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -370,12 +398,54 @@ const TcknChecker = () => {
                                     </div>
                                     <div className="pt-3 border-t border-slate-100 dark:border-white/5">
                                         <p className="text-[10px] font-mono text-slate-400 mb-1">Formül: (Toplam) % 10</p>
-                                        <p className="text-xs font-black">
-                                            {status.steps.firstTenSum} % 10 =
-                                            <span className={status.steps.calculatedEleventh === status.steps.actualEleventh ? 'text-emerald-500' : 'text-rose-500'}> {status.steps.calculatedEleventh}</span>
-                                        </p>
+                                        <div className="flex items-center gap-2">
+                                            <p className="text-xs font-black">
+                                                {status.steps.firstTenSum} % 10 =
+                                                <span className={status.steps.calculatedEleventh === status.steps.actualEleventh ? 'text-emerald-500' : 'text-rose-500'}> {status.steps.calculatedEleventh}</span>
+                                            </p>
+                                            {status.steps.calculatedEleventh === status.steps.actualEleventh && (
+                                                <span className="text-[10px] bg-emerald-500/10 text-emerald-500 px-2 py-0.5 rounded-full font-black animate-bounce">Match!</span>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
+                            </div>
+                        </div>
+
+                        {/* Live Digit Map */}
+                        <div className="mt-8 space-y-4">
+                            <h5 className="text-[10px] font-black uppercase text-slate-400 tracking-widest flex items-center gap-2">
+                                <Layers size={14} /> Canlı Hane Haritası
+                            </h5>
+                            <div className="flex flex-nowrap gap-1 overflow-x-auto pb-4 no-scrollbar">
+                                {tckn.split('').map((digit, i) => {
+                                    const isOdd = (i + 1) % 2 !== 0 && i < 9;
+                                    const isEven = (i + 1) % 2 === 0 && i < 9;
+                                    const isTenth = i === 9;
+                                    const isEleventh = i === 10;
+
+                                    return (
+                                        <div key={i} className="flex-1 min-w-[32px] space-y-2 group">
+                                            <div className="text-center text-[9px] font-bold text-slate-400 group-hover:text-rose-500 transition-colors">
+                                                {i + 1}.
+                                            </div>
+                                            <div className={`aspect-square rounded-xl border-2 flex items-center justify-center text-xl font-black transition-all ${isOdd ? 'bg-rose-500/10 border-rose-500/30 text-rose-600 ring-4 ring-rose-500/5 shadow-[0_0_10px_rgba(244,63,94,0.1)]' :
+                                                    isEven ? 'bg-indigo-500/10 border-indigo-500/30 text-indigo-600 ring-4 ring-indigo-500/5 shadow-[0_0_10px_rgba(99,102,241,0.1)]' :
+                                                        isTenth ? 'bg-emerald-500 text-white border-emerald-600 shadow-lg shadow-emerald-500/20' :
+                                                            isEleventh ? 'bg-amber-500 text-white border-amber-600 shadow-lg shadow-amber-500/20' :
+                                                                'bg-white dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-400'
+                                                }`}>
+                                                {digit}
+                                            </div>
+                                            <div className="text-center h-4 flex flex-col items-center">
+                                                {isOdd && <span className="text-[8px] font-black text-rose-500/60 uppercase">TEK</span>}
+                                                {isEven && <span className="text-[8px] font-black text-indigo-500/60 uppercase">ÇİFT</span>}
+                                                {isTenth && <span className="text-[8px] font-black text-emerald-500 uppercase">10.</span>}
+                                                {isEleventh && <span className="text-[8px] font-black text-amber-500 uppercase">11.</span>}
+                                            </div>
+                                        </div>
+                                    );
+                                })}
                             </div>
                         </div>
 
