@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from 'react';
-import { ArrowLeft, Calculator, Ruler, Box, Map, Calendar, Clock, Globe, Navigation, Coins, Delete, X, WifiOff, Info, Zap } from 'lucide-react';
+import { ArrowLeft, Calculator, Ruler, Box, Map, Calendar, Clock, Globe, Navigation, Coins, Delete, X, WifiOff, Info, Zap, RefreshCw } from 'lucide-react';
 
 interface UnitConverterProps {
     file?: File | null;
@@ -126,91 +126,132 @@ const UnitTool = () => {
     };
 
     const [category, setCategory] = useState<UnitCategory>('area');
-    const [amount, setAmount] = useState<string>("1");
+    const [fromAmount, setFromAmount] = useState<string>("1");
+    const [toAmount, setToAmount] = useState<string>("1000");
     const [fromUnit, setFromUnit] = useState(UNITS.area[0]);
     const [toUnit, setToUnit] = useState(UNITS.area[1]);
+    const [lastSource, setLastSource] = useState<'from' | 'to'>('from');
 
-    const handleCategoryChange = (cat: UnitCategory) => {
-        setCategory(cat);
-        setFromUnit(UNITS[cat][0]);
-        setToUnit(UNITS[cat][1] || UNITS[cat][0]);
+    const format = (num: number) => {
+        if (isNaN(num)) return '';
+        return parseFloat(num.toFixed(6)).toString();
     };
 
-    const convert = () => {
-        const val = parseFloat(amount || "0");
-        const baseValue = val * fromUnit.factor;
-        const result = baseValue / toUnit.factor;
-        return result.toLocaleString('tr-TR', { maximumFractionDigits: 4 });
+    // Update units when category changes
+    useEffect(() => {
+        const f = UNITS[category][0];
+        const t = UNITS[category][1] || UNITS[category][0];
+        setFromUnit(f);
+        setToUnit(t);
+        // Reset amounts based on 1 unit of the first item
+        setFromAmount("1");
+        setToAmount(format(f.factor / t.factor));
+        setLastSource('from');
+    }, [category]);
+
+    const handleAmountChange = (val: string, source: 'from' | 'to') => {
+        const v = parseFloat(val || "0");
+        if (source === 'from') {
+            setFromAmount(val);
+            setToAmount(format((v * fromUnit.factor) / toUnit.factor));
+        } else {
+            setToAmount(val);
+            setFromAmount(format((v * toUnit.factor) / fromUnit.factor));
+        }
+        setLastSource(source);
+    };
+
+    const handleUnitChange = (unitName: string, type: 'from' | 'to') => {
+        const unit = UNITS[category].find(u => u.name === unitName)!;
+        if (type === 'from') {
+            setFromUnit(unit);
+            if (lastSource === 'to') {
+                setFromAmount(format((parseFloat(toAmount) * toUnit.factor) / unit.factor));
+            } else {
+                setToAmount(format((parseFloat(fromAmount) * unit.factor) / toUnit.factor));
+            }
+        } else {
+            setToUnit(unit);
+            if (lastSource === 'from') {
+                setToAmount(format((parseFloat(fromAmount) * fromUnit.factor) / unit.factor));
+            } else {
+                setFromAmount(format((parseFloat(toAmount) * unit.factor) / fromUnit.factor));
+            }
+        }
     };
 
     return (
         <div className="animate-[fadeIn_0.5s_ease]">
             <div className="flex justify-center gap-4 mb-8 flex-wrap">
                 <button
-                    onClick={() => handleCategoryChange('area')}
+                    onClick={() => setCategory('area')}
                     className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${category === 'area' ? 'bg-orange-500 text-white' : 'bg-white/5 hover:bg-white/10'}`}
                 >
                     <Map size={18} /> Alan
                 </button>
                 <button
-                    onClick={() => handleCategoryChange('length')}
+                    onClick={() => setCategory('length')}
                     className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${category === 'length' ? 'bg-orange-500 text-white' : 'bg-white/5 hover:bg-white/10'}`}
                 >
                     <Ruler size={18} /> Uzunluk
                 </button>
                 <button
-                    onClick={() => handleCategoryChange('volume')}
+                    onClick={() => setCategory('volume')}
                     className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${category === 'volume' ? 'bg-orange-500 text-white' : 'bg-white/5 hover:bg-white/10'}`}
                 >
                     <Box size={18} /> Hacim
                 </button>
             </div>
 
-            <div className="bg-white/5 p-8 rounded-2xl border border-white/10 flex flex-col gap-6">
-                <div>
-                    <NumpadInput
-                        label="Miktar"
-                        value={amount}
-                        onChange={setAmount}
-                    />
-                </div>
-
-                <div className="grid grid-cols-[1fr_auto_1fr] gap-4 items-end">
-                    <div>
-                        <label className="block text-xs text-slate-400 mb-2 uppercase font-bold">Buradan</label>
+            <div className="bg-white/5 p-8 rounded-2xl border border-white/10 flex flex-col gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] gap-6 items-center">
+                    <div className="space-y-4">
                         <select
                             title="Kaynak Birim"
                             value={fromUnit.name}
-                            onChange={(e) => setFromUnit(UNITS[category].find(u => u.name === e.target.value) || fromUnit)}
+                            onChange={(e) => handleUnitChange(e.target.value, 'from')}
                             className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-3 font-bold text-slate-700 dark:text-slate-200 transition-colors"
                         >
                             {UNITS[category].map(u => (
                                 <option key={u.name} value={u.name} className="bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200">{u.label}</option>
                             ))}
                         </select>
+                        <NumpadInput
+                            label="Miktar"
+                            value={fromAmount}
+                            onChange={(val) => handleAmountChange(val, 'from')}
+                        />
                     </div>
 
-                    <div className="pb-3 text-slate-50 self-center">=</div>
+                    <div className="hidden md:flex flex-col items-center gap-2 text-slate-400">
+                        <div className="h-10 w-[2px] bg-gradient-to-b from-transparent via-orange-500/50 to-transparent"></div>
+                        <RefreshCw size={20} className="animate-spin-slow" />
+                        <div className="h-10 w-[2px] bg-gradient-to-t from-transparent via-orange-500/50 to-transparent"></div>
+                    </div>
 
-                    <div>
-                        <label className="block text-xs text-slate-400 mb-2 uppercase font-bold">Buraya</label>
+                    <div className="space-y-4">
                         <select
                             title="Hedef Birim"
                             value={toUnit.name}
-                            onChange={(e) => setToUnit(UNITS[category].find(u => u.name === e.target.value) || toUnit)}
+                            onChange={(e) => handleUnitChange(e.target.value, 'to')}
                             className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-3 font-bold text-slate-700 dark:text-slate-200 transition-colors"
                         >
                             {UNITS[category].map(u => (
                                 <option key={u.name} value={u.name} className="bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200">{u.label}</option>
                             ))}
                         </select>
+                        <NumpadInput
+                            label="Sonuç"
+                            value={toAmount}
+                            onChange={(val) => handleAmountChange(val, 'to')}
+                        />
                     </div>
                 </div>
 
-                <div className="mt-4 pt-6 border-t border-white/10 text-center">
-                    <div className="text-4xl font-bold text-orange-400 font-mono tracking-tight">
-                        {convert()} <span className="text-lg text-slate-400 font-sans font-normal">{toUnit.name}</span>
-                    </div>
+                <div className="p-6 bg-orange-500/5 rounded-2xl border border-dashed border-orange-500/20 text-center">
+                    <p className="text-sm font-bold text-orange-400">
+                        * Artık çift yönlü! Her iki alanı da düzenleyebilir, birimleri istediğiniz gibi değiştirebilirsiniz.
+                    </p>
                 </div>
             </div>
         </div>
@@ -358,70 +399,87 @@ const MapTool = () => {
 
 /* 4. Finance Tool (KDV & Stopaj) */
 const FinanceTool = () => {
-    const [amount, setAmount] = useState<string>("1000");
+    const [net, setNet] = useState<string>("1000");
+    const [gross, setGross] = useState<string>("1200");
     const [rate, setRate] = useState(20);
 
-    const val = parseFloat(amount || "0");
-    // Calculate values
-    const kdvAmount = val * (rate / 100);
-    const total = val + kdvAmount;
+    const format = (num: number) => {
+        if (isNaN(num)) return '';
+        return parseFloat(num.toFixed(2)).toString();
+    };
 
-    // Reverse calculation
-    const baseFromTotal = val / (1 + (rate / 100));
-    const kdvFromTotal = val - baseFromTotal;
+    const updateFromNet = (val: string, r: number) => {
+        setNet(val);
+        const v = parseFloat(val || "0");
+        setGross(format(v * (1 + r / 100)));
+    };
+
+    const updateFromGross = (val: string, r: number) => {
+        setGross(val);
+        const v = parseFloat(val || "0");
+        setNet(format(v / (1 + r / 100)));
+    };
 
     return (
         <div className="animate-[fadeIn_0.5s_ease]">
             <div className="bg-white/5 p-8 rounded-2xl border border-white/10 flex flex-col gap-6">
-                <div className="grid grid-cols-2 gap-4">
-                    <div>
-                        <NumpadInput
-                            label="Tutar"
-                            value={amount}
-                            onChange={setAmount}
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-xs text-slate-400 mb-2 uppercase font-bold">Vergi Oranı (%)</label>
-                        <select title="Vergi Oranı" value={rate} onChange={(e) => setRate(Number(e.target.value))} className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-3 font-bold text-slate-700 dark:text-slate-200">
-                            <option value={1} className="bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200">%1 (KDV)</option>
-                            <option value={10} className="bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200">%10 (KDV)</option>
-                            <option value={20} className="bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200">%20 (KDV/Stopaj)</option>
-                        </select>
+                <div className="mb-4">
+                    <label className="block text-xs text-slate-400 mb-2 uppercase font-bold">Vergi Oranı (%)</label>
+                    <div className="grid grid-cols-3 gap-2">
+                        {[1, 10, 20].map(r => (
+                            <button
+                                key={r}
+                                onClick={() => {
+                                    setRate(r);
+                                    updateFromNet(net, r);
+                                }}
+                                className={`py-2 rounded-xl text-sm font-bold border transition-all ${rate === r ? 'bg-sky-500 border-sky-400 text-white' : 'bg-white/5 border-white/10 text-slate-400'}`}
+                            >
+                                %{r}
+                            </button>
+                        ))}
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-                    {/* Method 1: Forward */}
-                    <div className="bg-white/5 p-4 rounded-xl border border-white/5">
-                        <div className="text-xs text-sky-400 font-bold mb-2 uppercase">KDV Hariçten → Dahile</div>
-                        <div className="flex justify-between items-center mb-1">
-                            <span className="text-slate-400">KDV Tutarı:</span>
-                            <span className="font-mono">{kdvAmount.toLocaleString('tr-TR', { maximumFractionDigits: 2 })} ₺</span>
-                        </div>
-                        <div className="flex justify-between items-center text-lg font-bold text-sky-300 pt-2 border-t border-white/10">
-                            <span>Toplam:</span>
-                            <span>{total.toLocaleString('tr-TR', { maximumFractionDigits: 2 })} ₺</span>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div className="space-y-4">
+                        <NumpadInput
+                            label="Matrah (Net Tutar)"
+                            value={net}
+                            onChange={(val) => updateFromNet(val, rate)}
+                        />
+                        <div className="p-4 bg-sky-500/5 rounded-xl border border-sky-500/10">
+                            <div className="text-[10px] text-sky-400 font-bold uppercase mb-1">Hesaplanan KDV</div>
+                            <div className="text-xl font-mono text-sky-200">
+                                {format(parseFloat(gross) - parseFloat(net))} ₺
+                            </div>
                         </div>
                     </div>
 
-                    {/* Method 2: Reverse */}
-                    <div className="bg-white/5 p-4 rounded-xl border border-white/5">
-                        <div className="text-xs text-purple-400 font-bold mb-2 uppercase">KDV Dahilden → Harice</div>
-                        <div className="flex justify-between items-center mb-1">
-                            <span className="text-slate-400">Matrah (Ana Para):</span>
-                            <span className="font-mono">{baseFromTotal.toLocaleString('tr-TR', { maximumFractionDigits: 2 })} ₺</span>
-                        </div>
-                        <div className="flex justify-between items-center text-slate-400 pt-2 border-t border-white/10">
-                            <span>İçindeki KDV:</span>
-                            <span className="font-mono">{kdvFromTotal.toLocaleString('tr-TR', { maximumFractionDigits: 2 })} ₺</span>
+                    <div className="space-y-4">
+                        <NumpadInput
+                            label="Toplam (Brüt Tutar)"
+                            value={gross}
+                            onChange={(val) => updateFromGross(val, rate)}
+                        />
+                        <div className="p-4 bg-purple-500/5 rounded-xl border border-purple-500/10">
+                            <div className="text-[10px] text-purple-400 font-bold uppercase mb-1">İçindeki KDV</div>
+                            <div className="text-xl font-mono text-purple-200">
+                                {format(parseFloat(gross) - parseFloat(net))} ₺
+                            </div>
                         </div>
                     </div>
+                </div>
+
+                <div className="mt-4 p-4 bg-slate-500/5 rounded-2xl border border-dashed border-slate-500/20 text-center">
+                    <p className="text-xs text-slate-400 italic font-medium">
+                        * Artık çift yönlü! Matrahı veya Toplam tutarı değiştirerek anında hesaplama yapabilirsiniz.
+                    </p>
                 </div>
             </div>
         </div>
     );
-}
+};
 
 /* 5. Coordinates Tool */
 const CoordTool = () => {

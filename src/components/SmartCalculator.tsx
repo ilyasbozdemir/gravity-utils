@@ -388,18 +388,33 @@ const CssUnits = () => {
     const [rem, setRem] = useState<string>('1');
     const [em, setEm] = useState<string>('1');
     const [tw, setTw] = useState<string>('4');
+    const [lastSource, setLastSource] = useState<'px' | 'rem' | 'em' | 'tw'>('px');
+
+    const format = (num: number) => {
+        if (isNaN(num)) return '';
+        return parseFloat(num.toFixed(4)).toString();
+    };
 
     const updateAll = (val: number, source: 'px' | 'rem' | 'em' | 'tw', baseVal: number) => {
         let pixels = 0;
         if (source === 'px') pixels = val;
-        if (source === 'rem') pixels = val * baseVal;
-        if (source === 'em') pixels = val * baseVal;
-        if (source === 'tw') pixels = val * 4;
+        if (source === 'rem' || source === 'em') pixels = val * baseVal;
+        if (source === 'tw') pixels = val * (baseVal / 4);
 
-        if (source !== 'px') setPx(pixels.toString());
-        if (source !== 'rem') setRem((pixels / baseVal).toString());
-        if (source !== 'em') setEm((pixels / baseVal).toString());
-        if (source !== 'tw') setTw((pixels / 4).toString());
+        if (source !== 'px') setPx(format(pixels));
+        if (source !== 'rem') setRem(format(pixels / baseVal));
+        if (source !== 'em') setEm(format(pixels / baseVal));
+        if (source !== 'tw') setTw(format(pixels / (baseVal / 4)));
+
+        setLastSource(source);
+    };
+
+    const handleBaseChange = (newBase: number) => {
+        setBase(newBase);
+        if (lastSource === 'px') updateAll(Number(px), 'px', newBase);
+        else if (lastSource === 'rem') updateAll(Number(rem), 'rem', newBase);
+        else if (lastSource === 'em') updateAll(Number(em), 'em', newBase);
+        else if (lastSource === 'tw') updateAll(Number(tw), 'tw', newBase);
     };
 
     return (
@@ -408,18 +423,14 @@ const CssUnits = () => {
                 <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg text-blue-600 dark:text-blue-400">
                     <Info size={16} />
                 </div>
-                <div className="flex-1">
+                <div className="flex-1 text-left">
                     <label htmlFor="baseFontSize" className="text-[10px] font-black uppercase text-slate-500 tracking-wider">Base Font Size (Root)</label>
                     <div className="flex items-center gap-2">
                         <input
                             id="baseFontSize"
                             type="number"
                             value={base}
-                            onChange={e => {
-                                const b = Number(e.target.value);
-                                setBase(b);
-                                updateAll(Number(px), 'px', b);
-                            }}
+                            onChange={e => handleBaseChange(Number(e.target.value))}
                             className="bg-transparent font-black text-slate-800 dark:text-white focus:outline-none w-16"
                             title="Base Font Size ayarı"
                         />
@@ -467,8 +478,8 @@ const CssUnits = () => {
 
             <div className="p-4 bg-slate-50 dark:bg-white/5 rounded-2xl border border-dashed border-slate-200 dark:border-white/10">
                 <p className="text-[11px] text-center text-slate-500 font-medium">
-                    <b>İpucu:</b> Bir değeri değiştirdiğinizde diğerleri otomatik olarak hesaplanır.
-                    Tailwind birimleri varsayılan olarak <b>1 birim = 4px</b> hesabına dayanır.
+                    <b>Çift Yönlü Kontrol:</b> Herhangi bir değeri değiştirdiğinizde diğerleri otomatik hesaplanır.
+                    Root font size değiştiğinde son düzenlediğiniz birim baz alınır.
                 </p>
             </div>
         </div>
@@ -524,24 +535,88 @@ const UnitInput = ({ id, label, value, onChange, icon, color, prefix, desc }: Un
 };
 
 const ViewportCalc = () => {
-    const [vw, setVw] = useState(5);
-    const [width, setWidth] = useState(375);
+    const [vw, setVw] = useState<string>('5');
+    const [width, setWidth] = useState<string>('375');
+    const [px, setPx] = useState<string>('18.8');
+    const [lastSource, setLastSource] = useState<'vw' | 'px'>('vw');
+
+    const format = (num: number) => {
+        if (isNaN(num)) return '';
+        return parseFloat(num.toFixed(2)).toString();
+    };
+
+    const updateAll = (val: number, source: 'vw' | 'px', w: number) => {
+        if (source === 'vw') {
+            setPx(format((w * val) / 100));
+        } else {
+            setVw(format((val / w) * 100));
+        }
+        setLastSource(source);
+    };
+
     return (
         <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                    <label htmlFor="screenWidth" className="block text-sm font-bold text-slate-500 mb-2">Ekran Genişliği (px)</label>
-                    <input id="screenWidth" type="number" value={width} onChange={e => setWidth(Number(e.target.value))} className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-3" title="Ekran genişliğini piksel cinsinden girin" />
+                <div className="text-left">
+                    <label htmlFor="screenWidth" className="block text-sm font-bold text-slate-500 mb-2 uppercase tracking-wider">Ekran Genişliği (px)</label>
+                    <input
+                        id="screenWidth"
+                        type="number"
+                        value={width}
+                        onChange={e => {
+                            const w = Number(e.target.value);
+                            setWidth(e.target.value);
+                            if (lastSource === 'vw') updateAll(Number(vw), 'vw', w);
+                            else updateAll(Number(px), 'px', w);
+                        }}
+                        className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-3 focus:ring-2 focus:ring-blue-500/20 outline-none"
+                        title="Ekran genişliğini piksel cinsinden girin"
+                    />
                 </div>
-                <div>
-                    <label htmlFor="vwValue" className="block text-sm font-bold text-slate-500 mb-2">VW Değeri (%)</label>
-                    <input id="vwValue" type="number" value={vw} onChange={e => setVw(Number(e.target.value))} className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-3" title="Viewport genişliği (vw) değerini yüzde olarak girin" />
+                <div className="text-left">
+                    <label htmlFor="vwValue" className="block text-sm font-bold text-slate-500 mb-2 uppercase tracking-wider">VW Değeri (%)</label>
+                    <div className="relative">
+                        <input
+                            id="vwValue"
+                            type="number"
+                            value={vw}
+                            onChange={e => {
+                                setVw(e.target.value);
+                                updateAll(Number(e.target.value), 'vw', Number(width));
+                            }}
+                            className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-3 pr-10 focus:ring-2 focus:ring-blue-500/20 outline-none"
+                            title="VW değerini girin"
+                        />
+                        <span className="absolute right-4 top-1/2 -translate-y-1/2 font-bold text-slate-400">%</span>
+                    </div>
                 </div>
             </div>
-            <div className="p-6 bg-amber-50 dark:bg-amber-500/10 rounded-2xl border border-amber-100 dark:border-amber-500/20 text-center">
-                <p className="text-sm font-bold text-amber-600 dark:text-amber-400 uppercase tracking-widest mb-1">Karşılık Gelen Piksel</p>
-                <p className="text-4xl font-black text-amber-700 dark:text-amber-300">{(width * vw / 100).toFixed(1)} px</p>
+
+            <div className="p-8 bg-amber-50 dark:bg-amber-500/10 rounded-[2.5rem] border border-amber-100 dark:border-amber-500/20 text-center relative overflow-hidden group">
+                <div className="relative z-10">
+                    <p className="text-xs font-bold text-amber-600 dark:text-amber-400 uppercase tracking-widest mb-2">Piksel Karşılığı</p>
+                    <div className="flex items-center justify-center gap-2">
+                        <input
+                            type="number"
+                            value={px}
+                            onChange={e => {
+                                setPx(e.target.value);
+                                updateAll(Number(e.target.value), 'px', Number(width));
+                            }}
+                            className="bg-transparent text-5xl font-black text-amber-700 dark:text-amber-300 w-48 text-center focus:outline-none"
+                            title="Piksel değerini girerek VW hesaplayın"
+                        />
+                        <span className="text-2xl font-black text-amber-600/50">px</span>
+                    </div>
+                </div>
+                <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                    <Smartphone size={80} />
+                </div>
             </div>
+
+            <p className="text-[10px] text-slate-400 font-medium text-center italic">
+                * Artık çift yönlü! Pikselleri değiştirerek VW yüzdesini bulabilir veya tersini yapabilirsiniz.
+            </p>
         </div>
     );
 };
