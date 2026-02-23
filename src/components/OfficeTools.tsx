@@ -667,6 +667,41 @@ export const OfficeTools: React.FC<OfficeToolsProps> = ({ mode }) => {
                 resultName = item.file.name.replace(/\.[^/.]+$/, '') + '.docx';
             }
 
+            // ── PDF → Excel ──────────────────────────────────────────────
+            else if (mode === 'pdf-excel') {
+                setFiles(prev => prev.map((f, i) => i === index ? { ...f, progress: 20 } : f));
+                const arrayBuffer = await item.file.arrayBuffer();
+                const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+                const allRows: string[][] = [];
+
+                for (let i = 1; i <= pdf.numPages; i++) {
+                    const page = await pdf.getPage(i);
+                    const textContent = await page.getTextContent();
+                    const items = textContent.items as any[];
+
+                    const lines: Record<number, any[]> = {};
+                    items.forEach(it => {
+                        const y = Math.round(it.transform[5]);
+                        if (!lines[y]) lines[y] = [];
+                        lines[y].push(it);
+                    });
+
+                    Object.keys(lines).sort((a, b) => Number(b) - Number(a)).forEach(y => {
+                        const row = lines[Number(y)].sort((a, b) => a.transform[4] - b.transform[4]).map(it => it.str);
+                        allRows.push(row);
+                    });
+                    setFiles(prev => prev.map((f, idx) => idx === index ? { ...f, progress: 20 + Math.round((i / pdf.numPages) * 70) } : f));
+                }
+
+                const { utils, write } = await import('xlsx');
+                const ws = utils.aoa_to_sheet(allRows);
+                const wb = utils.book_new();
+                utils.book_append_sheet(wb, ws, "PDF Verileri");
+                const excelBuffer = write(wb, { bookType: 'xlsx', type: 'array' });
+                result = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+                resultName = item.file.name.replace(/\.[^/.]+$/, '') + '.xlsx';
+            }
+
             // ── Excel / PPT (mock) ────────────────────────────────────────
             else {
                 await new Promise(r => setTimeout(r, 1200));

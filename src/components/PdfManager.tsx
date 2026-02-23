@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { ArrowLeft, FileText, Scissors, Download, Layers, Minimize2, Stamp, RefreshCw, Plus, Trash2, ArrowUp, ArrowDown, LayoutGrid, GripVertical, Image as ImageIcon, Database, Info, Lock } from 'lucide-react';
+import { ArrowLeft, FileText, Scissors, Download, Layers, Minimize2, Stamp, RefreshCw, Plus, Trash2, ArrowUp, ArrowDown, LayoutGrid, GripVertical, Image as ImageIcon, Database, Info, Lock, Unlock } from 'lucide-react';
 import { PDFDocument, degrees, rgb, PDFImage, PageSizes } from 'pdf-lib';
 import * as pdfjsLib from 'pdfjs-dist';
 import fontkit from '@pdf-lib/fontkit';
@@ -19,7 +19,7 @@ interface PdfManagerProps {
     initialTab?: TabType;
 }
 
-type TabType = 'split' | 'merge' | 'compress' | 'watermark' | 'convert';
+type TabType = 'split' | 'merge' | 'compress' | 'watermark' | 'convert' | 'protect' | 'unlock';
 
 interface OrganizedPage {
     id: string;
@@ -60,6 +60,10 @@ export const PdfManager: React.FC<PdfManagerProps> = ({ file, onBack, initialTab
     // New Conversion States
     const [convertFormat, setConvertFormat] = useState<'word' | 'image' | 'excel' | 'ppt'>('word');
     const [convertProgress, setConvertProgress] = useState(0);
+
+    // Security States
+    const [pdfPassword, setPdfPassword] = useState('');
+    const [isPasswordProtected, setIsPasswordProtected] = useState(false);
 
     const mergeInputRef = useRef<HTMLInputElement>(null);
     const renderContainerRef = useRef<HTMLDivElement>(null);
@@ -467,8 +471,39 @@ export const PdfManager: React.FC<PdfManagerProps> = ({ file, onBack, initialTab
                 });
                 const blob = await Packer.toBlob(wordDoc);
                 saveAs(blob, `${mainFile.name.replace('.pdf', '')}.docx`);
+            } else if (convertFormat === 'excel') {
+                setStatusText('Tablolar ayıklanıyor ve Excel\'e aktarılıyor...');
+                const arrayBuffer = await mainFile.arrayBuffer();
+                const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+
+                const allRows: string[][] = [];
+
+                for (let i = 1; i <= pdf.numPages; i++) {
+                    const page = await pdf.getPage(i);
+                    const textContent = await page.getTextContent();
+                    const items = textContent.items as any[];
+
+                    // Basit tablo tespiti: Y koordinatına göre grupla
+                    const lines: Record<number, any[]> = {};
+                    items.forEach(item => {
+                        const y = Math.round(item.transform[5]);
+                        if (!lines[y]) lines[y] = [];
+                        lines[y].push(item);
+                    });
+
+                    Object.keys(lines).sort((a, b) => Number(b) - Number(a)).forEach(y => {
+                        const row = lines[Number(y)].sort((a, b) => a.transform[4] - b.transform[4]).map(item => item.str);
+                        allRows.push(row);
+                    });
+                }
+
+                const { utils, writeFile } = await import('xlsx');
+                const ws = utils.aoa_to_sheet(allRows);
+                const wb = utils.book_new();
+                utils.book_append_sheet(wb, ws, "PDF Verileri");
+                writeFile(wb, `${mainFile.name.replace('.pdf', '')}.xlsx`);
             } else {
-                alert('Bu format henüz tarayıcı tarafında tam desteklenmiyor. Lütfen Word veya Görsel seçin.');
+                alert('Bu format henüz tarayıcı tarafında tam desteklenmiyor. Lütfen Word, Excel veya Görsel seçin.');
             }
         } catch (err) {
             console.error(err);
@@ -477,6 +512,52 @@ export const PdfManager: React.FC<PdfManagerProps> = ({ file, onBack, initialTab
             setProcessing(false);
             setStatusText('');
         }
+    };
+
+    const handleProtect = async () => {
+        if (pdfFiles.length === 0 || !pdfPassword) return;
+        setProcessing(true);
+        setStatusText('PDF şifreleniyor...');
+        try {
+            const arrayBuffer = await pdfFiles[0].file.arrayBuffer();
+            const pdfDoc = await PDFDocument.load(arrayBuffer);
+            const pdfBytes = await pdfDoc.save({
+                userPassword: pdfPassword,
+                ownerPassword: pdfPassword,
+                permissions: {
+                    printing: 'highResolution',
+                    modifying: true,
+                    copying: true,
+                    annotating: true,
+                    fillingForms: true,
+                    contentAccessibility: true,
+                    documentAssembly: true,
+                },
+            });
+            downloadPdf(pdfBytes, `sifreli-${pdfFiles[0].name}`);
+        } catch (err) {
+            console.error(err);
+            alert('Şifreleme hatası: ' + (err as Error).message);
+        }
+        setProcessing(false);
+        setStatusText('');
+    };
+
+    const handleUnlock = async () => {
+        if (pdfFiles.length === 0 || !pdfPassword) return;
+        setProcessing(true);
+        setStatusText('Şifre kaldırılıyor...');
+        try {
+            const arrayBuffer = await pdfFiles[0].file.arrayBuffer();
+            const pdfDoc = await PDFDocument.load(arrayBuffer, { password: pdfPassword });
+            const pdfBytes = await pdfDoc.save();
+            downloadPdf(pdfBytes, `sifresiz-${pdfFiles[0].name}`);
+        } catch (err) {
+            console.error(err);
+            alert('Şifre kaldırılamadı. Lütfen şifrenin doğru olduğundan emin olun.');
+        }
+        setProcessing(false);
+        setStatusText('');
     };
 
     return (
@@ -501,7 +582,7 @@ export const PdfManager: React.FC<PdfManagerProps> = ({ file, onBack, initialTab
                 </div>
                 {pdfFiles.length > 0 && (
                     <div className="flex gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl flex-wrap">
-                        {(['merge', 'split', 'compress', 'watermark', 'convert'] as TabType[]).map((tab) => (
+                        {(['merge', 'split', 'compress', 'watermark', 'convert', 'protect', 'unlock'] as TabType[]).map((tab) => (
                             <button
                                 key={tab}
                                 onClick={() => setActiveTab(tab)}
@@ -515,11 +596,15 @@ export const PdfManager: React.FC<PdfManagerProps> = ({ file, onBack, initialTab
                                 {tab === 'compress' && <Minimize2 size={16} className="inline mr-2" />}
                                 {tab === 'watermark' && <Stamp size={16} className="inline mr-2" />}
                                 {tab === 'convert' && <RefreshCw size={16} className="inline mr-2" />}
+                                {tab === 'protect' && <Lock size={16} className="inline mr-2" />}
+                                {tab === 'unlock' && <RefreshCw size={16} className="inline mr-2" />}
 
                                 {tab === 'merge' ? 'Birleştir' :
                                     tab === 'split' ? 'Ayır' :
                                         tab === 'compress' ? 'Sıkıştır' :
-                                            tab === 'watermark' ? 'Filigran' : 'Dönüştür'}
+                                            tab === 'watermark' ? 'Filigran' :
+                                                tab === 'convert' ? 'Dönüştür' :
+                                                    tab === 'protect' ? 'Şifrele' : 'Şifre Kaldır'}
                             </button>
                         ))}
                     </div>
@@ -965,7 +1050,7 @@ export const PdfManager: React.FC<PdfManagerProps> = ({ file, onBack, initialTab
 
                                     <div className="p-4 bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800 rounded-2xl">
                                         <p className="text-[10px] text-amber-700 dark:text-amber-400 leading-tight">
-                                            <b>Not:</b> Word ve Görsel dönüşümleri tarayıcıda (offline) yapılır. Excel ve PPT dönüşümleri henüz geliştirme aşamasındadır.
+                                            <b>Not:</b> Word, Görsel ve Excel dönüşümleri tarayıcıda (offline) yapılır. PowerPoint dönüşümü henüz geliştirme aşamasındadır.
                                         </p>
                                     </div>
 
@@ -976,6 +1061,72 @@ export const PdfManager: React.FC<PdfManagerProps> = ({ file, onBack, initialTab
                                     >
                                         {processing ? <RefreshCw className="animate-spin" /> : <Download size={20} />}
                                         {processing ? 'Dönüştürülüyor...' : 'Dönüştür ve İndir'}
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* PROTECT */}
+                        {activeTab === 'protect' && (
+                            <div className="max-w-md mx-auto py-10">
+                                <div className="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-6 text-center shadow-sm">
+                                    <div className="w-16 h-16 bg-red-100 dark:bg-red-900/20 rounded-2xl flex items-center justify-center mx-auto text-red-600">
+                                        <Lock size={32} />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-2">PDF Şifrele</h3>
+                                        <p className="text-sm text-slate-500">Dökümanınızı yetkisiz erişime karşı koruyun.</p>
+                                    </div>
+                                    <div className="space-y-4 text-left">
+                                        <label className="text-xs font-bold text-slate-500 uppercase">Şifre Belirleyin</label>
+                                        <input
+                                            type="password"
+                                            value={pdfPassword}
+                                            onChange={(e) => setPdfPassword(e.target.value)}
+                                            placeholder="Güçlü bir şifre girin..."
+                                            className="w-full p-4 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl focus:border-red-500 outline-none transition-all"
+                                        />
+                                    </div>
+                                    <button
+                                        onClick={handleProtect}
+                                        disabled={processing || !pdfPassword}
+                                        className="w-full py-4 bg-red-600 hover:bg-red-700 rounded-2xl font-bold text-white shadow-lg shadow-red-500/20 flex items-center justify-center gap-2 transition-all disabled:opacity-50"
+                                    >
+                                        {processing ? <RefreshCw className="animate-spin" /> : <Lock size={20} />}
+                                        {processing ? 'Şifreleniyor...' : 'Şifreli PDF İndir'}
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* UNLOCK */}
+                        {activeTab === 'unlock' && (
+                            <div className="max-w-md mx-auto py-10">
+                                <div className="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-6 text-center shadow-sm">
+                                    <div className="w-16 h-16 bg-green-100 dark:bg-green-900/20 rounded-2xl flex items-center justify-center mx-auto text-green-600">
+                                        <Unlock size={32} />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-2">Şifre Kaldır</h3>
+                                        <p className="text-sm text-slate-500">Şifreli bir PDF'in şifresini kalıcı olarak kaldırın.</p>
+                                    </div>
+                                    <div className="space-y-4 text-left">
+                                        <label className="text-xs font-bold text-slate-500 uppercase">Geçerli Şifreyi Girin</label>
+                                        <input
+                                            type="password"
+                                            value={pdfPassword}
+                                            onChange={(e) => setPdfPassword(e.target.value)}
+                                            placeholder="Dosya şifresini girin..."
+                                            className="w-full p-4 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl focus:border-green-500 outline-none transition-all"
+                                        />
+                                    </div>
+                                    <button
+                                        onClick={handleUnlock}
+                                        disabled={processing || !pdfPassword}
+                                        className="w-full py-4 bg-green-600 hover:bg-green-700 rounded-2xl font-bold text-white shadow-lg shadow-green-500/20 flex items-center justify-center gap-2 transition-all disabled:opacity-50"
+                                    >
+                                        {processing ? <RefreshCw className="animate-spin" /> : <Unlock size={20} />}
+                                        {processing ? 'Kaldırılıyor...' : 'Şifreyi Kaldır ve İndir'}
                                     </button>
                                 </div>
                             </div>

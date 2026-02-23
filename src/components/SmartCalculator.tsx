@@ -236,11 +236,13 @@ const IbanChecker = () => {
 
 const TcknChecker = () => {
     const [tckn, setTckn] = useState('');
-    const [status, setStatus] = useState<{ isValid: boolean; message: string }>({ isValid: false, message: '11 hane girmelisiniz' });
+    const [status, setStatus] = useState<{ isValid: boolean; message: string; steps?: any }>({ isValid: false, message: '11 hane girmelisiniz' });
+    const [showAdvanced, setShowAdvanced] = useState(false);
 
     useEffect(() => {
         if (tckn.length === 11) {
             const digits = tckn.split('').map(Number);
+            const steps: any = {};
 
             // Rule 1: First digit cannot be 0
             if (digits[0] === 0) {
@@ -254,28 +256,44 @@ const TcknChecker = () => {
             let tenthDigit = ((oddSum * 7) - evenSum) % 10;
             if (tenthDigit < 0) tenthDigit += 10;
 
+            steps.oddSum = oddSum;
+            steps.evenSum = evenSum;
+            steps.calculatedTenth = tenthDigit;
+            steps.actualTenth = digits[9];
+
             if (tenthDigit !== digits[9]) {
-                setStatus({ isValid: false, message: 'Algoritma hatası (10. hane uyumsuz)' });
+                setStatus({ isValid: false, message: '10. hane uyumsuz (Algoritma Hatası)', steps });
                 return;
             }
 
             // Rule 4: Sum of first 10 digits % 10 == 11th digit
             const totalSum = digits.slice(0, 10).reduce((a, b) => a + b, 0);
-            if (totalSum % 10 !== digits[10]) {
-                setStatus({ isValid: false, message: 'Algoritma hatası (11. hane uyumsuz)' });
+            const calculatedEleventh = totalSum % 10;
+
+            steps.totalSum = totalSum;
+            steps.calculatedEleventh = calculatedEleventh;
+            steps.actualEleventh = digits[10];
+
+            if (calculatedEleventh !== digits[10]) {
+                setStatus({ isValid: false, message: '11. hane uyumsuz (Algoritma Hatası)', steps });
                 return;
             }
 
-            setStatus({ isValid: true, message: 'TCKN Geçerli' });
+            setStatus({ isValid: true, message: 'TCKN Algoritması Geçerli', steps });
         } else {
             setStatus({ isValid: false, message: '11 hane girmelisiniz' });
         }
     }, [tckn]);
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 text-left">
             <div className="space-y-4">
-                <label htmlFor="tcknInput" className="block text-sm font-bold text-slate-500 mb-2">TC Kimlik Numarası</label>
+                <div className="flex items-center justify-between">
+                    <label htmlFor="tcknInput" className="block text-sm font-bold text-slate-500">TC Kimlik Numarası</label>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest bg-slate-100 dark:bg-white/5 px-2 py-1 rounded-md">
+                        Algoritma: Checksum v1.0
+                    </span>
+                </div>
                 <div className="relative">
                     <input
                         id="tcknInput"
@@ -283,25 +301,82 @@ const TcknChecker = () => {
                         maxLength={11}
                         value={tckn}
                         onChange={e => setTckn(e.target.value.replace(/\D/g, ''))}
-                        className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-4 text-3xl font-black text-center tracking-[1rem] focus:ring-4 focus:ring-blue-500/10 focus:outline-none transition-all"
+                        className="w-full bg-slate-50 dark:bg-white/5 border-2 border-slate-200 dark:border-white/10 rounded-2xl p-5 text-4xl font-black text-center tracking-[0.8rem] focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500/50 outline-none transition-all shadow-inner"
                         title="Kontrol etmek istediğiniz TC Kimlik numarasını girin"
                         placeholder="00000000000"
                     />
                 </div>
-                <div className={`p-4 rounded-xl flex items-center gap-3 transition-colors ${status.isValid ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400' : 'bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-400'}`}>
-                    <ShieldCheck size={20} />
-                    <span className="font-bold text-sm uppercase tracking-tight">{status.message}</span>
+                <div className={`p-5 rounded-2xl flex items-center justify-between transition-all ${status.isValid ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400 border border-emerald-200/50' : 'bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-400 border border-rose-200/50'}`}>
+                    <div className="flex items-center gap-3">
+                        <ShieldCheck size={24} />
+                        <span className="font-black text-sm uppercase tracking-tight">{status.message}</span>
+                    </div>
+                    {tckn.length === 11 && (
+                        <button
+                            onClick={() => setShowAdvanced(!showAdvanced)}
+                            className="text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 bg-white dark:bg-white/5 rounded-lg border border-current opacity-70 hover:opacity-100 transition-opacity"
+                        >
+                            {showAdvanced ? 'Özeti Göster' : 'Çözüm Adımları'}
+                        </button>
+                    )}
                 </div>
             </div>
 
-            <div className="p-4 bg-slate-50 dark:bg-white/5 rounded-2xl border border-slate-100 dark:border-white/10">
-                <div className="flex items-center gap-3 text-slate-500 dark:text-slate-400 mb-2">
-                    <Info size={16} />
-                    <h4 className="text-xs font-bold uppercase tracking-widest">Gizlilik Bilgilendirmesi</h4>
+            {showAdvanced && status.steps && (
+                <div className="p-6 bg-slate-50 dark:bg-white/5 rounded-3xl border border-slate-200 dark:border-white/10 space-y-4 animate-in fade-in zoom-in-95 duration-300">
+                    <h4 className="text-xs font-black uppercase text-slate-500 tracking-widest flex items-center gap-2">
+                        <Zap size={14} className="text-amber-500" /> Ayrıntılı Çözüm Aşamaları
+                    </h4>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="p-4 bg-white dark:bg-black/20 rounded-xl border border-slate-100 dark:border-white/5">
+                            <p className="text-[10px] font-bold text-slate-400 uppercase mb-2">Adım 1: 10. Hane Kontrolü</p>
+                            <div className="text-xs space-y-1 font-medium text-slate-600 dark:text-slate-300">
+                                <p>(Tekler Toplamı × 7 - Çiftler Toplamı) mod 10</p>
+                                <p className="font-mono text-blue-500 italic">({status.steps.oddSum} × 7 - {status.steps.evenSum}) % 10 = {status.steps.calculatedTenth}</p>
+                                <p className="flex items-center gap-2">
+                                    Sonuç: <span className={status.steps.calculatedTenth === status.steps.actualTenth ? 'text-emerald-500 font-bold' : 'text-rose-500 font-bold'}>{status.steps.calculatedTenth}</span>
+                                    (Girdi: {status.steps.actualTenth})
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="p-4 bg-white dark:bg-black/20 rounded-xl border border-slate-100 dark:border-white/5">
+                            <p className="text-[10px] font-bold text-slate-400 uppercase mb-2">Adım 2: 11. Hane Kontrolü</p>
+                            <div className="text-xs space-y-1 font-medium text-slate-600 dark:text-slate-300">
+                                <p>İlk 10 Hane Toplamı mod 10</p>
+                                <p className="font-mono text-blue-500 italic">{status.steps.totalSum} % 10 = {status.steps.calculatedEleventh}</p>
+                                <p className="flex items-center gap-2">
+                                    Sonuç: <span className={status.steps.calculatedEleventh === status.steps.actualEleventh ? 'text-emerald-500 font-bold' : 'text-rose-500 font-bold'}>{status.steps.calculatedEleventh}</span>
+                                    (Girdi: {status.steps.actualEleventh})
+                                </p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed font-medium">
-                    Analiz tamamen <strong>tarayıcınızda (client-side)</strong> gerçekleşir. Verileriniz hiçbir sunucuya gönderilmez, network tabını izleyerek kontrol edebilirsiniz. %100 offline-ready bir araçtır.
-                </p>
+            )}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="p-5 bg-blue-50/50 dark:bg-blue-500/5 rounded-2xl border border-blue-100 dark:border-blue-500/10">
+                    <div className="flex items-center gap-3 text-blue-600 dark:text-blue-400 mb-2">
+                        <Info size={16} />
+                        <h4 className="text-[10px] font-bold uppercase tracking-widest">Algoritma Hakkında</h4>
+                    </div>
+                    <p className="text-[11px] text-slate-600 dark:text-slate-400 leading-relaxed font-medium">
+                        TC Kimlik No algoritması; ilk 9 hane ile son 2 haneyi (kontrol basamaklarını) birbirine bağlar.
+                        <strong> Toplamda 900.000.000 (900 Milyon)</strong> farklı geçerli kombinasyon üretilebilir.
+                    </p>
+                </div>
+
+                <div className="p-5 bg-slate-50 dark:bg-white/5 rounded-2xl border border-slate-100 dark:border-white/10">
+                    <div className="flex items-center gap-3 text-slate-500 dark:text-slate-400 mb-2">
+                        <ShieldCheck size={16} />
+                        <h4 className="text-[10px] font-bold uppercase tracking-widest">Local-First Güvenlik</h4>
+                    </div>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed font-medium">
+                        Bu kontrol <strong>%100 tarayıcıda</strong> yapılır. Girdiğiniz numara internete veya herhangi bir veritabanına asla gönderilmez.
+                    </p>
+                </div>
             </div>
         </div>
     );
