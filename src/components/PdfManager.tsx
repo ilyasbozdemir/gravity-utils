@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { ArrowLeft, FileText, Scissors, Download, Layers, Minimize2, Stamp, RefreshCw, Plus, Trash2, ArrowUp, ArrowDown, LayoutGrid, GripVertical, Image as ImageIcon, Database, Info, Lock, Unlock } from 'lucide-react';
+import { ArrowLeft, FileText, Scissors, Download, Layers, Minimize2, Stamp, RefreshCw, Plus, Trash2, ArrowUp, ArrowDown, LayoutGrid, GripVertical, Image as ImageIcon, Database, Info, Lock, Unlock, Search, PenTool, Hash, RotateCw, Edit3 } from 'lucide-react';
 import { PDFDocument, degrees, rgb, PDFImage, PageSizes } from 'pdf-lib';
 import * as pdfjsLib from 'pdfjs-dist';
 import fontkit from '@pdf-lib/fontkit';
@@ -19,7 +19,7 @@ interface PdfManagerProps {
     initialTab?: TabType;
 }
 
-type TabType = 'split' | 'merge' | 'compress' | 'watermark' | 'convert' | 'protect' | 'unlock';
+type TabType = 'split' | 'merge' | 'compress' | 'watermark' | 'convert' | 'protect' | 'unlock' | 'edit' | 'ocr' | 'sign';
 
 interface OrganizedPage {
     id: string;
@@ -65,7 +65,15 @@ export const PdfManager: React.FC<PdfManagerProps> = ({ file, onBack, initialTab
     const [pdfPassword, setPdfPassword] = useState('');
     const [isPasswordProtected, setIsPasswordProtected] = useState(false);
 
+    // New Toolkit States
+    const [metadata, setMetadata] = useState({ title: '', author: '', subject: '', keywords: '', creator: 'Gravity Utils' });
+    const [rotateAngle, setRotateAngle] = useState<0 | 90 | 180 | 270>(0);
+    const [pageNumbering, setPageNumbering] = useState({ enabled: false, position: 'bottom-right' as 'bottom-right' | 'bottom-center' | 'top-right' });
+    const [ocrLanguage, setOcrLanguage] = useState<'tur' | 'eng'>('tur');
+    const [ocrProgress, setOcrProgress] = useState(0);
+
     const mergeInputRef = useRef<HTMLInputElement>(null);
+    const signatureCanvasRef = useRef<HTMLCanvasElement>(null);
     const renderContainerRef = useRef<HTMLDivElement>(null);
 
     const downloadPdf = useCallback((data: Uint8Array, filename: string) => {
@@ -608,6 +616,137 @@ export const PdfManager: React.FC<PdfManagerProps> = ({ file, onBack, initialTab
         }
     };
 
+    const handleEditApply = async () => {
+        if (pdfFiles.length === 0) return;
+        setProcessing(true);
+        setStatusText('Düzenlemeler uygulanıyor...');
+        try {
+            const arrayBuffer = await pdfFiles[0].file.arrayBuffer();
+            const pdfDoc = await PDFDocument.load(arrayBuffer);
+
+            pdfDoc.setTitle(metadata.title || pdfFiles[0].name);
+            pdfDoc.setAuthor(metadata.author);
+            pdfDoc.setSubject(metadata.subject);
+            pdfDoc.setKeywords(metadata.keywords.split(',').map(k => k.trim()));
+            pdfDoc.setProducer('Gravity Utils');
+            pdfDoc.setCreator(metadata.creator);
+
+            const pages = pdfDoc.getPages();
+            for (let i = 0; i < pages.length; i++) {
+                const page = pages[i];
+                if (rotateAngle !== 0) {
+                    page.setRotation(degrees(rotateAngle));
+                }
+
+                if (pageNumbering.enabled) {
+                    const { width } = page.getSize();
+                    const text = `${i + 1} / ${pages.length}`;
+                    page.drawText(text, {
+                        x: pageNumbering.position === 'bottom-right' ? width - 70 : pageNumbering.position === 'bottom-center' ? width / 2 - 20 : width - 70,
+                        y: 20,
+                        size: 10,
+                        color: rgb(0.5, 0.5, 0.5),
+                    });
+                }
+            }
+
+            const pdfBytes = await pdfDoc.save();
+            downloadPdf(pdfBytes, `duzenlenmis-${pdfFiles[0].name}`);
+            alert('Değişiklikler başarıyla uygulandı.');
+        } catch (err: any) {
+            console.error(err);
+            alert('Hata: ' + err.message);
+        } finally {
+            setProcessing(false);
+            setStatusText('');
+        }
+    };
+
+    const handleOCR = async () => {
+        if (pdfFiles.length === 0) return;
+        setProcessing(true);
+        setStatusText('OCR İşlemi Başlatılıyor (Tarayıcıda)...');
+        try {
+            const { createWorker } = await import('tesseract.js');
+            const worker = await createWorker(ocrLanguage);
+
+            const arrayBuffer = await pdfFiles[0].file.arrayBuffer();
+            const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+
+            let fullText = "";
+
+            for (let i = 1; i <= pdf.numPages; i++) {
+                setStatusText(`Sayfa ${i}/${pdf.numPages} metne dönüştürülüyor...`);
+                const page = await pdf.getPage(i);
+                const viewport = page.getViewport({ scale: 2 });
+                const canvas = document.createElement('canvas');
+                const context = canvas.getContext('2d');
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
+                await page.render({ canvasContext: context!, viewport } as any).promise;
+
+                const imageDataUrl = canvas.toDataURL('image/png');
+                const { data: { text } } = await worker.recognize(imageDataUrl);
+                fullText += `\n--- SAYFA ${i} ---\n\n${text}\n`;
+                setOcrProgress((i / pdf.numPages) * 100);
+            }
+
+            await worker.terminate();
+
+            const blob = new Blob([fullText], { type: 'text/plain;charset=utf-8' });
+            saveAs(blob, `ocr-${pdfFiles[0].name.replace('.pdf', '')}.txt`);
+            alert('Tüm sayfalardaki metinler başarıyla ayrıştırıldı.');
+        } catch (err: any) {
+            console.error(err);
+            alert('OCR hatası: ' + err.message);
+        } finally {
+            setProcessing(false);
+            setStatusText('');
+            setOcrProgress(0);
+        }
+    };
+
+    const handleSignatureApply = async () => {
+        if (pdfFiles.length === 0 || !signatureCanvasRef.current) return;
+        setProcessing(true);
+        setStatusText('İmza dökümana işleniyor...');
+        try {
+            const arrayBuffer = await pdfFiles[0].file.arrayBuffer();
+            const pdfDoc = await PDFDocument.load(arrayBuffer);
+            const signatureImg = signatureCanvasRef.current.toDataURL('image/png');
+            const signatureBytes = Uint8Array.from(atob(signatureImg.split(',')[1]), c => c.charCodeAt(0));
+            const signatureImage = await pdfDoc.embedPng(signatureBytes);
+
+            const pages = pdfDoc.getPages();
+            const lastPage = pages[pages.length - 1];
+            const { width } = lastPage.getSize();
+
+            lastPage.drawImage(signatureImage, {
+                x: width - 220,
+                y: 50,
+                width: 150,
+                height: 60,
+            });
+
+            const pdfBytes = await pdfDoc.save();
+            downloadPdf(pdfBytes, `imzali-${pdfFiles[0].name}`);
+            alert('İmza başarıyla eklendi.');
+        } catch (err: any) {
+            console.error(err);
+            alert('İmza hatası: ' + err.message);
+        } finally {
+            setProcessing(false);
+            setStatusText('');
+        }
+    };
+
+    const clearSignature = () => {
+        if (signatureCanvasRef.current) {
+            const ctx = signatureCanvasRef.current.getContext('2d');
+            ctx?.clearRect(0, 0, signatureCanvasRef.current.width, signatureCanvasRef.current.height);
+        }
+    };
+
     return (
         <div className="w-full max-w-[1000px] mx-auto p-4 md:p-8 animate-in fade-in zoom-in duration-300">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
@@ -630,7 +769,7 @@ export const PdfManager: React.FC<PdfManagerProps> = ({ file, onBack, initialTab
                 </div>
                 {pdfFiles.length > 0 && (
                     <div className="flex gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl flex-wrap">
-                        {(['merge', 'split', 'compress', 'watermark', 'convert', 'protect', 'unlock'] as TabType[]).map((tab) => (
+                        {(['merge', 'split', 'compress', 'watermark', 'convert', 'protect', 'unlock', 'edit', 'ocr', 'sign'] as TabType[]).map((tab) => (
                             <button
                                 key={tab}
                                 onClick={() => setActiveTab(tab)}
@@ -646,13 +785,19 @@ export const PdfManager: React.FC<PdfManagerProps> = ({ file, onBack, initialTab
                                 {tab === 'convert' && <RefreshCw size={16} className="inline mr-2" />}
                                 {tab === 'protect' && <Lock size={16} className="inline mr-2" />}
                                 {tab === 'unlock' && <RefreshCw size={16} className="inline mr-2" />}
+                                {tab === 'edit' && <Edit3 size={16} className="inline mr-2" />}
+                                {tab === 'ocr' && <Search size={16} className="inline mr-2" />}
+                                {tab === 'sign' && <PenTool size={16} className="inline mr-2" />}
 
                                 {tab === 'merge' ? 'Birleştir' :
                                     tab === 'split' ? 'Ayır' :
                                         tab === 'compress' ? 'Sıkıştır' :
                                             tab === 'watermark' ? 'Filigran' :
                                                 tab === 'convert' ? 'Dönüştür' :
-                                                    tab === 'protect' ? 'Şifrele' : 'Şifre Kaldır'}
+                                                    tab === 'protect' ? 'Şifrele' :
+                                                        tab === 'unlock' ? 'Şifre Kaldır' :
+                                                            tab === 'edit' ? 'Düzenle' :
+                                                                tab === 'ocr' ? 'OCR' : 'İmzala'}
                             </button>
                         ))}
                     </div>
@@ -1179,6 +1324,251 @@ export const PdfManager: React.FC<PdfManagerProps> = ({ file, onBack, initialTab
                                 </div>
                             </div>
                         )}
+
+                        {/* EDIT (Metadata & Rotation) */}
+                        {activeTab === 'edit' && (
+                            <div className="max-w-2xl mx-auto py-6">
+                                <div className="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-6 shadow-sm">
+                                    <div className="flex items-center gap-4 mb-4">
+                                        <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/20 rounded-xl flex items-center justify-center text-blue-600">
+                                            <Edit3 size={24} />
+                                        </div>
+                                        <div>
+                                            <h3 className="text-lg font-bold text-slate-800 dark:text-white">Künye & Düzenleme</h3>
+                                            <p className="text-xs text-slate-500">Metadata, sayfa numarası ve yönlendirme</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-bold text-slate-500 uppercase">Belge Başlığı</label>
+                                            <input
+                                                type="text"
+                                                value={metadata.title}
+                                                onChange={(e) => setMetadata({ ...metadata, title: e.target.value })}
+                                                placeholder="Örn: Rapor 2024"
+                                                title="Belge Başlığı"
+                                                className="w-full p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm"
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-bold text-slate-500 uppercase">Yazar / Kurum</label>
+                                            <input
+                                                type="text"
+                                                value={metadata.author}
+                                                onChange={(e) => setMetadata({ ...metadata, author: e.target.value })}
+                                                placeholder="İsim veya Şirket"
+                                                title="Yazar veya Kurum Adı"
+                                                className="w-full p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-4 pt-4 border-t border-slate-100 dark:border-white/5">
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <RotateCw size={18} className="text-slate-400" />
+                                                <span className="text-sm font-bold text-slate-700 dark:text-slate-200">Sayfa Yönlendirme</span>
+                                            </div>
+                                            <select
+                                                value={rotateAngle}
+                                                onChange={(e) => setRotateAngle(parseInt(e.target.value) as any)}
+                                                title="Döndürme Açısı"
+                                                className="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-2 text-xs"
+                                            >
+                                                <option value={0}>Değiştirme (0°)</option>
+                                                <option value={90}>90° Sağa Döndür</option>
+                                                <option value={180}>180° Döndür</option>
+                                                <option value={270}>90° Sola Döndür</option>
+                                            </select>
+                                        </div>
+
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <Hash size={18} className="text-slate-400" />
+                                                <span className="text-sm font-bold text-slate-700 dark:text-slate-200">Sayfa Numaralandırma</span>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={pageNumbering.enabled}
+                                                    onChange={(e) => setPageNumbering({ ...pageNumbering, enabled: e.target.checked })}
+                                                    title="Sayfa Numarasını Etkinleştir"
+                                                    className="w-4 h-4 rounded accent-blue-600"
+                                                />
+                                                <select
+                                                    disabled={!pageNumbering.enabled}
+                                                    value={pageNumbering.position}
+                                                    onChange={(e) => setPageNumbering({ ...pageNumbering, position: e.target.value as any })}
+                                                    title="Numara Konumu"
+                                                    className="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-2 text-xs disabled:opacity-50"
+                                                >
+                                                    <option value="bottom-right">Sağ Alt</option>
+                                                    <option value="bottom-center">Orta Alt</option>
+                                                    <option value="top-right">Sağ Üst</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <button
+                                        onClick={handleEditApply}
+                                        disabled={processing}
+                                        className="w-full py-4 bg-blue-600 hover:bg-blue-700 rounded-2xl font-bold text-white shadow-lg shadow-blue-500/20 flex items-center justify-center gap-2 transition-all disabled:opacity-50"
+                                    >
+                                        {processing ? <RefreshCw className="animate-spin" /> : <Download size={20} />}
+                                        {processing ? 'Uygulanıyor...' : 'Değişiklikleri Kaydet ve İndir'}
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* OCR */}
+                        {activeTab === 'ocr' && (
+                            <div className="max-w-md mx-auto py-10">
+                                <div className="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-6 text-center shadow-sm">
+                                    <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/20 rounded-2xl flex items-center justify-center mx-auto text-blue-600">
+                                        <Search size={32} />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-2">Metin Tanıma (OCR)</h3>
+                                        <p className="text-xs text-slate-500 leading-relaxed">
+                                            Görsel tabanlı PDF'lerdeki metinleri otomatik olarak tanır ve yazı dosyası olarak indirmenizi sağlar.
+                                        </p>
+                                    </div>
+
+                                    <div className="space-y-4 py-4 text-left">
+                                        <label className="text-[10px] font-bold text-slate-500 uppercase">Dil Seçimi</label>
+                                        <div className="flex gap-2">
+                                            <button
+                                                onClick={() => setOcrLanguage('tur')}
+                                                className={`flex-1 p-3 rounded-xl border text-sm font-bold transition-all ${ocrLanguage === 'tur' ? 'bg-blue-50 border-blue-500 text-blue-600' : 'bg-slate-50 border-slate-200 text-slate-500'}`}
+                                            >
+                                                Türkçe
+                                            </button>
+                                            <button
+                                                onClick={() => setOcrLanguage('eng')}
+                                                className={`flex-1 p-3 rounded-xl border text-sm font-bold transition-all ${ocrLanguage === 'eng' ? 'bg-blue-50 border-blue-500 text-blue-600' : 'bg-slate-50 border-slate-200 text-slate-500'}`}
+                                            >
+                                                İngilizce
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    {ocrProgress > 0 && (
+                                        <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 mb-4 overflow-hidden">
+                                            <div
+                                                className="bg-blue-600 h-full transition-all duration-300"
+                                                style={{ width: `${ocrProgress}%` }}
+                                            ></div>
+                                        </div>
+                                    )}
+
+                                    <button
+                                        onClick={handleOCR}
+                                        disabled={processing}
+                                        className="w-full py-4 bg-blue-600 hover:bg-blue-700 rounded-2xl font-bold text-white shadow-lg shadow-blue-500/20 flex items-center justify-center gap-2 transition-all disabled:opacity-50"
+                                    >
+                                        {processing ? <RefreshCw className="animate-spin" /> : <Search size={20} />}
+                                        {processing ? 'Okunuyor...' : 'Metinleri Çıkar (.txt)'}
+                                    </button>
+                                    <p className="text-[10px] text-slate-400 italic">Not: Bu işlem tarayıcınızın CPU gücünü kullanır, işlem sırasında sekme donabilir.</p>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* SIGN */}
+                        {activeTab === 'sign' && (
+                            <div className="max-w-md mx-auto py-10">
+                                <div className="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-6 text-center shadow-sm">
+                                    <div className="w-16 h-16 bg-amber-100 dark:bg-amber-900/20 rounded-2xl flex items-center justify-center mx-auto text-amber-600">
+                                        <PenTool size={32} />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-2">Dijital İmza</h3>
+                                        <p className="text-xs text-slate-500">Aşağıdaki alana imzanızı çizin ve dökümana ekleyin.</p>
+                                    </div>
+
+                                    <div className="relative bg-slate-50 dark:bg-slate-950 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden touch-none">
+                                        <canvas
+                                            ref={signatureCanvasRef}
+                                            width={400}
+                                            height={200}
+                                            className="w-full cursor-crosshair"
+                                            onMouseDown={(e) => {
+                                                const canvas = signatureCanvasRef.current;
+                                                if (!canvas) return;
+                                                const ctx = canvas.getContext('2d');
+                                                if (!ctx) return;
+                                                ctx.beginPath();
+                                                ctx.lineWidth = 2;
+                                                ctx.lineCap = 'round';
+                                                ctx.strokeStyle = '#000';
+                                                const rect = canvas.getBoundingClientRect();
+                                                ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+
+                                                const onMouseMove = (moveEvent: MouseEvent) => {
+                                                    ctx.lineTo(moveEvent.clientX - rect.left, moveEvent.clientY - rect.top);
+                                                    ctx.stroke();
+                                                };
+
+                                                const onMouseUp = () => {
+                                                    window.removeEventListener('mousemove', onMouseMove);
+                                                    window.removeEventListener('mouseup', onMouseUp);
+                                                };
+
+                                                window.addEventListener('mousemove', onMouseMove);
+                                                window.addEventListener('mouseup', onMouseUp);
+                                            }}
+                                            onTouchStart={(e) => {
+                                                const canvas = signatureCanvasRef.current;
+                                                if (!canvas) return;
+                                                const ctx = canvas.getContext('2d');
+                                                if (!ctx) return;
+                                                ctx.beginPath();
+                                                ctx.lineWidth = 2;
+                                                ctx.lineCap = 'round';
+                                                ctx.strokeStyle = '#000';
+                                                const rect = canvas.getBoundingClientRect();
+                                                const touch = e.touches[0];
+                                                ctx.moveTo(touch.clientX - rect.left, touch.clientY - rect.top);
+
+                                                const onTouchMove = (moveEvent: TouchEvent) => {
+                                                    const t = moveEvent.touches[0];
+                                                    ctx.lineTo(t.clientX - rect.left, t.clientY - rect.top);
+                                                    ctx.stroke();
+                                                };
+
+                                                const onTouchEnd = () => {
+                                                    window.removeEventListener('touchmove', onTouchMove);
+                                                    window.removeEventListener('touchend', onTouchEnd);
+                                                };
+
+                                                window.addEventListener('touchmove', onTouchMove);
+                                                window.addEventListener('touchend', onTouchEnd);
+                                            }}
+                                        />
+                                        <button
+                                            onClick={clearSignature}
+                                            title="İmzayı Sil"
+                                            className="absolute top-2 right-2 p-2 bg-white/80 dark:bg-slate-800 shadow-sm rounded-lg text-slate-500 hover:text-red-500 transition-colors"
+                                        >
+                                            <Trash2 size={16} />
+                                        </button>
+                                    </div>
+
+                                    <button
+                                        onClick={handleSignatureApply}
+                                        disabled={processing}
+                                        className="w-full py-4 bg-amber-600 hover:bg-amber-700 rounded-2xl font-bold text-white shadow-lg shadow-amber-500/20 flex items-center justify-center gap-2 transition-all disabled:opacity-50"
+                                    >
+                                        {processing ? <RefreshCw className="animate-spin" /> : <PenTool size={20} />}
+                                        {processing ? 'Uygulanıyor...' : 'İmzayı Ekle ve İndir'}
+                                    </button>
+                                    <p className="text-[10px] text-slate-400 italic">Not: İmza dökümanın son sayfasının sağ altına eklenir.</p>
+                                </div>
+                            </div>
+                        )}
                     </>
                 )}
             </div>
@@ -1230,7 +1620,7 @@ export const PdfManager: React.FC<PdfManagerProps> = ({ file, onBack, initialTab
                     <p className="text-red-50 text-sm leading-relaxed font-medium">
                         Gravity Utils, "Privacy First" (Önce Gizlilik) prensibiyle çalışır. PDF'lerinizi işlemek için yüksek performanslı `pdf-lib` ve `pdf.js` kütüphanelerini doğrudan tarayıcınızda çalıştırıyoruz. İnternetiniz olmasa bile çoğu aracı kullanmaya devam edebilirsiniz.
                     </p>
-                    <div className="pt-4 border-t border-white/10 italic text-[11px] text-red-100 italic">
+                    <div className="pt-4 border-t border-white/10 italic text-[11px] text-red-100">
                         * Dosyalarınız bellekte (RAM) işlenir ve indirildikten sonra tamamen temizlenir.
                     </div>
                 </div>
