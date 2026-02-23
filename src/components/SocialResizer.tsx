@@ -29,7 +29,7 @@ const PRESETS = [
     { name: 'TikTok', w: 1080, h: 1920, ratio: 9 / 16, icon: '🎵' },
 ];
 
-export const SocialResizer: React.FC<SocialResizerProps> = ({ file: initialFile, onBack }) => {
+export function SocialResizer({ file: initialFile, onBack }: SocialResizerProps) {
     const [imageSrc, setImageSrc] = useState<string | null>(null);
     const [imageDimensions, setImageDimensions] = useState<{ width: number, height: number } | null>(null);
     const [crop, setCrop] = useState<Point>({ x: 0, y: 0 });

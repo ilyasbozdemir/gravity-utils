@@ -542,8 +542,8 @@ function UserAgentTab() {
 }
 
 // ─── Main Component ───────────────────────────────────────────────────────────
-export function WebToolkit() {
-    const handleBack = () => { window.location.hash = ''; };
+export function WebToolkit({ onBack }: { onBack?: () => void }) {
+    const handleBack = onBack || (() => { window.location.hash = ''; });
     const [activeTab, setActiveTab] = useState<ToolTab>('url');
 
     const tabColorMap: Record<ToolTab, string> = {

@@ -1028,10 +1028,10 @@ const StatusCard = ({ item }: { item: any }) => {
     );
 };
 
-export function HttpStatusCodes() {
-    const handleBack = () => {
+export function HttpStatusCodes({ onBack }: { onBack?: () => void }) {
+    const handleBack = onBack || (() => {
         window.location.hash = "";
-    };
+    });
     const [search, setSearch] = useState("");
 
     const filtered = STATUS_CODES.filter((s) =>

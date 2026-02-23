@@ -79,8 +79,8 @@ function CopyBtn({ text }: { text: string }) {
 }
 
 // ─── Main Component ───────────────────────────────────────────────────────────
-export function ColorToolkit() {
-    const handleBack = () => { window.location.hash = ''; };
+export function ColorToolkit({ onBack }: { onBack?: () => void }) {
+    const handleBack = onBack || (() => { window.location.hash = ''; });
     const [hex, setHex] = useState('#6366F1');
     const [hexInput, setHexInput] = useState('#6366F1');
     const [r, setR] = useState(99); const [g, setG] = useState(102); const [b, setB] = useState(241);

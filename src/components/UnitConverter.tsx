@@ -5,6 +5,7 @@ import { ArrowLeft, Calculator, Ruler, Box, Map, Calendar, Clock, Globe, Navigat
 
 interface UnitConverterProps {
     file?: File | null;
+    onBack?: () => void;
 }
 
 type TabType = 'units' | 'date' | 'map' | 'finance' | 'coords';
@@ -550,8 +551,8 @@ const CoordTool = () => {
 
 // --- MAIN COMPONENT ---
 
-export const UnitConverter: React.FC<UnitConverterProps> = () => {
-    const handleBack = () => { window.location.hash = ''; };
+export const UnitConverter: React.FC<UnitConverterProps> = ({ onBack }) => {
+    const handleBack = onBack || (() => { window.location.hash = ''; });
     const [activeTab, setActiveTab] = useState<TabType>('units');
     const [isOfflineMode, setIsOfflineMode] = useState(false);
 
