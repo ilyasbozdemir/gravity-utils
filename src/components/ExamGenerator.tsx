@@ -153,9 +153,9 @@ export const ExamGenerator: React.FC<ExamGeneratorProps> = ({ onBack }) => {
                 <div className="flex gap-2">
                     <button
                         onClick={() => setShowJsonInput(!showJsonInput)}
-                        className="p-3 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl hover:bg-slate-200 transition-all flex items-center gap-2 font-bold text-xs"
+                        className={`p-3 rounded-xl transition-all flex items-center gap-2 font-bold text-xs ${showJsonInput ? 'bg-blue-600/10 text-blue-500 border border-blue-500/30' : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200'}`}
                     >
-                        <Code size={16} /> JSON İÇE AKTAR
+                        <Code size={16} /> {showJsonInput ? 'GİRİŞİ KAPAT' : 'JSON İÇE AKTAR'}
                     </button>
                     <button
                         onClick={generatePdf}

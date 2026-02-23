@@ -246,12 +246,6 @@ export const DocumentToolkit: React.FC<DocumentToolkitProps> = ({ onBack, initia
                         icon={<FileType className="text-slate-500" />}
                         onClick={() => handlePdfTool('convert')}
                     />
-                    <ToolCard
-                        title="Sınav Hazırlayıcı"
-                        desc="Sorulardan PDF test oluştur"
-                        icon={<HelpCircle className="text-amber-500" />}
-                        onClick={() => setView('exam-generator')}
-                    />
                 </div>
             </section>
 
@@ -289,6 +283,13 @@ export const DocumentToolkit: React.FC<DocumentToolkitProps> = ({ onBack, initia
                         icon={<Stamp size={24} />}
                         color="purple"
                         onClick={() => handlePdfTool('watermark')}
+                    />
+                    <BigActionCard
+                        title="Sınav Hazırlayıcı"
+                        desc="PDF test dökümanları oluştur"
+                        icon={<HelpCircle size={24} />}
+                        color="amber"
+                        onClick={() => setView('exam-generator')}
                     />
                 </div>
             </section>
@@ -339,6 +340,7 @@ const BigActionCard = ({ title, desc, icon, color, onClick }: {
         blue: 'bg-blue-50 dark:bg-blue-500/10 text-blue-500 border-blue-100 dark:border-blue-500/20 hover:border-blue-500',
         orange: 'bg-orange-50 dark:bg-orange-500/10 text-orange-500 border-orange-100 dark:border-orange-500/20 hover:border-orange-500',
         purple: 'bg-purple-50 dark:bg-purple-500/10 text-purple-500 border-purple-100 dark:border-purple-500/20 hover:border-purple-500',
+        amber: 'bg-amber-50 dark:bg-amber-500/10 text-amber-500 border-amber-100 dark:border-amber-500/20 hover:border-amber-500',
     };
 
     return (
@@ -346,7 +348,7 @@ const BigActionCard = ({ title, desc, icon, color, onClick }: {
             onClick={onClick}
             className={`p-6 rounded-[2rem] border-2 transition-all hover:scale-[1.02] text-left flex flex-col items-center gap-4 ${colors[color]}`}
         >
-            <div className={`p-4 rounded-2xl ${color === 'red' ? 'bg-red-500 text-white' : color === 'blue' ? 'bg-blue-500 text-white' : color === 'orange' ? 'bg-orange-500 text-white' : 'bg-purple-500 text-white'}`}>
+            <div className={`p-4 rounded-2xl ${color === 'red' ? 'bg-red-500 text-white' : color === 'blue' ? 'bg-blue-500 text-white' : color === 'orange' ? 'bg-orange-500 text-white' : color === 'amber' ? 'bg-amber-500 text-white' : 'bg-purple-500 text-white'}`}>
                 {icon}
             </div>
             <div>
