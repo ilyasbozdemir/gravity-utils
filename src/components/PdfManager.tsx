@@ -515,19 +515,39 @@ export const PdfManager: React.FC<PdfManagerProps> = ({ file, onBack, initialTab
     };
 
     const handleProtect = async () => {
-        if (pdfFiles.length === 0 || !pdfPassword) return;
-        setProcessing(true);
-        setStatusText('PDF şifreleniyor...');
-        try {
-            // NOTA: pdf-lib v1.x standart olarak şifreleme/parola korumalı kaydetmeyi desteklemez.
-            // Bu özelliği sunucu tarafı veya özel bir WASM kütüphanesi olmadan tarayıcıda gerçekleştirmek mümkün değildir.
-            alert('PDF Şifreleme özelliği şu anki tarayıcı tabanlı versiyonda desteklenmemektedir. Tam destek için sunucu entegrasyonu gereklidir.');
-        } catch (err) {
-            console.error(err);
-            alert('Şifreleme hatası: ' + (err as Error).message);
+        if (pdfFiles.length === 0 || !pdfPassword) {
+            alert('Lütfen şifrelenecek dosyayı ve şifreyi girin.');
+            return;
         }
-        setProcessing(false);
-        setStatusText('');
+        setProcessing(true);
+        setStatusText('PDF şifreleniyor (Sunucu Tarafında)...');
+        try {
+            const formData = new FormData();
+            formData.append('file', pdfFiles[0].file);
+            formData.append('type', 'pdf-protect');
+            formData.append('password', pdfPassword);
+
+            const response = await fetch('/api/convert', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Şifreleme sırasında bir hata oluştu.');
+            }
+
+            const blob = await response.blob();
+            saveAs(blob, `sifreli-${pdfFiles[0].name}`);
+
+            alert('PDF başarıyla şifrelendi.');
+        } catch (err: any) {
+            console.error(err);
+            alert('Şifreleme hatası: ' + err.message);
+        } finally {
+            setProcessing(false);
+            setStatusText('');
+        }
     };
 
     const handleUnlock = async () => {

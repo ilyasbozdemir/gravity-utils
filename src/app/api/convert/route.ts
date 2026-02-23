@@ -123,6 +123,23 @@ export async function POST(req: NextRequest) {
                     },
                 });
             }
+
+            if (type === 'pdf-protect') {
+                const password = formData?.get('password') as string;
+                if (!password) {
+                    return NextResponse.json({ error: 'Parola belirtilmedi' }, { status: 400 });
+                }
+
+                const { encryptPDF } = await import('@pdfsmaller/pdf-encrypt-lite');
+                const encryptedBytes = await encryptPDF(new Uint8Array(arrayBuffer), password);
+
+                return new Response(Buffer.from(encryptedBytes), {
+                    headers: {
+                        'Content-Type': 'application/pdf',
+                        'Content-Disposition': `attachment; filename="protected-${fileName}"`,
+                    },
+                });
+            }
         }
 
         // --- Text Processing Logic (JSON or FormData) ---

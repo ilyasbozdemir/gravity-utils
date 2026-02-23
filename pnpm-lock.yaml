@@ -11,6 +11,9 @@ importers:
       '@pdf-lib/fontkit':
         specifier: ^1.1.1
         version: 1.1.1
+      '@pdfsmaller/pdf-encrypt-lite':
+        specifier: ^1.0.1
+        version: 1.0.1(pdf-lib@1.17.1)
       '@types/jszip':
         specifier: ^3.4.0
         version: 3.4.1
@@ -381,6 +384,12 @@ packages:
 
   '@pdf-lib/upng@1.0.1':
     resolution: {integrity: sha512-dQK2FUMQtowVP00mtIksrlZhdFXQZPC+taih1q4CvPZ5vqdxR/LKBaFg0oAfzd1GlHZXXSPdQfzQnt+ViGvEIQ==}
+
+  '@pdfsmaller/pdf-encrypt-lite@1.0.1':
+    resolution: {integrity: sha512-9giOp0WRqGqV/dwDSMJFBLaYe3IFmyQWvmQDeY//VZOGTQIvWHAfncV+6NSgdAjoCpUilHdXTJx0X/6YF1gegw==}
+    engines: {node: '>=14.0.0'}
+    peerDependencies:
+      pdf-lib: ^1.17.1
 
   '@pkgjs/parseargs@0.11.0':
     resolution: {integrity: sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg==}
@@ -2947,6 +2956,10 @@ snapshots:
   '@pdf-lib/upng@1.0.1':
     dependencies:
       pako: 1.0.11
+
+  '@pdfsmaller/pdf-encrypt-lite@1.0.1(pdf-lib@1.17.1)':
+    dependencies:
+      pdf-lib: 1.17.1
 
   '@pkgjs/parseargs@0.11.0':
     optional: true
