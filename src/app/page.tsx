@@ -64,6 +64,7 @@ const MermaidEditor = dynamic(() => import('@/components/MermaidEditor').then(mo
 const CodeSnap = dynamic(() => import('@/components/CodeSnap').then(mod => mod.CodeSnap), { ssr: false });
 const SmartMockGenerator = dynamic(() => import('@/components/SmartMockGenerator').then(mod => mod.SmartMockGenerator), { ssr: false });
 const SqlConverter = dynamic(() => import('@/components/SqlConverter').then(mod => mod.SqlConverter), { ssr: false });
+const TerminalMastery = dynamic(() => import('@/components/TerminalMastery').then(mod => mod.TerminalMastery), { ssr: false });
 
 export default function Home() {
     const [file, setFile] = useState<File | null>(null);
@@ -262,6 +263,7 @@ export default function Home() {
                             {view === 'codesnap' && <CodeSnap onBack={() => setView('home')} />}
                             {view === 'mock-generator' && <SmartMockGenerator onBack={() => setView('home')} />}
                             {view === 'sql-converter' && <SqlConverter onBack={() => setView('home')} />}
+                            {view === 'terminal-mastery' && <TerminalMastery onBack={() => setView('home')} />}
                             {view === 'text-diff' && <TextDiff onBack={() => setView('home')} />}
                             {view === 'convert' && <FileConverter file={file} onBack={() => setView('home')} />}
                         </div>

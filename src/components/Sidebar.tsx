@@ -20,7 +20,8 @@ import {
     Stamp,
     Sparkles,
     Camera,
-    Repeat
+    Repeat,
+    Terminal
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 
@@ -35,7 +36,7 @@ export type ToolView =
     | 'iban-checker' | 'tckn-checker' | 'file-size-calc' | 'viewport-calc' | 'exif-viewer' | 'bulk-rename'
     | 'email-header-analyzer' | 'identifier-converter' | 'schema-generator' | 'metadata-generator' | 'document-toolkit' | 'check-toolkit'
     | 'json-to-code' | 'text-diff' | 'exam-generator' | 'pdf-merge' | 'pdf-split' | 'pdf-compress' | 'pdf-watermark' | 'mermaid'
-    | 'codesnap' | 'mock-generator' | 'sql-converter';
+    | 'codesnap' | 'mock-generator' | 'sql-converter' | 'terminal-mastery';
 
 interface SidebarProps {
     currentView: ToolView;
@@ -98,6 +99,7 @@ const NAV_ITEMS: NavItem[] = [
     { id: 'json-to-code', title: 'JSON ↔ Code Generator', icon: <FileCode size={18} />, category: 'dev', addedAt: '2026-02-23' },
     { id: 'mermaid', title: 'Mermaid Diyagram Pro', icon: <Sparkles size={18} />, category: 'dev', addedAt: '2026-02-23' },
     { id: 'codesnap', title: 'CodeSnap Pro', icon: <Camera size={18} />, category: 'dev', addedAt: '2026-02-23' },
+    { id: 'terminal-mastery', title: 'Terminal Mastery Pro', icon: <Terminal size={18} />, category: 'dev', addedAt: '2026-02-23' },
     { id: 'mock-generator', title: 'Smart Mock Generator', icon: <Database size={18} />, category: 'dev', addedAt: '2026-02-23' },
     { id: 'sql-converter', title: 'SQL Schema Converter', icon: <Repeat size={18} />, category: 'dev', addedAt: '2026-02-23' },
     { id: 'text-diff', title: 'Metin Karşılaştırıcı', icon: <Split size={18} />, category: 'dev', addedAt: '2026-02-23' },
