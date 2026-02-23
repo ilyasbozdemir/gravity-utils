@@ -19,6 +19,56 @@ import {
     XCircle,
 } from "lucide-react";
 
+const AxiosPlayground = ({ code, phrase }: { code: number; phrase: string }) => {
+    const isError = code >= 400;
+    const method = isError ? "post" : "get";
+
+    const codeSnippet = isError
+        ? `// Axios Hata Yakalama (${code})
+axios.${method}('/api/resource', { data: 'test' })
+  .catch(error => {
+    if (error.response && error.response.status === ${code}) {
+      console.error("Hata: ${phrase}");
+      // Çözüm: Logları incele ve veriyi doğrula
+    }
+  });`
+        : `// Axios Başarılı İstek (${code})
+axios.${method}('/api/resource')
+  .then(response => {
+    if (response.status === ${code}) {
+      console.log("Başarılı: ${phrase}");
+      console.log(response.data);
+    }
+  });`;
+
+    return (
+        <div className="p-6 bg-slate-950 rounded-[2rem] border border-white/5 shadow-2xl relative overflow-hidden group/axios">
+            <div className="absolute top-0 right-0 p-4 opacity-5 group-hover/axios:opacity-20 transition-opacity">
+                <Code2 size={60} />
+            </div>
+            <p className="text-[11px] font-black uppercase tracking-[0.25em] text-indigo-400 mb-4 flex items-center gap-2">
+                <Terminal size={14} className="animate-pulse" /> Axios Implementation
+            </p>
+            <div className="relative">
+                <pre className="text-[12px] font-mono text-slate-300 overflow-x-auto selection:bg-indigo-500/30">
+                    <code className="block py-2 leading-relaxed">
+                        {codeSnippet}
+                    </code>
+                </pre>
+                <button
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        navigator.clipboard.writeText(codeSnippet);
+                    }}
+                    className="absolute top-0 right-0 p-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors text-[10px] font-bold text-slate-400 uppercase"
+                >
+                    kopyala
+                </button>
+            </div>
+        </div>
+    );
+};
+
 const STATUS_CODES = [
     // 1xx: Informational
     {
@@ -188,6 +238,39 @@ const STATUS_CODES = [
             "Netflix'te videonun ortasına tıkladığınızda sadece o saniyenin verisinin gelmesi.",
         proTip: "Büyük boyutlu verileri stream etmek için hayati bir koddur.",
     },
+    {
+        code: 207,
+        phrase: "Multi-Status",
+        category: "Success",
+        desc: "Çoklu Durum.",
+        longDesc: "Birden fazla işlemin sonucunu içeren bir XML yanıtı döner (WebDAV).",
+        rootCause: "Aynı anda birden fazla kaynağın durumunun sorgulanması.",
+        solution: "Yanıttaki her bir 'status' bloğu ayrı ayrı işlenmelidir.",
+        example: "Bir klasördeki 5 dosyanın 3'ü silindi, 2'si silinemedi bilgisini tek seferde dönerken.",
+        proTip: "Toplu API isteklerinde (Bulk Operations) karmaşıklığı azaltmak için tasarım kalıbı olarak kullanılabilir.",
+    },
+    {
+        code: 208,
+        phrase: "Already Reported",
+        category: "Success",
+        desc: "Zaten Bildirildi.",
+        longDesc: "Bir DAV bağlamında, kaynağın üyeleri yanıtın önceki bir bölümünde zaten numaralandırılmıştır.",
+        rootCause: "Aynı verinin tekrar tekrar listelenmesini önlemek.",
+        solution: "İstemci bu kısmı atlayıp mevcut referansı kullanabilir.",
+        example: "Döngüsel referans içeren klasör yapılarında verinin replikasyonunu önlemek.",
+        proTip: "Veritabanı dökümlerinde veya derin JSON objelerinde gereksiz şişmeyi engeller.",
+    },
+    {
+        code: 226,
+        phrase: "IM Used",
+        category: "Success",
+        desc: "IM Kullanıldı.",
+        longDesc: "Sunucu, kaynak üzerindeki bir GET isteğini tamamladı ve yanıt, geçerli örneğe uygulanan bir veya daha fazla örneğin sonucudur.",
+        rootCause: "Delta encoding (fark kodlaması) kullanımı.",
+        solution: "İstemci gelen farkı mevcut kaynağına 'yama' (patch) olarak uygulamalıdır.",
+        example: "Sadece değişen dosya parçalarının indirilmesi (Git diff gibi).",
+        proTip: "Mobil veri kullanımını azaltmak için hardcore performans optimizasyonlarında tercih edilir.",
+    },
 
     // 3xx: Redirection
     {
@@ -255,6 +338,39 @@ const STATUS_CODES = [
         example: "Bir ödeme API'sinin v1'den v2'ye kalıcı geçişi.",
         proTip: "Veri kaybını önleyen en katı kalıcı yönlendirme budur.",
     },
+    {
+        code: 300,
+        phrase: "Multiple Choices",
+        category: "Redirection",
+        desc: "Çoklu Seçenek.",
+        longDesc: "İsteğin birden fazla olası yanıtı var. Kullanıcı veya kullanıcı aracı birini seçmelidir.",
+        rootCause: "Aynı kaynağın farklı formatlarda (HTML, JSON, XML) bulunması.",
+        solution: "Yanıttaki seçeneklerden biri seçilerek yeni bir istek yapılmalıdır.",
+        example: "Video indirme sitesinde farklı çözünürlük seçeneklerinin sunulması.",
+        proTip: "Genellikle video formatları veya dil seçenekleri arasında otomatik seçim yapamayan tarayıcılar için kullanılır.",
+    },
+    {
+        code: 303,
+        phrase: "See Other",
+        category: "Redirection",
+        desc: "Diğerine Bak.",
+        longDesc: "İstediğiniz kaynağı GET metoduyla başka bir URL'den alabilirsiniz.",
+        rootCause: "Form gönderimi (POST) sonrası kullanıcıyı başka bir sayfaya yönlendirme gereği.",
+        solution: "Farklı bir URL'ye GET isteği yapın.",
+        example: "Ödeme yapıldıktan sonra 'Başarılı' sayfasına yönlendirilmek.",
+        proTip: "Double-Submit (formun iki kere gitmesi) sorununu çözmek için Post-Redirect-Get paterniyle kullanılır.",
+    },
+    {
+        code: 305,
+        phrase: "Use Proxy",
+        category: "Redirection",
+        desc: "Proxy Kullan (Güvenlik Uyarısı).",
+        longDesc: "İstenen kaynağa yalnızca yanıtta belirtilen proxy üzerinden erişilebilir.",
+        rootCause: "Ağ kısıtlamaları veya güvenlik duvarı protokolleri.",
+        solution: "Belirtilen proxy ayarlarını tarayıcıya uygulayıp tekrar deneyin.",
+        example: "Şirket içi hassas verilere sadece VPN/Proxy üzerinden bakılabilmesi durumu.",
+        proTip: "Modern tarayıcılarda güvenlik (hijacking) riskleri nedeniyle pek desteklenmez, dikkatli olun.",
+    },
 
     // 4xx: Client Error
     {
@@ -281,6 +397,17 @@ const STATUS_CODES = [
         example: "Oturum açmadan profil sayfasına girmeye çalışmak.",
         proTip:
             "Bu kod kimliği sormak içindir, yetkiyi sormak için 403 kullanılır.",
+    },
+    {
+        code: 402,
+        phrase: "Payment Required",
+        category: "Client Error",
+        desc: "Ödeme Gerekli.",
+        longDesc: "Gelecekteki kullanımlar için ayrılmış bir koddur ancak şu an SaaS sistemlerinde yaygın kullanılır.",
+        rootCause: "Abonelik süresinin dolması veya limit aşımı.",
+        solution: "Ödeme sayfasına yönlendirilmeli veya paket yükseltilmelidir.",
+        example: "API krediniz bittiğinde dönen hata.",
+        proTip: "Aslında RFC'de tam tanımlanmadı ama Stripe gibi devler bunu standart haline getirdi.",
     },
     {
         code: 403,
@@ -323,6 +450,39 @@ const STATUS_CODES = [
             "API tasarlarken readonly endpointlere POST atıldığında mutlaka bu kodu dönün.",
     },
     {
+        code: 406,
+        phrase: "Not Acceptable",
+        category: "Client Error",
+        desc: "Kabul Edilemez.",
+        longDesc: "Sunucu, istemcinin beklediği formatta (Accept header) veri üretemiyor.",
+        rootCause: "İstemci JSON istiyor ama sunucu sadece XML biliyor.",
+        solution: "Header bilgisini desteklenen formatlardan birine çekin.",
+        example: "Accept: application/pdf gönderilen bir yere sadece plain text dönebilen sunucu.",
+        proTip: "API'nizin Content-Type desteğini geniş tutmak bu hatayı minimize eder.",
+    },
+    {
+        code: 407,
+        phrase: "Proxy Authentication Required",
+        category: "Client Error",
+        desc: "Proxy Yetkisi Lazım.",
+        longDesc: "Kaynağa erişmeden önce aradaki proxy sunucusuna giriş yapmalısın.",
+        rootCause: "Kurumsal firewall yapılandırmaları.",
+        solution: "Proxy-Authenticate başlığındaki kimlik bilgilerini doğrulayın.",
+        example: "Ofis internetinde web sayfasına girmeden önce çıkan şirket login ekranı.",
+        proTip: "401 ile benzerdir ama 407 sadece 'ara eleman' (proxy) içindir.",
+    },
+    {
+        code: 408,
+        phrase: "Request Timeout",
+        category: "Client Error",
+        desc: "İstek Zaman Aşımı.",
+        longDesc: "İstemci isteği vaktinde tamamlayamadı, sunucu beklemekten vazgeçti.",
+        rootCause: "Yavaş internet bağlantısı veya çok büyük dosya yükleme denemesi.",
+        solution: "İnternet bağlantısını kontrol edip tekrar deneyin.",
+        example: "Veri paketleri aşırı yavaş giderken sunucunun bağlantıyı kesmesi.",
+        proTip: "Sunucu tarafındaki 'Idle Timeout' ayarlarıyla doğrudan ilişkilidir.",
+    },
+    {
         code: 409,
         phrase: "Conflict",
         category: "Client Error",
@@ -352,6 +512,61 @@ const STATUS_CODES = [
             '404\'ten farkı, bu kodun bir "temizlik" sinyali olmasıdır; arama motorları bunu görünce indeksten hemen siler.',
     },
     {
+        code: 411,
+        phrase: "Length Required",
+        category: "Client Error",
+        desc: "Uzunluk Gerekli.",
+        longDesc: "Content-Length başlığı belirtilmeden bu istek kabul edilemez.",
+        rootCause: "Veri boyutu belirtilmeyen POST istekleri.",
+        solution: "İsteğe Content-Length header'ı ekleyin.",
+        example: "Gövdesi olan bir isteği boyut belirtmeden göndermeye çalışmak.",
+        proTip: "Güvenlik için buffer overflow saldırılarını önlemede sunucular tarafından katı bir şekilde uygulanır.",
+    },
+    {
+        code: 412,
+        phrase: "Precondition Failed",
+        category: "Client Error",
+        desc: "Ön Koşul Sağlanamadı.",
+        longDesc: "Sunucu, istemci tarafından belirtilen bir veya daha fazla ön koşulu (If-Match vb.) karşılamıyor.",
+        rootCause: "ETag eşleşmemesi sonucu veri güncelleme çakışması.",
+        solution: "Verinin güncel halini çekip (GET) tekrar deneyin.",
+        example: "Siz veriyi düzenlerken başkası kaydettiği için ETag'in değişmiş olması.",
+        proTip: "Optimistic Locking mekanizmalarının temel taşıdır.",
+    },
+    {
+        code: 413,
+        phrase: "Payload Too Large",
+        category: "Client Error",
+        desc: "İstek Gövdesi Çok Büyük.",
+        longDesc: "Gönderdiğiniz veri sunucunun limitlerini aşıyor.",
+        rootCause: "Çok büyük dosya yükleme (File Upload).",
+        solution: "Dosyayı küçültün veya parçalara (multipart) bölüp yükleyin.",
+        example: "10MB limit olan bir yere 50MB fotoğraf yüklemeye çalışmak.",
+        proTip: "Nginx'te 'client_max_body_size' ayarını kontrol ederek bu limiti değiştirebilirsiniz.",
+    },
+    {
+        code: 414,
+        phrase: "URI Too Long",
+        category: "Client Error",
+        desc: "URL Çok Uzun.",
+        longDesc: "URL adresi sunucunun işleyemeyeceği kadar fazla karakter içeriyor.",
+        rootCause: "GET isteğine aşırı fazla parametre eklenmesi.",
+        solution: "Verileri URL üzerinden değil, POST metoduyla gövde (body) içinde gönderin.",
+        example: "Bir aramada binlerce kelimeyi URL parametresi yapmaya çalışmak.",
+        proTip: "Genellikle 2048 karakter sonrası tehlikeli bölgedir.",
+    },
+    {
+        code: 415,
+        phrase: "Unsupported Media Type",
+        category: "Client Error",
+        desc: "Desteklenmeyen Medya.",
+        longDesc: "Sunucu, isteğin içindeki veri formatını (Content-Type) anlamıyor.",
+        rootCause: "Görüntü bekleyen yere .txt dosyası gönderilmesi.",
+        solution: "İsteğin gövde formatını ve header'ını sunucunun beklentisine uydurun.",
+        example: "JSON bekleyen API'ye XML veri yollamak.",
+        proTip: "Postman'de 'Content-Type' ayarınızın doğruluğundan emin olun.",
+    },
+    {
         code: 418,
         phrase: "I'm a teapot",
         category: "Client Error",
@@ -364,6 +579,39 @@ const STATUS_CODES = [
             "1 Nisan şakası olarak sunucuya kahve makinesi muamelesi yapmak.",
         proTip:
             'Geliştiriciler arasında bir "Easter Egg" olarak hala çok popülerdir.',
+    },
+    {
+        code: 416,
+        phrase: "Range Not Satisfiable",
+        category: "Client Error",
+        desc: "Aralık Uygun Değil.",
+        longDesc: "Dosyanın istenen kısmı (örneğin 100-200. byte'lar arası) mevcut değil.",
+        rootCause: "Video seek işlemi yapılırken dosya boyutundan büyük bir yerin istenmesi.",
+        solution: "İstenen byte aralığını dosya boyutuna göre revize edin.",
+        example: "1000 byte'lık dosyanın 2000. byte'ını istemek.",
+        proTip: "İndirme yöneticileri (IDM vb.) bu hatayla sık karşılaşabilir.",
+    },
+    {
+        code: 417,
+        phrase: "Expectation Failed",
+        category: "Client Error",
+        desc: "Beklenti Karşılanamadı.",
+        longDesc: "Sunucu, 'Expect' başlığındaki gereksinimleri karşılayamıyor.",
+        rootCause: "İstemcinin sunduğu teknik spesifikasyonun sunucuda olmaması.",
+        solution: "Expect başlığını kaldırın veya gereksinimleri basitleştirin.",
+        example: "Sunucunun desteklemediği bir transfer kodlaması talep etmek.",
+        proTip: "Nadiren görülür, genellikle custom proxy/gateway yapılarında karşımıza çıkar.",
+    },
+    {
+        code: 421,
+        phrase: "Misdirected Request",
+        category: "Client Error",
+        desc: "Yanlış Yönlendirilmiş İstek.",
+        longDesc: "İstek, yanıt üretemeyen bir sunucuya gönderildi.",
+        rootCause: "Bağlantı yeniden kullanımı (connection reuse) hataları.",
+        solution: "DNS ayarlarını veya yönlendirme kurallarını kontrol edin.",
+        example: "Yanlış yapılandırılmış bir load balancer/proxy üzerinden talep iletmek.",
+        proTip: "HTTP/2 protokolünde sertifika çakışmalarında sıkça görülür.",
     },
     {
         code: 422,
@@ -379,6 +627,50 @@ const STATUS_CODES = [
             "Modern web API'lerinde en çok kullanılan hata kodlarından biridir.",
     },
     {
+        code: 423,
+        phrase: "Locked",
+        category: "Client Error",
+        desc: "Kilitli (İşlem Yasak).",
+        longDesc: "Erişilmek istenen kaynak şu an başka bir işlem tarafından kilitlenmiş durumda.",
+        rootCause: "Aynı anda aynı dosyayı düzenleyen iki farklı süreç.",
+        solution: "Diğer işlemin bitmesini bekleyin veya kilidi kaldırın.",
+        example: "Bir dokümanın aynı anda iki kişi tarafından 'check-out' edilmesi.",
+        proTip: "WebDAV sistemlerinde dosya bütünlüğünü korumak için hayati öneme sahiptir.",
+    },
+    {
+        code: 424,
+        phrase: "Failed Dependency",
+        category: "Client Error",
+        desc: "Bağımsızlık Hatası.",
+        longDesc: "İstek başarısız oldu çünkü bağımlı olduğu başka bir işlem hata verdi.",
+        rootCause: "Zincirleme (sequential) yapılan isteklerin birinde kopukluk.",
+        solution: "Önceki adımların başarıyla tamamlandığından emin olun.",
+        example: "Klasör oluşturma hatası yüzünden klasöre dosya ekleme işleminin iptali.",
+        proTip: "İşlem atomikliğini (atomicity) sağlamak için kullanılır.",
+    },
+    {
+        code: 426,
+        phrase: "Upgrade Required",
+        category: "Client Error",
+        desc: "Yükseltme Gerekli.",
+        longDesc: "Sunucu bu isteği mevcut protokol ile yapmayı reddediyor, TLS/HTTP2 gibi bir yükseltme bekliyor.",
+        rootCause: "Güvenli olmayan (HTTP) bağlantı üzerinden hassas veri talebi.",
+        solution: "İsteği HTTPS veya daha modern bir sürümle tekrar yapın.",
+        example: "Sadece TLS 1.3 destekleyen bir API'ye eski SSL ile bağlanmaya çalışmak.",
+        proTip: "Güvenlik standartlarını yükseltmek için kullanılan zorlayıcı bir mekanizmadır.",
+    },
+    {
+        code: 428,
+        phrase: "Precondition Required",
+        category: "Client Error",
+        desc: "Ön Koşul Gerekli.",
+        longDesc: "Kaynak üzerinde değişiklik yapmadan önce If-Match gibi bir koşul sunmalısın.",
+        rootCause: "Kayıp Güncelleme (Lost Update) sorunlarını önlemek.",
+        solution: "İsteğe verinin güncel versiyon ID'sini ekleyin.",
+        example: "Sunucunun 'kimin verisiyle çakışacağımı bilmem lazım' demesi.",
+        proTip: "API'lerde yanlışlıkla veri ezilmesini (overwrite) önleyen güvenli bir bariyerdir.",
+    },
+    {
         code: 429,
         phrase: "Too Many Requests",
         category: "Client Error",
@@ -390,6 +682,50 @@ const STATUS_CODES = [
         example: "Instagram'da bir saniyede 100 kişiyi takip etmeye çalışmak.",
         proTip:
             "API'nizi korumak için mutlaka bir Rate-Limit mekanizması kurmalısınız.",
+    },
+    {
+        code: 431,
+        phrase: "Request Header Fields Too Large",
+        category: "Client Error",
+        desc: "Başlıklar Çok Büyük.",
+        longDesc: "HTTP header bilgileri (özellikle Cookie'ler) sunucun işleme limitini aştı.",
+        rootCause: "Aşırı büyümüş tarayıcı çerezleri veya devasa JWT tokenlar.",
+        solution: "Çerezleri temizleyin (Clear Cookies) veya token boyutunu optimize edin.",
+        example: "Yüzlerce çerez biriktiğinde sitenin açılmaması durumu.",
+        proTip: "Domain bazlı çerez temizliği yapmak genellikle sorunu anında çözer.",
+    },
+    {
+        code: 444,
+        phrase: "No Response",
+        category: "Client Error",
+        desc: "Yanıt Yok (Nginx Özel).",
+        longDesc: "Sunucu bağlantıyı kesti ve hiçbir veri dönmedi.",
+        rootCause: "Güvenlik duvarı veya anti-bot sistemi tarafından engellenme.",
+        solution: "Bot gibi davranmadığınızdan emin olun, IP ban durumunu kontrol edin.",
+        example: "Nginx'in saldırgan gördüğü IP'ye hiçbir şey demeden kapıyı kapatması.",
+        proTip: "Loglarda bile görünmeyebilir, en sessiz ve etkili savunma kodudur.",
+    },
+    {
+        code: 451,
+        phrase: "Unavailable For Legal Reasons",
+        category: "Client Error",
+        desc: "Yasal Mevzuat Engeli.",
+        longDesc: "Bu içerik mahkeme kararı veya sansür nedeniyle bu ülkede yasaklanmıştır.",
+        rootCause: "Copyright ihlalleri veya hükümet engelleri.",
+        solution: "Yasal süreci takip edin (veya VPN kullanın).",
+        example: "YouTube'da bir videonun 'ülkenizde kullanılamıyor' uyarısı vermesi.",
+        proTip: "Ray Bradbury'nin Fahrenheit 451 kitabına atıfta bulunarak isimlendirilmiştir.",
+    },
+    {
+        code: 499,
+        phrase: "Client Closed Request",
+        category: "Client Error",
+        desc: "İstemci İsteği Kapattı (Nginx Özel).",
+        longDesc: "Sunucu yanıtı hazırlarken, istemci (tarayıcı) bağlantıyı kesti (vazgeçti).",
+        rootCause: "Kullanıcının sayfa yüklenmeden 'X'e basması veya timeout süreleri.",
+        solution: "Backend işleminin hızlandırılması veya istemci timeout süresinin artırılması.",
+        example: "Büyük bir rapor inerken kullanıcının sabırsızlanıp tarayıcıyı kapatması.",
+        proTip: "Backend servisiniz hala çalışıyor olabilir ama gönderecek bir istemci kalmamıştır; loglarda sık görülür.",
     },
 
     // 5xx: Server Error
@@ -432,6 +768,94 @@ const STATUS_CODES = [
         proTip:
             "Bakım yaparken bu kodu dönmek SEO puanınızın düşmesini engeller.",
     },
+    {
+        code: 504,
+        phrase: "Gateway Timeout",
+        category: "Server Error",
+        desc: "Ağ Geçidi Zaman Aşımı.",
+        longDesc: "Sunucu bir ağ geçidi (proxy) gibi davranırken, arkadaki asıl sunucudan zamanında yanıt alamadı.",
+        rootCause: "Backend servisinin aşırı yavaş olması veya kilitlenmesi.",
+        solution: "Arkadaki veritabanı sorgularını veya API servislerini optimize edin.",
+        example: "Load balancer Node.js servisine sorar ama Node.js 60 saniye boyunca susar.",
+        proTip: "Nginx proxy_read_timeout ayarı ile bu süreyi yönetebilirsiniz.",
+    },
+    {
+        code: 505,
+        phrase: "HTTP Version Not Supported",
+        category: "Server Error",
+        desc: "Sürüm Desteklenmiyor.",
+        longDesc: "Sunucu, isteğin içinde belirtilen HTTP protokol sürümünü desteklemiyor.",
+        rootCause: "Çok eski veya deneysel bir HTTP protokolü ile istek yapmak.",
+        solution: "Standard HTTP/1.1 veya HTTP/2 sürümlerini kullanın.",
+        example: "Henüz çıkmamış bir HTTP/4.0 ile veri yollamaya çalışmak.",
+        proTip: "Modern tarayıcılar bunu otomatik halleder, genellikle hatalı scriptlerden kaynaklanır.",
+    },
+    {
+        code: 506,
+        phrase: "Variant Also Negotiates",
+        category: "Server Error",
+        desc: "Varyant Çakışması.",
+        longDesc: "Sunucu yapılandırmasında bir döngü oluştu; kaynak kendi kendine referans veriyor.",
+        rootCause: "Yanlış 'Content Negotiation' yapılandırması.",
+        solution: "Sunucu tarafındaki yönlendirme (rewrite) kurallarını inceleyin.",
+        example: "Dil seçimi yaparken sonsuz bir yönlendirme döngüsüne girmek.",
+        proTip: "İçerik müzakeresi yapan Apache/Nginx ayarlarında hata arayın.",
+    },
+    {
+        code: 507,
+        phrase: "Insufficient Storage",
+        category: "Server Error",
+        desc: "Yetersiz Depolama.",
+        longDesc: "Sunucunun isteği tamamlamak için gereken alanı (disk) kalmadı.",
+        rootCause: "Dolmuş harddiskler veya kota aşımı.",
+        solution: "Disk alanını temizleyin veya depolama kapasitesini artırın.",
+        example: "Disk doluyken sunucuya 100MB video yüklemeye çalışmak.",
+        proTip: "Monitoring araçlarıyla (Zabbix, NewRelic) disk doluluk oranını önceden takip edin.",
+    },
+    {
+        code: 508,
+        phrase: "Loop Detected",
+        category: "Server Error",
+        desc: "Döngü Algılandı.",
+        longDesc: "Sunucu, WebDAV isteğini işlerken sonsuz bir döngü fark etti.",
+        rootCause: "Birbirine bağlı dosya/link yapılarındaki mantık hatası.",
+        solution: "Klasör veya link yapılandırmasındaki döngüsel referansı kırın.",
+        example: "A klasörü B'yi, B klasörü A'yı içeren bir yapı oluşturmak.",
+        proTip: "Web crawlerlar için ölümcül bir hata kodudur, SEO'yu bitirir.",
+    },
+    {
+        code: 510,
+        phrase: "Not Extended",
+        category: "Server Error",
+        desc: "Genişletilmedi.",
+        longDesc: "Sunucunun isteği yerine getirebilmesi için isteğe ek uzantılar (extensions) gerekiyor.",
+        rootCause: "Eksik protokol özellikleri.",
+        solution: "Gerekli tüm extension başlıklarını isteğe ekleyin.",
+        example: "Özel bir güvenlik katmanı gerektiren kurumsal API istekleri.",
+        proTip: "RFC 2774 kapsamında tanımlanmıştır, nadir bir durumdur.",
+    },
+    {
+        code: 511,
+        phrase: "Network Authentication Required",
+        category: "Server Error",
+        desc: "Ağ Kimlik Doğrulaması.",
+        longDesc: "İnternete erişmeden önce ağın (Wi-Fi vb.) şartlarını kabul etmeli veya giriş yapmalısınız.",
+        rootCause: "Havaalanı veya kafe Wi-Fi giriş ekranları (Captive Portal).",
+        solution: "Açılan portal ekranında giriş yapın veya 'Kabul Et'e basın.",
+        example: "Starbucks Wi-Fi'ına bağlanınca internetin çalışmaması ve sizi bir sayfaya atması.",
+        proTip: "Bu kodun 401'den farkı, hatanın API'den değil internetin kendisinden gelmesidir.",
+    },
+    {
+        code: 599,
+        phrase: "Network Connect Timeout Error",
+        category: "Server Error",
+        desc: "Ağ Bağlantısı Kesildi.",
+        longDesc: "İstek sunucuya hiç ulaşamadı veya arada olan bir proxy bağlantıyı kesti.",
+        rootCause: "Proxy ayarları veya ISP kaynaklı bağlantı kopması.",
+        solution: "İnternet kablonu kontrol et hocam, bağlantı gitmiş olabilir.",
+        example: "VPN açıkken internetin tamamen kesilmesi ve tarayıcının çökmesi.",
+        proTip: "Yine bir HTTP standardı değil, bazı HTTP client kitaplıkları tarafından uydurulmuş 'catch-all' bir hatadır.",
+    },
 ];
 
 const StatusCard = ({ item }: { item: any }) => {
@@ -471,8 +895,8 @@ const StatusCard = ({ item }: { item: any }) => {
         <div
             onClick={() => setIsExpanded(!isExpanded)}
             className={`cursor-pointer group flex flex-col p-6 rounded-[2.5rem] border transition-all duration-500 ${isExpanded
-                    ? "shadow-2xl shadow-indigo-500/15 scale-[1.02] bg-white dark:bg-slate-900"
-                    : "hover:scale-[1.01] hover:shadow-xl"
+                ? "shadow-2xl shadow-indigo-500/15 scale-[1.02] bg-white dark:bg-slate-900"
+                : "hover:scale-[1.01] hover:shadow-xl"
                 } ${getColorClass(item.category)}`}
         >
             <div className="flex flex-col md:flex-row md:items-center gap-6">
@@ -573,6 +997,9 @@ const StatusCard = ({ item }: { item: any }) => {
                             </p>
                         </div>
                     )}
+
+                    {/* Axios Playground */}
+                    <AxiosPlayground code={item.code} phrase={item.phrase} />
                 </div>
             )}
         </div>
