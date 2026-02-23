@@ -519,22 +519,9 @@ export const PdfManager: React.FC<PdfManagerProps> = ({ file, onBack, initialTab
         setProcessing(true);
         setStatusText('PDF şifreleniyor...');
         try {
-            const arrayBuffer = await pdfFiles[0].file.arrayBuffer();
-            const pdfDoc = await PDFDocument.load(arrayBuffer);
-            const pdfBytes = await pdfDoc.save({
-                userPassword: pdfPassword,
-                ownerPassword: pdfPassword,
-                permissions: {
-                    printing: 'highResolution',
-                    modifying: true,
-                    copying: true,
-                    annotating: true,
-                    fillingForms: true,
-                    contentAccessibility: true,
-                    documentAssembly: true,
-                },
-            });
-            downloadPdf(pdfBytes, `sifreli-${pdfFiles[0].name}`);
+            // NOTA: pdf-lib v1.x standart olarak şifreleme/parola korumalı kaydetmeyi desteklemez.
+            // Bu özelliği sunucu tarafı veya özel bir WASM kütüphanesi olmadan tarayıcıda gerçekleştirmek mümkün değildir.
+            alert('PDF Şifreleme özelliği şu anki tarayıcı tabanlı versiyonda desteklenmemektedir. Tam destek için sunucu entegrasyonu gereklidir.');
         } catch (err) {
             console.error(err);
             alert('Şifreleme hatası: ' + (err as Error).message);
@@ -546,18 +533,59 @@ export const PdfManager: React.FC<PdfManagerProps> = ({ file, onBack, initialTab
     const handleUnlock = async () => {
         if (pdfFiles.length === 0 || !pdfPassword) return;
         setProcessing(true);
-        setStatusText('Şifre kaldırılıyor...');
+        setStatusText('Şifre kaldırılıyor (Yeniden işleniyor)...');
         try {
             const arrayBuffer = await pdfFiles[0].file.arrayBuffer();
-            const pdfDoc = await PDFDocument.load(arrayBuffer, { password: pdfPassword });
-            const pdfBytes = await pdfDoc.save();
+
+            // pdf-lib does not support password protected PDFs directly.
+            // We use pdfjs-dist to read the password protected PDF and recreate it.
+            const loadingTask = pdfjsLib.getDocument({
+                data: arrayBuffer,
+                password: pdfPassword
+            });
+
+            const pdf = await loadingTask.promise;
+            const newPdfDoc = await PDFDocument.create();
+
+            for (let i = 1; i <= pdf.numPages; i++) {
+                setStatusText(`Sayfa işleniyor: ${i} / ${pdf.numPages}`);
+                const page = await pdf.getPage(i);
+                const viewport = page.getViewport({ scale: 2.0 });
+                const canvas = document.createElement('canvas');
+                const context = canvas.getContext('2d');
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
+
+                await page.render({
+                    canvasContext: (context as unknown as CanvasRenderingContext2D),
+                    viewport: viewport
+                } as any).promise;
+
+                const imgDataUrl = canvas.toDataURL('image/jpeg', 0.95);
+                const imgImage = await newPdfDoc.embedJpg(imgDataUrl);
+                const newPage = newPdfDoc.addPage([viewport.width, viewport.height]);
+
+                newPage.drawImage(imgImage, {
+                    x: 0,
+                    y: 0,
+                    width: viewport.width,
+                    height: viewport.height,
+                });
+            }
+
+            const pdfBytes = await newPdfDoc.save();
             downloadPdf(pdfBytes, `sifresiz-${pdfFiles[0].name}`);
-        } catch (err) {
+        } catch (err: any) {
             console.error(err);
-            alert('Şifre kaldırılamadı. Lütfen şifrenin doğru olduğundan emin olun.');
+            if (err.name === 'PasswordException') {
+                alert('Geçersiz şifre. Lütfen tekrar deneyin.');
+            } else {
+                alert('Şifre kaldırılamadı: ' + err.message);
+            }
+        } finally {
+            setProcessing(false);
+            setStatusText('');
         }
-        setProcessing(false);
-        setStatusText('');
     };
 
     return (
