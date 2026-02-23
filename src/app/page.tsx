@@ -60,6 +60,7 @@ const DocumentToolkit = dynamic(() => import('@/components/DocumentToolkit').the
 const CheckToolkit = dynamic(() => import('@/components/CheckToolkit').then(mod => mod.CheckToolkit), { ssr: false });
 const JsonToCode = dynamic(() => import('@/components/JsonToCode').then(mod => mod.JsonToCode), { ssr: false });
 const TextDiff = dynamic(() => import('@/components/TextDiff').then(mod => mod.TextDiff), { ssr: false });
+const MermaidEditor = dynamic(() => import('@/components/MermaidEditor').then(mod => mod.MermaidEditor), { ssr: false });
 
 export default function Home() {
     const [file, setFile] = useState<File | null>(null);
@@ -254,6 +255,7 @@ export default function Home() {
                             {view === 'document-toolkit' && <DocumentToolkit onBack={() => setView('home')} />}
                             {view === 'check-toolkit' && <CheckToolkit onBack={() => setView('home')} />}
                             {view === 'json-to-code' && <JsonToCode onBack={() => setView('home')} />}
+                            {view === 'mermaid' && <MermaidEditor onBack={() => setView('home')} />}
                             {view === 'text-diff' && <TextDiff onBack={() => setView('home')} />}
                             {view === 'convert' && <FileConverter file={file} onBack={() => setView('home')} />}
                         </div>

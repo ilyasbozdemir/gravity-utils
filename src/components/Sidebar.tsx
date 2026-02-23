@@ -17,7 +17,8 @@ import {
     Merge,
     Scissors,
     Minimize2,
-    Stamp
+    Stamp,
+    Sparkles
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 
@@ -31,7 +32,7 @@ export type ToolView =
     | 'json-csv' | 'text-cleaner' | 'case-converter-pro' | 'css-units' | 'date-calculator' | 'internet-speed'
     | 'iban-checker' | 'tckn-checker' | 'file-size-calc' | 'viewport-calc' | 'exif-viewer' | 'bulk-rename'
     | 'email-header-analyzer' | 'identifier-converter' | 'schema-generator' | 'metadata-generator' | 'document-toolkit' | 'check-toolkit'
-    | 'json-to-code' | 'text-diff' | 'exam-generator' | 'pdf-merge' | 'pdf-split' | 'pdf-compress' | 'pdf-watermark';
+    | 'json-to-code' | 'text-diff' | 'exam-generator' | 'pdf-merge' | 'pdf-split' | 'pdf-compress' | 'pdf-watermark' | 'mermaid';
 
 interface SidebarProps {
     currentView: ToolView;
@@ -92,6 +93,7 @@ const NAV_ITEMS: NavItem[] = [
     { id: 'network-cable', title: 'Network Kablo Testi', icon: <Cable size={18} />, category: 'dev' },
     { id: 'sql-formatter', title: 'SQL Formatlayıcı', icon: <Database size={18} />, category: 'dev' },
     { id: 'json-to-code', title: 'JSON ↔ Code Generator', icon: <FileCode size={18} />, category: 'dev', addedAt: '2026-02-23' },
+    { id: 'mermaid', title: 'Mermaid Diyagram Pro', icon: <Sparkles size={18} />, category: 'dev', addedAt: '2026-02-23' },
     { id: 'text-diff', title: 'Metin Karşılaştırıcı', icon: <Split size={18} />, category: 'dev', addedAt: '2026-02-23' },
     { id: 'identifier-converter', title: 'Akıllı İsim Çevirici', icon: <Type size={18} />, category: 'dev', addedAt: '2026-02-20' },
     { id: 'schema-generator', title: 'Şema & Form Üretici', icon: <Layers size={18} />, category: 'dev', addedAt: '2026-02-20' },
