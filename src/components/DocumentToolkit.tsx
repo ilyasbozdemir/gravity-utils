@@ -35,9 +35,12 @@ export const DocumentToolkit: React.FC<DocumentToolkitProps> = ({ onBack, initia
                 else if (externalView.includes('compress')) setPdfTab('compress');
                 else if (externalView.includes('watermark')) setPdfTab('watermark');
                 else if (externalView.includes('convert') || externalView.includes('image') || externalView.includes('text') || externalView.includes('word-pdf') || externalView.includes('pdf-word')) setPdfTab('convert');
-            } else if (externalView.includes('word') || externalView.includes('excel') || externalView.includes('ppt')) {
+            } else if (externalView.includes('office') || externalView.includes('word') || externalView.includes('excel') || externalView.includes('ppt') || externalView.includes('image')) {
                 setView('office-tools');
                 if (externalView.includes('pdf')) setOfficeMode(externalView as any);
+                if (externalView === 'imagetopdf') setOfficeMode('imagetopdf');
+            } else if (externalView === 'exam-generator') {
+                setView('exam-generator');
             } else if (externalView === 'convert') {
                 setView('general-converter');
             }
