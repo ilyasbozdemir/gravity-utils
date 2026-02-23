@@ -226,39 +226,165 @@ const TcknChecker = () => {
     const [tckn, setTckn] = useState('');
     const [status, setStatus] = useState<{ isValid: boolean; message: string; steps?: any }>({ isValid: false, message: '11 hane girmelisiniz' });
     const [showAdvanced, setShowAdvanced] = useState(false);
+
     useEffect(() => {
         if (tckn.length === 11) {
             const digits = tckn.split('').map(Number);
             const steps: any = {};
-            if (digits[0] === 0) { setStatus({ isValid: false, message: 'İlk hane 0 olamaz' }); return; }
-            const oddSum = digits[0] + digits[2] + digits[4] + digits[6] + digits[8];
-            const evenSum = digits[1] + digits[3] + digits[5] + digits[7];
+
+            if (digits[0] === 0) {
+                setStatus({ isValid: false, message: 'İlk hane 0 olamaz' });
+                return;
+            }
+
+            const oddDigits = [digits[0], digits[2], digits[4], digits[6], digits[8]];
+            const evenDigits = [digits[1], digits[3], digits[5], digits[7]];
+
+            const oddSum = oddDigits.reduce((a, b) => a + b, 0);
+            const evenSum = evenDigits.reduce((a, b) => a + b, 0);
+
             let tenthDigit = ((oddSum * 7) - evenSum) % 10;
             if (tenthDigit < 0) tenthDigit += 10;
-            steps.oddSum = oddSum; steps.evenSum = evenSum; steps.calculatedTenth = tenthDigit; steps.actualTenth = digits[9];
-            if (tenthDigit !== digits[9]) { setStatus({ isValid: false, message: '10. hane uyumsuz', steps }); return; }
-            const totalSum = digits.slice(0, 10).reduce((a, b) => a + b, 0);
-            const calculatedEleventh = totalSum % 10;
-            steps.totalSum = totalSum; steps.calculatedEleventh = calculatedEleventh; steps.actualEleventh = digits[10];
-            if (calculatedEleventh !== digits[10]) { setStatus({ isValid: false, message: '11. hane uyumsuz', steps }); return; }
-            setStatus({ isValid: true, message: 'TCKN Algoritması Geçerli', steps });
-        } else { setStatus({ isValid: false, message: '11 hane girmelisiniz' }); }
+
+            steps.oddSum = oddSum;
+            steps.oddDigits = oddDigits;
+            steps.evenSum = evenSum;
+            steps.evenDigits = evenDigits;
+            steps.calculatedTenth = tenthDigit;
+            steps.actualTenth = digits[9];
+
+            if (tenthDigit !== digits[9]) {
+                setStatus({ isValid: false, message: '10. Hane Algoritma Hatası', steps });
+                return;
+            }
+
+            const firstTenSum = digits.slice(0, 10).reduce((a, b) => a + b, 0);
+            const calculatedEleventh = firstTenSum % 10;
+
+            steps.firstTenSum = firstTenSum;
+            steps.calculatedEleventh = calculatedEleventh;
+            steps.actualEleventh = digits[10];
+
+            if (calculatedEleventh !== digits[10]) {
+                setStatus({ isValid: false, message: '11. Hane Algoritma Hatası', steps });
+                return;
+            }
+
+            setStatus({ isValid: true, message: 'TCKN Algoritması Doğrulandı', steps });
+        } else {
+            setStatus({ isValid: false, message: '11 hane girmelisiniz' });
+        }
     }, [tckn]);
+
     return (
-        <div className="space-y-6 text-left">
+        <div className="space-y-8 text-left">
             <div className="space-y-4">
-                <input id="tcknInput" type="text" maxLength={11} value={tckn} onChange={e => setTckn(e.target.value.replace(/\D/g, ''))} className="w-full bg-slate-50 dark:bg-white/5 border-2 border-slate-200 dark:border-white/10 rounded-2xl p-5 text-4xl font-black text-center tracking-[0.8rem] outline-none" title="TCKN girin" placeholder="00000000000" />
-                <div className={`p-5 rounded-2xl flex items-center justify-between ${status.isValid ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400' : 'bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-400'}`}>
-                    <div className="flex items-center gap-3"><ShieldCheck size={24} /> <span className="font-black text-sm uppercase tracking-tight">{status.message}</span></div>
-                    {tckn.length === 11 && <button onClick={() => setShowAdvanced(!showAdvanced)} className="text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 bg-white dark:bg-white/5 rounded-lg border border-current">Detay</button>}
+                <div className="relative group">
+                    <input
+                        id="tcknInput"
+                        type="text"
+                        maxLength={11}
+                        value={tckn}
+                        onChange={e => setTckn(e.target.value.replace(/\D/g, ''))}
+                        className="w-full bg-slate-50 dark:bg-white/5 border-2 border-slate-200 dark:border-white/10 rounded-[2.5rem] p-8 text-5xl font-black text-center tracking-[1rem] outline-none focus:border-rose-500/50 transition-all font-mono placeholder:opacity-20 translate-z-0"
+                        title="TCKN girin"
+                        placeholder="00000000000"
+                    />
+                    <div className="absolute -bottom-2 right-8 px-4 py-1 bg-rose-500 text-white text-[9px] font-black uppercase tracking-widest rounded-full opacity-0 group-focus-within:opacity-100 transition-opacity">
+                        Secure Client-Side Analysis
+                    </div>
+                </div>
+
+                <div className={`p-6 rounded-[2rem] border-2 flex items-center justify-between transition-all ${status.isValid
+                    ? 'bg-emerald-50/50 dark:bg-emerald-500/5 border-emerald-200/50 dark:border-emerald-500/20 text-emerald-700 dark:text-emerald-400'
+                    : 'bg-rose-50/50 dark:bg-rose-500/5 border-rose-200/50 dark:border-rose-500/20 text-rose-700 dark:text-rose-400'}`}>
+                    <div className="flex items-center gap-4">
+                        <div className={`p-3 rounded-2xl ${status.isValid ? 'bg-emerald-500 text-white' : 'bg-rose-500 text-white shadow-lg shadow-rose-500/20 animate-pulse'}`}>
+                            <ShieldCheck size={24} />
+                        </div>
+                        <div>
+                            <span className="font-black text-lg uppercase tracking-tight block leading-none mb-1">{status.isValid ? 'Doğrulama Başarılı' : 'Bekleniyor'}</span>
+                            <span className="text-[11px] font-bold opacity-60 uppercase tracking-widest leading-none">{status.message}</span>
+                        </div>
+                    </div>
+                    {tckn.length === 11 && (
+                        <button
+                            onClick={() => setShowAdvanced(!showAdvanced)}
+                            className={`px-5 py-2.5 rounded-xl font-black text-xs uppercase tracking-widest transition-all ${showAdvanced
+                                ? 'bg-slate-900 text-white scale-95'
+                                : 'bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:shadow-lg'}`}
+                        >
+                            {showAdvanced ? 'Gizle' : 'Algoritmayı Gör'}
+                        </button>
+                    )}
                 </div>
             </div>
+
             {showAdvanced && status.steps && (
-                <div className="p-6 bg-slate-50 dark:bg-white/5 rounded-3xl border border-slate-200 dark:border-white/10 space-y-4 animate-in fade-in zoom-in-95 duration-300">
-                    <p className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Algoritma Kontrolü</p>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-medium">
-                        <div className="p-3 bg-white dark:bg-black/20 rounded-xl">10. Hane: ({status.steps.oddSum}*7 - {status.steps.evenSum})%10 = {status.steps.calculatedTenth}</div>
-                        <div className="p-3 bg-white dark:bg-black/20 rounded-xl">11. Hane: {status.steps.totalSum}%10 = {status.steps.calculatedEleventh}</div>
+                <div className="p-8 bg-slate-50 dark:bg-white/5 rounded-[2.5rem] border border-slate-200 dark:border-white/10 space-y-8 animate-in fade-in slide-in-from-top-4 duration-500 relative overflow-hidden">
+                    <div className="absolute top-0 right-0 p-8 opacity-5">
+                        <Terminal size={120} />
+                    </div>
+
+                    <div className="relative z-10">
+                        <h4 className="text-[11px] font-black uppercase text-rose-500 tracking-[0.2em] mb-6 flex items-center gap-2">
+                            <Code2 size={16} /> Teknik Doğrulama Adımları
+                        </h4>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {/* Step 1: 10th Digit */}
+                            <div className="space-y-4">
+                                <div className="flex items-center gap-2 text-xs font-black text-slate-400 uppercase tracking-wider">
+                                    <span className="w-6 h-6 rounded-full bg-slate-200 dark:bg-white/10 flex items-center justify-center text-[10px]">1</span>
+                                    10. Hane Analizi
+                                </div>
+                                <div className="p-5 bg-white dark:bg-black/20 rounded-2xl border border-slate-100 dark:border-white/5 space-y-3">
+                                    <div className="flex justify-between text-[11px] font-bold">
+                                        <span className="text-slate-500">Tek Haneler Toplamı (1,3,5,7,9):</span>
+                                        <span className="text-rose-500">{status.steps.oddSum}</span>
+                                    </div>
+                                    <div className="flex justify-between text-[11px] font-bold">
+                                        <span className="text-slate-500">Çift Haneler Toplamı (2,4,6,8):</span>
+                                        <span className="text-indigo-500">{status.steps.evenSum}</span>
+                                    </div>
+                                    <div className="pt-3 border-t border-slate-100 dark:border-white/5">
+                                        <p className="text-[10px] font-mono text-slate-400 mb-1">Formül: ((Tek*7) - Çift) % 10</p>
+                                        <p className="text-xs font-black">
+                                            ({status.steps.oddSum} × 7) - {status.steps.evenSum} =
+                                            <span className={status.steps.calculatedTenth === status.steps.actualTenth ? 'text-emerald-500' : 'text-rose-500'}> {status.steps.calculatedTenth}</span>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Step 2: 11th Digit */}
+                            <div className="space-y-4">
+                                <div className="flex items-center gap-2 text-xs font-black text-slate-400 uppercase tracking-wider">
+                                    <span className="w-6 h-6 rounded-full bg-slate-200 dark:bg-white/10 flex items-center justify-center text-[10px]">2</span>
+                                    11. Hane Analizi
+                                </div>
+                                <div className="p-5 bg-white dark:bg-black/20 rounded-2xl border border-slate-100 dark:border-white/5 space-y-3 text-left">
+                                    <div className="flex justify-between text-[11px] font-bold">
+                                        <span className="text-slate-500">İlk 10 Hane Toplamı:</span>
+                                        <span className="text-rose-500">{status.steps.firstTenSum}</span>
+                                    </div>
+                                    <div className="pt-3 border-t border-slate-100 dark:border-white/5">
+                                        <p className="text-[10px] font-mono text-slate-400 mb-1">Formül: (Toplam) % 10</p>
+                                        <p className="text-xs font-black">
+                                            {status.steps.firstTenSum} % 10 =
+                                            <span className={status.steps.calculatedEleventh === status.steps.actualEleventh ? 'text-emerald-500' : 'text-rose-500'}> {status.steps.calculatedEleventh}</span>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="mt-8 p-4 bg-indigo-500/5 rounded-2xl border border-indigo-500/10 flex items-start gap-4">
+                            <Info size={16} className="text-indigo-500 mt-1 shrink-0" />
+                            <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400 leading-relaxed italic">
+                                "Bu doğrulama süreci tamamen matematikseldir. Nüfus ve Vatandaşlık İşleri Genel Müdürlüğü standart algoritması baz alınarak <strong>%100 güvenli ve anonim</strong> olarak cihazınızda gerçekleştirilmiştir."
+                            </p>
+                        </div>
                     </div>
                 </div>
             )}

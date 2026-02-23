@@ -67,7 +67,7 @@ function analyzePassword(pwd: string) {
     return { has, entropy, strength: strengthLabel(entropy) };
 }
 
-export function PasswordGenerator() {
+export function PasswordGenerator({ onBack }: { onBack: () => void }) {
     const handleBack = () => { window.location.hash = ''; };
     const [length, setLength] = useState(20);
     const [opts, setOpts] = useState({ upper: true, lower: true, digits: true, symbols: true });

@@ -2,6 +2,7 @@ import React from 'react';
 import {
     Lock, Share2, MousePointer2, Settings, Smartphone, RefreshCw, Layers, Globe,
     Type, Clock, Camera, Zap, Star, Calculator, FileText, Minimize2, Hash, Code, Search, QrCode, Archive, Database,
+    Split, FileCode,
     Image as ImageIcon
 } from 'lucide-react';
 
@@ -14,7 +15,8 @@ export type ToolView =
     | 'timezone-converter' | 'json-ld' | 'network-cable' | 'lorem-ipsum' | 'aspect-ratio' | 'social-guide' | 'http-status'
     | 'json-csv' | 'text-cleaner' | 'case-converter-pro' | 'css-units' | 'date-calculator' | 'internet-speed'
     | 'iban-checker' | 'tckn-checker' | 'file-size-calc' | 'viewport-calc' | 'exif-viewer' | 'bulk-rename'
-    | 'email-header-analyzer' | 'identifier-converter' | 'schema-generator' | 'metadata-generator' | 'document-toolkit';
+    | 'email-header-analyzer' | 'identifier-converter' | 'schema-generator' | 'metadata-generator' | 'document-toolkit'
+    | 'json-to-code' | 'text-diff';
 
 interface LandingHeroProps {
     onFileSelect: (file: File) => void;
@@ -101,6 +103,8 @@ export const LandingHero: React.FC<LandingHeroProps> = ({ onToolSelect }) => {
                             <QuickAction title="Meta Üretici" onClick={() => onToolSelect('metadata-generator')} icon={<Globe size={16} />} color="emerald" />
                             <QuickAction title="Viewport Calc" onClick={() => onToolSelect('viewport-calc')} icon={<Smartphone size={16} />} color="orange" />
                             <QuickAction title="JSON Schema" onClick={() => onToolSelect('json-ld')} icon={<Search size={16} />} color="amber" />
+                            <QuickAction title="JSON ↔ Code" onClick={() => onToolSelect('json-to-code')} icon={<FileCode size={16} />} color="blue" />
+                            <QuickAction title="Metin Diff" onClick={() => onToolSelect('text-diff')} icon={<Split size={16} />} color="indigo" />
                             <QuickAction title="SQL Format" onClick={() => onToolSelect('sql-formatter')} icon={<Database size={16} />} color="rose" />
                         </div>
                     </section>

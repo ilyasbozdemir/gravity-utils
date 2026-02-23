@@ -66,8 +66,8 @@ function toBase64DataUrl(svg: string): string {
     return `data:image/svg+xml;base64,${btoa(unescape(encodeURIComponent(svg)))}`;
 }
 
-export function SvgOptimizer() {
-    const handleBack = () => { window.location.hash = ''; };
+export function SvgOptimizer({ onBack }: { onBack: () => void }) {
+    const handleBack = onBack;
     const [input, setInput] = useState('');
     const [output, setOutput] = useState('');
     const [savings, setSavings] = useState(0);

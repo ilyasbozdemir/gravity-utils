@@ -58,6 +58,8 @@ const MetadataGenerator = dynamic(() => import('@/components/MetadataGenerator')
 const EmailHeaderAnalyzer = dynamic(() => import('@/components/EmailHeaderAnalyzer').then(mod => mod.EmailHeaderAnalyzer), { ssr: false });
 const DocumentToolkit = dynamic(() => import('@/components/DocumentToolkit').then(mod => mod.DocumentToolkit), { ssr: false });
 const CheckToolkit = dynamic(() => import('@/components/CheckToolkit').then(mod => mod.CheckToolkit), { ssr: false });
+const JsonToCode = dynamic(() => import('@/components/JsonToCode').then(mod => mod.JsonToCode), { ssr: false });
+const TextDiff = dynamic(() => import('@/components/TextDiff').then(mod => mod.TextDiff), { ssr: false });
 
 export default function Home() {
     const [file, setFile] = useState<File | null>(null);
@@ -210,7 +212,7 @@ export default function Home() {
                             {view === 'sql-formatter' && <SqlFormatter onBack={() => setView('home')} />}
                             {view === 'web-toolkit' && <WebToolkit />}
                             {view === 'network-toolkit' && <NetworkToolkit onBack={() => setView('home')} />}
-                            {view === 'password-generator' && <PasswordGenerator />}
+                            {view === 'password-generator' && <PasswordGenerator onBack={() => setView('home')} />}
                             {view === 'svg-optimizer' && <SvgOptimizer onBack={() => setView('home')} />}
                             {view === 'cron-builder' && <CronBuilder onBack={() => setView('home')} />}
                             {view === 'timezone-converter' && <TimezoneConverter onBack={() => setView('home')} />}
@@ -251,6 +253,8 @@ export default function Home() {
                             {view === 'email-header-analyzer' && <EmailHeaderAnalyzer onBack={() => setView('home')} />}
                             {view === 'document-toolkit' && <DocumentToolkit onBack={() => setView('home')} />}
                             {view === 'check-toolkit' && <CheckToolkit onBack={() => setView('home')} />}
+                            {view === 'json-to-code' && <JsonToCode onBack={() => setView('home')} />}
+                            {view === 'text-diff' && <TextDiff onBack={() => setView('home')} />}
                             {view === 'convert' && <FileConverter file={file} onBack={() => setView('home')} />}
                         </div>
                     )}

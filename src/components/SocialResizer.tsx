@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import Cropper from 'react-easy-crop';
 import { ArrowLeft, Download, Monitor, ZoomIn, RotateCcw, Maximize, GripHorizontal, Sliders } from 'lucide-react';
 import { getCroppedImg, getFittedImg, getMultiPartImg, estimateJpegSize, formatBytes } from '@/utils/cropImage';
@@ -13,6 +13,7 @@ type Area = { width: number; height: number; x: number; y: number };
 
 interface SocialResizerProps {
     file: File | null;
+    onBack: () => void;
 }
 
 const PRESETS = [
@@ -28,8 +29,7 @@ const PRESETS = [
     { name: 'TikTok', w: 1080, h: 1920, ratio: 9 / 16, icon: '🎵' },
 ];
 
-export const SocialResizer: React.FC<SocialResizerProps> = ({ file: initialFile }) => {
-    const handleBack = () => { window.location.hash = ''; };
+export const SocialResizer: React.FC<SocialResizerProps> = ({ file: initialFile, onBack }) => {
     const [imageSrc, setImageSrc] = useState<string | null>(null);
     const [imageDimensions, setImageDimensions] = useState<{ width: number, height: number } | null>(null);
     const [crop, setCrop] = useState<Point>({ x: 0, y: 0 });
@@ -39,6 +39,9 @@ export const SocialResizer: React.FC<SocialResizerProps> = ({ file: initialFile 
     const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
     const [isProcessing, setIsProcessing] = useState(false);
     const [quality, setQuality] = useState(0.92);
+    const [fitMode, setFitMode] = useState(false);
+    const [carouselMode, setCarouselMode] = useState(false);
+    const [carouselParts, setCarouselParts] = useState(0);
 
     const fitPreviewRef = useRef<HTMLDivElement>(null);
     const carouselContainerRef = useRef<HTMLDivElement>(null);
@@ -191,7 +194,7 @@ export const SocialResizer: React.FC<SocialResizerProps> = ({ file: initialFile 
         <div className="max-w-6xl mx-auto p-4 md:p-8 animate-in fade-in zoom-in duration-300">
             <div className="flex items-center gap-4 mb-8">
                 <button
-                    onClick={handleBack}
+                    onClick={onBack}
                     title="Geri Dön"
                     aria-label="Geri Dön"
                     className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
