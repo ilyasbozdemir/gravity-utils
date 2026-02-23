@@ -202,73 +202,79 @@ export const FileConverter: React.FC<FileConverterProps> = ({ file: initialFile,
                     let fullText = '';
                     const pageImages: string[] = [];
 
+                    setProgress('Word belgesi oluşturuluyor...');
+                    const sections: ISectionOptions[] = [];
+
                     for (let i = 1; i <= pdf.numPages; i++) {
                         setProgress(`Sayfa işleniyor: ${i}/${pdf.numPages}`);
                         const page = await pdf.getPage(i);
-
-                        // Text Extraction
                         const textContent = await page.getTextContent();
-                        const pageText = textContent.items.map((item: unknown) => {
-                            if (typeof item === 'object' && item !== null && 'str' in item) {
-                                return (item as { str: string }).str;
+                        const items = textContent.items as any[];
+
+                        if (items.length === 0) {
+                            sections.push({ children: [new Paragraph({ text: "" })] });
+                            continue;
+                        }
+
+                        // Satırları grupla (Y koordinatına göre)
+                        const lines: any[][] = [];
+                        let currentLine: any[] = [];
+                        let lastY = -1;
+
+                        const sortedItems = [...items].sort((a, b) => {
+                            const yA = a.transform[5];
+                            const yB = b.transform[5];
+                            if (Math.abs(yA - yB) < 3) {
+                                return a.transform[4] - b.transform[4];
                             }
-                            return '';
-                        }).join(' ');
-                        fullText += pageText + '\n\n';
-
-                        // Always capture images as fallback
-                        const viewport = page.getViewport({ scale: 1.5 });
-                        const canvas = document.createElement('canvas');
-                        const context = canvas.getContext('2d');
-                        if (context) {
-                            canvas.height = viewport.height;
-                            canvas.width = viewport.width;
-                            await page.render({
-                                canvasContext: context as unknown as CanvasRenderingContext2D,
-                                viewport: viewport,
-                                canvas: canvas
-                            } as unknown as Parameters<typeof page.render>[0]).promise;
-                            pageImages.push(canvas.toDataURL('image/jpeg', 0.8));
-                        }
-                    }
-
-                    setProgress('Word belgesi oluşturuluyor...');
-
-                    // If text is too sparse (less than 50 chars per page on average), use visual mode
-                    const isVisualMode = fullText.trim().length < (pdf.numPages * 50);
-
-                    const sections: ISectionOptions[] = [];
-
-                    if (isVisualMode) {
-                        setProgress('Görsel Fidelity Modu devrede...');
-                        for (const imgData of pageImages) {
-                            const res = await fetch(imgData);
-                            const imgArrayBuffer = await res.arrayBuffer();
-                            sections.push({
-                                properties: { page: { margin: { top: 0, bottom: 0, left: 0, right: 0 } } },
-                                children: [
-                                    new Paragraph({
-                                        children: [
-                                            new ImageRun({
-                                                data: imgArrayBuffer,
-                                                transformation: { width: 595, height: 841 },
-                                                type: 'jpg'
-                                            }),
-                                        ],
-                                    }),
-                                ],
-                            });
-                        }
-                    } else {
-                        sections.push({
-                            properties: {},
-                            children: fullText.split('\n').map(line => new Paragraph({
-                                children: [line.trim() ? new TextRun(line) : new TextRun("")],
-                            })),
+                            return yB - yA;
                         });
+
+                        for (const textItem of sortedItems) {
+                            const y = textItem.transform[5];
+                            if (lastY !== -1 && Math.abs(y - lastY) > 3) {
+                                lines.push(currentLine);
+                                currentLine = [];
+                            }
+                            currentLine.push(textItem);
+                            lastY = y;
+                        }
+                        if (currentLine.length > 0) lines.push(currentLine);
+
+                        const pageChildren: Paragraph[] = [];
+                        for (const line of lines) {
+                            const runs: any[] = [];
+                            let lastX = -1;
+
+                            for (const textItem of line) {
+                                const x = textItem.transform[4];
+                                if (lastX !== -1 && x - lastX > 10) {
+                                    runs.push(new TextRun({ text: " ", size: Math.round(textItem.transform[0] * 2) || 22 }));
+                                }
+
+                                const fontSize = Math.abs(Math.round(textItem.transform[0] * 2)) || 22;
+                                runs.push(new TextRun({
+                                    text: textItem.str,
+                                    size: fontSize,
+                                    font: "Arial",
+                                }));
+                                lastX = x + textItem.width;
+                            }
+
+                            pageChildren.push(new Paragraph({
+                                children: runs,
+                                spacing: { before: 100, after: 100 }
+                            }));
+                        }
+
+                        sections.push({ children: pageChildren });
                     }
 
-                    const wordDoc = new Document({ sections });
+                    const wordDoc = new Document({
+                        sections,
+                        creator: "Antigravity Converter",
+                        title: file.name
+                    });
                     const buffer = await Packer.toBlob(wordDoc);
                     saveAs(buffer, finalName);
                 } else {

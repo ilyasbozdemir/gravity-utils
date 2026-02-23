@@ -10,7 +10,7 @@ import {
 import { PDFDocument, PageSizes } from 'pdf-lib';
 import * as pdfjsLib from 'pdfjs-dist';
 import { saveAs } from 'file-saver';
-import { Document, Packer, Paragraph, ImageRun, type ISectionOptions } from 'docx';
+import { Document, Packer, Paragraph, TextRun, ImageRun, type ISectionOptions } from 'docx';
 import fontkit from '@pdf-lib/fontkit';
 import { renderAsync } from 'docx-preview';
 import html2canvas from 'html2canvas';
@@ -575,46 +575,94 @@ export const OfficeTools: React.FC<OfficeToolsProps> = ({ mode }) => {
 
             // ── PDF → Word ────────────────────────────────────────────────
             else if (mode === 'pdf-word') {
-                setFiles(prev => prev.map((f, i) => i === index ? { ...f, progress: 20 } : f));
+                setFiles(prev => prev.map((f, i) => i === index ? { ...f, progress: 10 } : f));
                 const arrayBuffer = await item.file.arrayBuffer();
                 const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-                const pageImages: string[] = [];
+
+                const sections: ISectionOptions[] = [];
 
                 for (let i = 1; i <= pdf.numPages; i++) {
                     const page = await pdf.getPage(i);
-                    const viewport = page.getViewport({ scale: 1.5 });
-                    const canvas = document.createElement('canvas');
-                    const context = canvas.getContext('2d');
-                    if (context) {
-                        canvas.height = viewport.height;
-                        canvas.width = viewport.width;
-                        await page.render({ canvasContext: context as unknown as CanvasRenderingContext2D, viewport } as Parameters<typeof page.render>[0]).promise;
-                        pageImages.push(canvas.toDataURL('image/jpeg', 0.85));
+                    const textContent = await page.getTextContent();
+                    const items = textContent.items as any[];
+
+                    if (items.length === 0) {
+                        // Boş sayfa veya sadece görsel var, eski yöntemi (görsel) kullanabiliriz veya boş geçebiliriz
+                        sections.push({
+                            children: [new Paragraph({ text: "" })]
+                        });
+                        continue;
                     }
-                    setFiles(prev => prev.map((f, idx) => idx === index ? { ...f, progress: 20 + Math.round((i / pdf.numPages) * 60) } : f));
-                }
 
-                const sections: ISectionOptions[] = [];
-                for (const imgData of pageImages) {
-                    const res = await fetch(imgData);
-                    const imgArrayBuffer = await res.arrayBuffer();
-                    sections.push({
-                        properties: { page: { margin: { top: 0, bottom: 0, left: 0, right: 0 } } },
-                        children: [
-                            new Paragraph({
-                                children: [
-                                    new ImageRun({
-                                        data: imgArrayBuffer,
-                                        transformation: { width: 595, height: 841 },
-                                        type: 'jpg',
-                                    }),
-                                ],
-                            }),
-                        ],
+                    // Satırları grupla (Y koordinatına göre)
+                    const lines: any[][] = [];
+                    let currentLine: any[] = [];
+                    let lastY = -1;
+
+                    // Y koordinatına göre (yukarıdan aşağıya) ve sonra X koordinatına göre sırala
+                    const sortedItems = [...items].sort((a, b) => {
+                        const yA = a.transform[5];
+                        const yB = b.transform[5];
+                        if (Math.abs(yA - yB) < 3) { // Aynı satır toleransı
+                            return a.transform[4] - b.transform[4];
+                        }
+                        return yB - yA;
                     });
+
+                    for (const textItem of sortedItems) {
+                        const y = textItem.transform[5];
+                        if (lastY !== -1 && Math.abs(y - lastY) > 3) {
+                            lines.push(currentLine);
+                            currentLine = [];
+                        }
+                        currentLine.push(textItem);
+                        lastY = y;
+                    }
+                    if (currentLine.length > 0) lines.push(currentLine);
+
+                    const pageChildren: Paragraph[] = [];
+                    for (const line of lines) {
+                        const runs: any[] = [];
+                        let lastX = -1;
+
+                        for (const textItem of line) {
+                            const x = textItem.transform[4];
+
+                            // Kelimeler arası boşluk kontrolü (basit)
+                            if (lastX !== -1 && x - lastX > 10) {
+                                runs.push(new TextRun({ text: " ", size: Math.round(textItem.transform[0] * 2) || 22 }));
+                            }
+
+                            // Font büyüklüğünü belirle (transform[0] veya transform[3] genellikle font size'dır)
+                            // docx size birimi half-points'tir (pt * 2)
+                            const fontSize = Math.abs(Math.round(textItem.transform[0] * 2)) || 22;
+
+                            runs.push(new TextRun({
+                                text: textItem.str,
+                                size: fontSize,
+                                font: "Arial", // Varsayılan font, PDF'den eşleştirmek zordur
+                            }));
+                            lastX = x + textItem.width;
+                        }
+
+                        pageChildren.push(new Paragraph({
+                            children: runs,
+                            spacing: { before: 100, after: 100 }
+                        }));
+                    }
+
+                    sections.push({
+                        children: pageChildren
+                    });
+
+                    setFiles(prev => prev.map((f, idx) => idx === index ? { ...f, progress: 10 + Math.round((i / pdf.numPages) * 80) } : f));
                 }
 
-                const wordDoc = new Document({ sections });
+                const wordDoc = new Document({
+                    sections,
+                    creator: "Antigravity Office Tools",
+                    title: item.file.name
+                });
                 result = await Packer.toBlob(wordDoc);
                 resultName = item.file.name.replace(/\.[^/.]+$/, '') + '.docx';
             }
