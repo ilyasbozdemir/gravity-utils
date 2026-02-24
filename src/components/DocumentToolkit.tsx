@@ -134,16 +134,23 @@ export const DocumentToolkit: React.FC<DocumentToolkitProps> = ({ onBack, initia
                             <Zap size={14} className="text-yellow-400" /> Akıllı Algılama Aktif
                         </div>
                         <h2 className="text-4xl font-black leading-tight">Hangi dosyayı<br />dönüştürmek istersiniz?</h2>
-                        <p className="text-blue-100/80 text-lg">Dosyanızı buraya bırakın, biz formatı algılayıp en iyi seçenekleri sunalım.</p>
+                        <p className="text-blue-100/80 text-lg">Dosyanızı yan panele sürükleyin veya tıklayarak seçin. Formatı otomatik algılayıp size en iyi seçenekleri sunacağız.</p>
 
                         {!smartFile ? (
-                            <button
-                                onClick={() => document.getElementById('smart-upload-input')?.click()}
-                                title="Dosya Seçin"
-                                className="px-8 py-4 bg-white text-blue-600 rounded-2xl font-black flex items-center gap-3 hover:scale-105 transition-all shadow-xl shadow-black/10"
-                            >
-                                <Plus size={20} /> DOSYA SEÇİN
-                            </button>
+                            <div className="flex flex-wrap gap-3 pt-4">
+                                <div className="flex items-center gap-2 px-4 py-2 bg-white/10 rounded-xl border border-white/5">
+                                    <FileText size={16} className="text-blue-300" />
+                                    <span className="text-xs font-bold uppercase tracking-widest">PDF & Word</span>
+                                </div>
+                                <div className="flex items-center gap-2 px-4 py-2 bg-white/10 rounded-xl border border-white/5">
+                                    <FileSpreadsheet size={16} className="text-green-300" />
+                                    <span className="text-xs font-bold uppercase tracking-widest">Excel</span>
+                                </div>
+                                <div className="flex items-center gap-2 px-4 py-2 bg-white/10 rounded-xl border border-white/5">
+                                    <ImageIcon size={16} className="text-purple-300" />
+                                    <span className="text-xs font-bold uppercase tracking-widest">Görsel</span>
+                                </div>
+                            </div>
                         ) : (
                             <div className="space-y-4 animate-in fade-in slide-in-from-left-4 duration-300">
                                 <div className="p-4 bg-white/10 rounded-2xl flex items-center justify-between border border-white/10">
@@ -200,13 +207,17 @@ export const DocumentToolkit: React.FC<DocumentToolkitProps> = ({ onBack, initia
                             e.preventDefault();
                             if (e.dataTransfer.files?.[0]) handleSmartUpload(e.dataTransfer.files[0]);
                         }}
-                        className="group aspect-square lg:aspect-video rounded-[2rem] border-4 border-dashed border-white/20 hover:border-white/50 hover:bg-white/5 transition-all flex flex-col items-center justify-center gap-4 cursor-pointer"
+                        className="group aspect-square lg:aspect-video rounded-[3rem] border-4 border-dashed border-white/20 hover:border-white/50 hover:bg-white/5 transition-all flex flex-col items-center justify-center gap-4 cursor-pointer relative overflow-hidden"
                         onClick={() => document.getElementById('smart-upload-input')?.click()}
                     >
-                        <div className="w-20 h-20 rounded-full bg-white/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-500">
-                            <Upload size={32} />
+                        <div className="absolute inset-0 bg-blue-400/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <div className="w-24 h-24 rounded-[2rem] bg-white/10 flex items-center justify-center group-hover:scale-110 group-hover:bg-white/20 transition-all duration-500">
+                            <Upload size={40} className="group-hover:-translate-y-1 transition-transform" />
                         </div>
-                        <p className="font-black text-xl">DOSYAYI BIRAKIN</p>
+                        <div className="text-center">
+                            <p className="font-black text-2xl uppercase tracking-tighter italic">DOSYA SEÇİN / BIRAKIN</p>
+                            <p className="text-[10px] font-bold text-blue-200 uppercase tracking-widest mt-1 opacity-60">Tüm formatlar desteklenir</p>
+                        </div>
                     </div>
                 </div>
             </section>

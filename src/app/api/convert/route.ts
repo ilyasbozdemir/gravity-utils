@@ -157,14 +157,31 @@ export async function POST(req: NextRequest) {
                 if (type === 'excel-pdf') {
                     const orientation = formData?.get('orientation') as string || 'portrait';
                     const pageSizeParam = formData?.get('pageSize') as string || 'a4';
-                    const { read, utils } = await import('xlsx');
-                    const workbook = read(arrayBuffer, { type: 'buffer' });
+                    const gridDataStr = formData?.get('gridData') as string;
                     
-                    for (const sheetName of workbook.SheetNames) {
-                        const worksheet = workbook.Sheets[sheetName];
-                        const json = utils.sheet_to_json(worksheet, { header: 1 }) as any[][];
-                        
-                        if (json.length === 0) continue;
+                    let dataToProcess: any[][][] = []; // [sheetIndex][row][col]
+                    
+                    if (gridDataStr) {
+                        try {
+                            const editedData = JSON.parse(gridDataStr);
+                            dataToProcess = [editedData]; // Treat edited grid as a single sheet
+                        } catch (e) {
+                            console.error('Grid data parse error:', e);
+                        }
+                    }
+                    
+                    // Fallback to original file if no edited data
+                    if (dataToProcess.length === 0) {
+                        const { read, utils } = await import('xlsx');
+                        const workbook = read(arrayBuffer, { type: 'buffer' });
+                        for (const name of workbook.SheetNames) {
+                            const sheet = workbook.Sheets[name];
+                            dataToProcess.push(utils.sheet_to_json(sheet, { header: 1 }) as any[][]);
+                        }
+                    }
+                    
+                    dataToProcess.forEach((json, sheetIdx) => {
+                        if (json.length === 0) return;
                         
                         let dims: [number, number] = [595.28, 841.89]; // A4
                         if (pageSizeParam === 'a3') dims = [841.89, 1190.55]; 
@@ -174,7 +191,7 @@ export async function POST(req: NextRequest) {
                         const { width, height } = page.getSize();
                         let y = height - 50;
 
-                        page.drawText(`Sayfa: ${sheetName}`, { x: 50, y, size: 16, font, color: rgb(0, 0.4, 0.7) });
+                        page.drawText(`Sayfa ${sheetIdx + 1}`, { x: 50, y, size: 16, font, color: rgb(0, 0.4, 0.7) });
                         y -= 30;
 
                         const colCount = Math.max(...json.map(r => Array.isArray(r) ? r.length : 0));
@@ -194,7 +211,7 @@ export async function POST(req: NextRequest) {
                             });
                             y -= rowHeight;
                         });
-                    }
+                    });
                 } else {
                     // PPT to PDF (Text extraction approach)
                     try {

@@ -5,7 +5,7 @@ import {
     ArrowLeft, FileText, Upload, X, AlertCircle, Download,
     FileSpreadsheet, Image as ImageIcon, FileType,
     GripVertical, ArrowUp, ArrowDown, Plus, Layers,
-    Settings2, CheckCircle2, Loader2, Info
+    Settings2, CheckCircle2, Loader2, Info, Eye, ChevronRight
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { PDFDocument, PageSizes } from 'pdf-lib';
@@ -30,11 +30,12 @@ interface OfficeToolsProps {
 
 interface FileState {
     file: File;
-    status: 'idle' | 'converting' | 'success' | 'error';
+    status: 'idle' | 'editing' | 'converting' | 'success' | 'error';
     progress: number;
     result?: string | Blob;
     errorMsg?: string;
     resultName?: string;
+    gridData?: any[][];
 }
 
 interface ImageItem {
@@ -46,15 +47,15 @@ interface ImageItem {
 }
 
 const TOOL_CONFIG = {
-    'word-pdf': { title: 'Word → PDF', accept: '.doc,.docx', icon: <FileText size={24} />, color: 'text-blue-600', bg: 'bg-blue-600', real: true },
-    'pdf-word': { title: 'PDF → Word', accept: '.pdf', icon: <FileText size={24} />, color: 'text-red-500', bg: 'bg-red-500', real: true },
-    'excel-pdf': { title: 'Excel → PDF', accept: '.xls,.xlsx', icon: <FileSpreadsheet size={24} />, color: 'text-green-600', bg: 'bg-green-600', real: true },
-    'pdf-excel': { title: 'PDF → Excel', accept: '.pdf', icon: <FileSpreadsheet size={24} />, color: 'text-red-500', bg: 'bg-red-500', real: false },
-    'ppt-pdf': { title: 'PowerPoint → PDF', accept: '.ppt,.pptx', icon: <FileSpreadsheet size={24} />, color: 'text-orange-500', bg: 'bg-orange-500', real: true },
-    'pdf-ppt': { title: 'PDF → PowerPoint', accept: '.pdf', icon: <FileSpreadsheet size={24} />, color: 'text-red-500', bg: 'bg-red-500', real: false },
-    'pdf-image': { title: 'PDF → Görsel', accept: '.pdf', icon: <ImageIcon size={24} />, color: 'text-purple-500', bg: 'bg-purple-500', real: true },
-    'imagetopdf': { title: 'Görsel → PDF', accept: 'image/*', icon: <ImageIcon size={24} />, color: 'text-blue-500', bg: 'bg-blue-600', real: true },
-    'excel-word': { title: 'Excel → Word', accept: '.xlsx,.xls', icon: <FileText size={24} />, color: 'text-green-700', bg: 'bg-green-700', real: true },
+    'word-pdf': { title: 'Word → PDF', from: 'Word', to: 'PDF', accept: '.doc,.docx', icon: <FileText size={24} />, color: 'text-blue-600', bg: 'bg-blue-600', real: true },
+    'pdf-word': { title: 'PDF → Word', from: 'PDF', to: 'Word', accept: '.pdf', icon: <FileText size={24} />, color: 'text-red-500', bg: 'bg-red-500', real: true },
+    'excel-pdf': { title: 'Excel → PDF', from: 'Excel', to: 'PDF', accept: '.xls,.xlsx', icon: <FileSpreadsheet size={24} />, color: 'text-green-600', bg: 'bg-green-600', real: true },
+    'pdf-excel': { title: 'PDF → Excel', from: 'PDF', to: 'Excel', accept: '.pdf', icon: <FileSpreadsheet size={24} />, color: 'text-red-500', bg: 'bg-red-500', real: false },
+    'ppt-pdf': { title: 'PowerPoint → PDF', from: 'PPT', to: 'PDF', accept: '.ppt,.pptx', icon: <FileSpreadsheet size={24} />, color: 'text-orange-500', bg: 'bg-orange-500', real: true },
+    'pdf-ppt': { title: 'PDF → PowerPoint', from: 'PDF', to: 'PPT', accept: '.pdf', icon: <FileSpreadsheet size={24} />, color: 'text-red-500', bg: 'bg-red-500', real: false },
+    'pdf-image': { title: 'PDF → Görsel', from: 'PDF', to: 'Görsel', accept: '.pdf', icon: <ImageIcon size={24} />, color: 'text-purple-500', bg: 'bg-purple-500', real: true },
+    'imagetopdf': { title: 'Görsel → PDF', from: 'Görsel', to: 'PDF', accept: 'image/*', icon: <ImageIcon size={24} />, color: 'text-blue-500', bg: 'bg-blue-600', real: true },
+    'excel-word': { title: 'Excel → Word', from: 'Excel', to: 'Word', accept: '.xlsx,.xls', icon: <FileText size={24} />, color: 'text-green-700', bg: 'bg-green-700', real: true },
 };
 
 type PageSize = 'auto' | 'a4' | 'a3' | 'letter' | 'legal';
@@ -491,12 +492,24 @@ export const OfficeTools: React.FC<OfficeToolsProps> = ({ mode, onBack }) => {
     const inputRef = useRef<HTMLInputElement>(null);
     const renderContainerRef = useRef<HTMLDivElement>(null);
 
-    const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files) {
-            const newFiles = Array.from(e.target.files).map(f => ({
-                file: f,
-                status: 'idle' as const,
-                progress: 0
+            const newFiles = await Promise.all(Array.from(e.target.files).map(async f => {
+                let gridData: any[][] | undefined;
+                if ((mode === 'excel-word' || mode === 'excel-pdf') && (f.name.endsWith('.xlsx') || f.name.endsWith('.xls'))) {
+                    const { read, utils } = await import('xlsx');
+                    const buffer = await f.arrayBuffer();
+                    const wb = read(buffer, { type: 'array' });
+                    const sheet = wb.Sheets[wb.SheetNames[0]];
+                    gridData = utils.sheet_to_json(sheet, { header: 1 }) as any[][];
+                }
+
+                return {
+                    file: f,
+                    status: gridData ? 'editing' as const : 'idle' as const,
+                    progress: 0,
+                    gridData
+                };
             }));
             setFiles(prev => [...prev, ...newFiles]);
         }
@@ -731,6 +744,11 @@ export const OfficeTools: React.FC<OfficeToolsProps> = ({ mode, onBack }) => {
                 formData.append('orientation', orientation);
                 formData.append('pageSize', pageSize);
 
+                // If user edited data in the grid, send it as JSON string
+                if (mode === 'excel-pdf' && item.gridData) {
+                    formData.append('gridData', JSON.stringify(item.gridData));
+                }
+
                 const response = await fetch('/api/convert', {
                     method: 'POST',
                     body: formData,
@@ -749,10 +767,13 @@ export const OfficeTools: React.FC<OfficeToolsProps> = ({ mode, onBack }) => {
                 const { read, utils } = await import('xlsx');
                 const { Document, Packer, Paragraph, Table, TableRow, TableCell, BorderStyle, WidthType } = await import('docx');
 
-                const arrayBuffer = await item.file.arrayBuffer();
-                const workbook = read(arrayBuffer, { type: 'array' });
-                const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-                const jsonData = utils.sheet_to_json(firstSheet, { header: 1 }) as any[][];
+                let jsonData = item.gridData;
+                if (!jsonData) {
+                    const arrayBuffer = await item.file.arrayBuffer();
+                    const workbook = read(arrayBuffer, { type: 'array' });
+                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                    jsonData = utils.sheet_to_json(firstSheet, { header: 1 }) as any[][];
+                }
 
                 const tableRows = jsonData.map(row =>
                     new TableRow({
@@ -822,6 +843,13 @@ export const OfficeTools: React.FC<OfficeToolsProps> = ({ mode, onBack }) => {
         saveAs(item.result instanceof Blob ? item.result : item.result, item.resultName || `converted-${item.file.name}`);
     };
 
+    const previewFile = (item: FileState) => {
+        if (!item.result) return;
+        const blob = item.result instanceof Blob ? item.result : item.result;
+        const url = URL.createObjectURL(blob as Blob);
+        window.open(url, '_blank');
+    };
+
     return (
         <div className="max-w-[1000px] mx-auto p-8 animate-in fade-in zoom-in duration-300">
             {/* Hidden DOCX render container */}
@@ -839,10 +867,16 @@ export const OfficeTools: React.FC<OfficeToolsProps> = ({ mode, onBack }) => {
                     <ArrowLeft className="w-6 h-6 text-slate-600 dark:text-slate-400 group-hover:text-blue-500 transition-colors" />
                 </button>
                 <div>
+                    <div className="flex items-center gap-2 mb-2">
+                        <span className="px-2 py-0.5 bg-blue-500/10 text-blue-600 dark:text-blue-400 text-[10px] font-black uppercase tracking-widest rounded-md border border-blue-500/20">
+                            {config.from}
+                        </span>
+                        <ChevronRight size={12} className="text-slate-300" />
+                        <span className="px-2 py-0.5 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-black uppercase tracking-widest rounded-md border border-emerald-500/20">
+                            {config.to}
+                        </span>
+                    </div>
                     <h2 className="text-3xl font-black text-slate-900 dark:text-white flex items-center gap-3 uppercase tracking-tight italic">
-                        <div className="p-2 bg-blue-500/10 rounded-xl">
-                            {config.icon}
-                        </div>
                         {config.title}
                     </h2>
                     <p className="text-sm text-slate-500 dark:text-slate-400 font-medium mt-1">
@@ -964,79 +998,159 @@ export const OfficeTools: React.FC<OfficeToolsProps> = ({ mode, onBack }) => {
                 </button>
             </div>
 
-            {/* File list */}
-            <div className="space-y-3">
+            {/* File List / Actions */}
+            <div className="space-y-4 mt-8">
                 {files.map((item, index) => (
-                    <div key={index}
-                        className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 transition-all hover:shadow-sm">
-                        <div className="flex items-center gap-4">
-                            <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0 text-slate-500 dark:text-slate-400">
-                                {config.icon}
-                            </div>
-
-                            <div className="flex-1 min-w-0">
-                                <div className="flex items-center justify-between mb-1.5">
-                                    <p className="font-medium text-slate-700 dark:text-slate-200 truncate text-sm">{item.file.name}</p>
-                                    <span className="text-xs text-slate-500 dark:text-slate-400 font-mono ml-2 shrink-0">
-                                        {(item.file.size / 1024 / 1024).toFixed(2)} MB
-                                    </span>
+                    <div key={index} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl overflow-hidden shadow-sm transition-all hover:shadow-md">
+                        <div className="p-6 flex items-center justify-between gap-4">
+                            <div className="flex items-center gap-4 flex-1 min-w-0">
+                                <div className={`p-3 rounded-2xl ${item.file.name.endsWith('.xlsx') || item.file.name.endsWith('.xls') ? 'bg-green-500/10 text-green-600' : 'bg-blue-500/10 text-blue-600'}`}>
+                                    {item.file.name.endsWith('.xlsx') || item.file.name.endsWith('.xls') ? <FileSpreadsheet size={24} /> : <FileText size={24} />}
                                 </div>
-                                <ProgressBar
-                                    value={item.progress}
-                                    color={item.status === 'error' ? 'bg-red-500' : item.status === 'success' ? 'bg-green-500' : 'bg-blue-500'}
-                                />
-                                {item.status === 'success' && item.resultName && (
-                                    <p className="text-[10px] text-green-600 dark:text-green-400 mt-1 font-medium">
-                                        ✅ {item.resultName}
-                                    </p>
-                                )}
-                                {item.status === 'error' && item.errorMsg && (
-                                    <p className="text-[10px] text-red-500 mt-1 truncate">
-                                        ❌ {item.errorMsg}
-                                    </p>
-                                )}
+                                <div className="truncate">
+                                    <p className="text-sm font-bold text-slate-800 dark:text-slate-200 truncate">{item.file.name}</p>
+                                    <div className="flex items-center gap-2 mt-0.5">
+                                        <p className="text-[10px] font-medium text-slate-400 uppercase tracking-widest">{(item.file.size / 1024).toFixed(1)} KB</p>
+                                        <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-700" />
+                                        <div className="flex items-center gap-1 px-2 py-0.5 bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-white/5 rounded-lg">
+                                            <span className="text-[9px] font-black text-slate-400 uppercase">{config.from}</span>
+                                            <ChevronRight size={8} className="text-slate-400/50" />
+                                            <span className="text-[9px] font-black text-blue-500 uppercase">{config.to}</span>
+                                        </div>
+                                        <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-700" />
+                                        <span className={`text-[10px] font-black uppercase tracking-tight ${item.status === 'success' ? 'text-green-500' : 'text-blue-500'}`}>
+                                            {item.status === 'editing' ? 'İnceleme Bekliyor' : item.status === 'converting' ? 'Dönüştürülüyor' : item.status === 'success' ? 'Hazır' : 'Dosya Hazır'}
+                                        </span>
+                                    </div>
+                                </div>
                             </div>
 
-                            <div className="flex items-center gap-2 shrink-0">
+                            <div className="flex items-center gap-2">
                                 {item.status === 'idle' && (
-                                    <button onClick={() => processFile(item, index)}
-                                        className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium rounded-lg transition-colors shadow-lg shadow-blue-500/20">
-                                        Dönüştür
-                                    </button>
+                                    <button onClick={() => processFile(item, index)} title="Dönüştürme İşlemini Başlat" className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-blue-500/20 active:scale-95">Başlat</button>
+                                )}
+                                {item.status === 'editing' && (
+                                    <button onClick={() => processFile(item, index)} title="Düzenlenen Verileri Dönüştür" className="px-6 py-2.5 bg-green-600 hover:bg-green-700 text-white text-xs font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-green-500/20 active:scale-95">Dönüştür</button>
                                 )}
                                 {item.status === 'converting' && (
-                                    <span className="text-xs font-medium text-blue-500 flex items-center gap-1">
-                                        <Loader2 size={14} className="animate-spin" /> İşleniyor...
-                                    </span>
+                                    <div className="flex items-center gap-2 px-4 py-2 bg-slate-50 dark:bg-slate-800 rounded-xl">
+                                        <Loader2 size={16} className="animate-spin text-blue-500" />
+                                        <span className="text-[10px] font-black uppercase text-slate-400">%{item.progress}</span>
+                                    </div>
                                 )}
                                 {item.status === 'success' && (
-                                    <button onClick={() => downloadFile(item)}
-                                        className="p-2 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20 rounded-lg transition-colors"
-                                        title="İndir" aria-label="Dosyayı indir">
-                                        <Download size={20} />
-                                    </button>
+                                    <div className="flex items-center gap-2">
+                                        <button onClick={() => previewFile(item)} title="Önizleme" className="p-2.5 bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-blue-500 rounded-xl transition-all active:scale-95 hover:bg-white dark:hover:bg-slate-700 border border-transparent hover:border-slate-200 dark:hover:border-slate-600">
+                                            <Eye size={18} />
+                                        </button>
+                                        <button onClick={() => downloadFile(item)} title="Hazır Dosyayı İndir" className="px-6 py-2.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-xs font-black uppercase tracking-widest rounded-xl transition-all shadow-sm active:scale-95 flex items-center gap-2 group">
+                                            <Download size={14} className="group-hover:translate-y-0.5 transition-transform" /> İndir
+                                        </button>
+                                    </div>
                                 )}
-                                {item.status === 'error' && (
-                                    <button onClick={() => processFile(item, index)}
-                                        title="Tekrar dene" aria-label="Tekrar dene"
-                                        className="p-2 text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20 rounded-lg transition-colors">
-                                        <AlertCircle size={18} />
-                                    </button>
-                                )}
-                                <button
-                                    onClick={() => setFiles(prev => prev.filter((_, i) => i !== index))}
-                                    className="p-2 text-slate-400 hover:text-red-500 dark:hover:text-red-400 rounded-lg transition-colors"
-                                    title="Kaldır" aria-label="Dosyayı listeden kaldır">
-                                    <X size={18} />
+                                <button onClick={() => setFiles(prev => prev.filter((_, i) => i !== index))} title="Listeden Kaldır" className="p-3 text-slate-400 hover:text-red-500 transition-colors rounded-xl hover:bg-red-50 dark:hover:bg-red-950/20">
+                                    <X size={20} />
                                 </button>
                             </div>
                         </div>
+
+                        {/* Progress bar for ongoing operations */}
+                        {item.status === 'converting' && (
+                            <div className="px-6 pb-6 pt-0">
+                                <ProgressBar value={item.progress} color="bg-blue-600" />
+                            </div>
+                        )}
+
+                        {/* Smart Data Editor (Horizontal Scrollable Table) */}
+                        {item.status === 'editing' && item.gridData && (
+                            <div className="border-t border-slate-100 dark:border-slate-800 p-6 bg-slate-50/50 dark:bg-slate-950/20">
+                                <div className="flex items-center justify-between mb-4">
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-8 h-8 bg-green-500/10 rounded-lg flex items-center justify-center">
+                                            <Settings2 size={14} className="text-green-600" />
+                                        </div>
+                                        <div>
+                                            <h4 className="text-xs font-black text-slate-700 dark:text-slate-300 uppercase tracking-tight">Akıllı Veri Editörü</h4>
+                                            <p className="text-[10px] font-medium text-slate-400 italic">Verileri dökümana basmadan önce buradan düzenleyebilirsiniz.</p>
+                                        </div>
+                                    </div>
+                                    <button
+                                        onClick={() => {
+                                            const newData = [...(item.gridData || [])];
+                                            const colCount = newData[0]?.length || 1;
+                                            newData.push(new Array(colCount).fill(''));
+                                            setFiles(prev => prev.map((f, i) => i === index ? { ...f, gridData: newData } : f));
+                                        }}
+                                        className="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-[10px] font-black text-slate-600 dark:text-slate-400 hover:border-green-500 hover:text-green-600 transition-all shadow-sm active:scale-95"
+                                    >
+                                        <Plus size={14} /> SATIR EKLE
+                                    </button>
+                                </div>
+
+                                <div className="relative rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm overflow-hidden">
+                                    <div className="overflow-x-auto max-h-[350px]">
+                                        <table className="w-full text-left border-collapse table-fixed min-w-[600px]">
+                                            <thead>
+                                                <tr className="bg-slate-50 dark:bg-slate-800/80 sticky top-0 z-10 shadow-sm">
+                                                    {(item.gridData[0] || []).map((_, cIdx) => (
+                                                        <th key={cIdx} className="px-4 py-3 text-[10px] font-black text-slate-400 border-b border-slate-200 dark:border-slate-700 uppercase tracking-widest">
+                                                            Sütun {cIdx + 1}
+                                                        </th>
+                                                    ))}
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                                                {item.gridData.map((row, rIdx) => (
+                                                    <tr key={rIdx} className="hover:bg-blue-50/30 dark:hover:bg-blue-900/10 transition-colors group">
+                                                        {row.map((cell, cIdx) => (
+                                                            <td key={cIdx} className="px-3 py-2 border-r border-slate-100 dark:border-slate-800 last:border-r-0">
+                                                                <input
+                                                                    type="text"
+                                                                    value={String(cell || '')}
+                                                                    onChange={(e) => {
+                                                                        const newData = [...(item.gridData || [])];
+                                                                        newData[rIdx][cIdx] = e.target.value;
+                                                                        setFiles(prev => prev.map((f, i) => i === index ? { ...f, gridData: newData } : f));
+                                                                    }}
+                                                                    className="w-full bg-transparent border-none text-xs text-slate-700 dark:text-slate-300 focus:ring-1 focus:ring-green-500/20 rounded-lg px-2 py-1.5 outline-none transition-all hover:bg-slate-50 dark:hover:bg-slate-800"
+                                                                    title={`Satır ${rIdx + 1} Sütun ${cIdx + 1}`}
+                                                                />
+                                                            </td>
+                                                        ))}
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                <div className="mt-4 p-4 bg-amber-500/5 border border-amber-500/10 rounded-2xl flex items-center gap-3">
+                                    <Info size={16} className="text-amber-500 shrink-0" />
+                                    <p className="text-[10px] font-bold text-amber-700 dark:text-amber-400">
+                                        İpucu: Hücreleri doğrudan düzenleyebilirsiniz. Değişiklikler döküman dönüştürme sırasında otomatik uygulanacaktır.
+                                    </p>
+                                </div>
+                            </div>
+                        )}
+
+                        {item.status === 'error' && (
+                            <div className="px-6 pb-6 pt-0">
+                                <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-2xl flex items-center gap-3 text-red-600 dark:text-red-400">
+                                    <AlertCircle size={18} />
+                                    <p className="text-xs font-bold">{item.errorMsg || 'İşlem sırasında bir hata oluştu.'}</p>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 ))}
 
                 {files.length === 0 && (
-                    <div className="text-center py-8 text-slate-400">
-                        <p className="text-sm">Henüz dosya eklenmedi</p>
+                    <div className="text-center py-16 bg-slate-50 dark:bg-slate-800/10 rounded-[2.5rem] border-2 border-dashed border-slate-200 dark:border-slate-800 group hover:border-blue-500/50 transition-all">
+                        <div className="w-20 h-20 bg-white dark:bg-slate-800 rounded-3xl shadow-xl shadow-slate-200/50 dark:shadow-none flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
+                            <Layers size={32} className="text-slate-300 group-hover:text-blue-500 transition-colors" />
+                        </div>
+                        <h3 className="text-lg font-black text-slate-800 dark:text-white uppercase tracking-tight italic">Dosya Bekleniyor</h3>
+                        <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 font-medium">Lütfen dönüştürmek istediğiniz dosyayı seçin.</p>
                     </div>
                 )}
             </div>
