@@ -15,6 +15,7 @@ import {
     Lightbulb,
     Rocket,
     Search,
+    Sparkles,
     Terminal,
     XCircle,
 } from "lucide-react";
@@ -157,6 +158,7 @@ const STATUS_CODES = [
         example: "Bir web sayfasını başarıyla açmak veya veri listelemek.",
         proTip:
             "En güvenli limandır ama her şeyi 200 dönmek yerine spesifik kodları (201, 204 vb.) kullanmak sizi profesyonel yapar.",
+        lessonNote: "Hocam, 200 demek 'buradayım, her şey yolunda' demektir. Ama bir tweet attığında sunucu 200 yerine 201 Created dönerse, 'sadece tamam demedim, yeni bir şey de yarattım' demiş olur. Bu ince fark projenin kalitesini gösterir.",
     },
     {
         code: 201,
@@ -285,6 +287,7 @@ const STATUS_CODES = [
         example: "www.eski-site.com -> www.yeni-site.com.",
         proTip:
             "Arama motorları bu kodu gördüğünde indeksindeki linki de günceller.",
+        lessonNote: "Bakın burası çok önemli; 301 'kalıcı' demektir. Google amcaya 'bu sayfa artık yok, her şeyi şu yeni eve taşıdım' dersiniz. O da tüm SEO gücünü (biz buna link juice diyoruz) yeni sayfaya aktarır. Eğer 302 (geçici) yaparsanız, Google gücü eski sayfada tutar ve yeni sayfa sıralama alamaz.",
     },
     {
         code: 302,
@@ -433,6 +436,7 @@ const STATUS_CODES = [
         example: "Google'da olmayan bir sayfa aratmak.",
         proTip:
             "Güvenlik için bazen 403 yerine 404 verilir ki kaynağın varlığı bile gizlensin.",
+        lessonNote: "404 sadece 'bulamadım' demek değildir. Bazen 'sana bunu göstermiyorum' demenin kibar yoludur. Eğer bir admin sayfasını 403 (yasak) ile kapatırsanız, hacker orada bir sayfa olduğunu anlar. Ama 404 dönerseniz, orada bir şey yok sanıp gider. Buna 'security by obscurity' (gizleyerek güvenlik) diyoruz.",
     },
     {
         code: 405,
@@ -1016,6 +1020,21 @@ const StatusCard = ({ item }: { item: any }) => {
                             </p>
                             <p className="text-sm font-bold leading-relaxed text-slate-700 dark:text-slate-300 relative z-10">
                                 {item.proTip}
+                            </p>
+                        </div>
+                    )}
+
+                    {/* Academy Lesson Note */}
+                    {(item as any).lessonNote && (
+                        <div className="p-8 bg-indigo-600 rounded-[2.5rem] text-white shadow-xl relative overflow-hidden group/academy">
+                            <div className="absolute top-0 right-0 p-8 opacity-10 group-hover/academy:scale-110 transition-transform">
+                                <BookOpen size={100} />
+                            </div>
+                            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-indigo-200 mb-3 flex items-center gap-2">
+                                <Sparkles size={14} /> Hoca Köşesi / Akademi Notu
+                            </p>
+                            <p className="text-sm font-bold leading-relaxed italic relative z-10">
+                                "{(item as any).lessonNote}"
                             </p>
                         </div>
                     )}

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Copy, Check, Search, Globe, FileCode, CheckCircle2, RefreshCw, Plus, Trash2, Download } from 'lucide-react';
+import { ArrowLeft, Copy, Check, Search, Globe, FileCode, CheckCircle2, RefreshCw, Plus, Trash2, Download, BookOpen, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 
 export const SitemapGenerator: React.FC<{ onBack: () => void }> = ({ onBack }) => {
@@ -110,7 +110,7 @@ export const SitemapGenerator: React.FC<{ onBack: () => void }> = ({ onBack }) =
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">Öncelik (Priority)</label>
-                                <select value={priority} onChange={(e) => setPriority(e.target.value)} className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-3 text-sm font-bold focus:outline-none">
+                                <select value={priority} title="Öncelik Seçin" onChange={(e) => setPriority(e.target.value)} className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-3 text-sm font-bold focus:outline-none">
                                     <option value="1.0">1.0 (Anasayfa)</option>
                                     <option value="0.8">0.8 (Kategori)</option>
                                     <option value="0.6">0.6 (Makale)</option>
@@ -119,7 +119,7 @@ export const SitemapGenerator: React.FC<{ onBack: () => void }> = ({ onBack }) =
                             </div>
                             <div className="space-y-2">
                                 <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">Değişim Sıklığı</label>
-                                <select value={changefreq} onChange={(e) => setChangefreq(e.target.value)} className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-3 text-sm font-bold focus:outline-none">
+                                <select value={changefreq} title="Değişim Sıklığı Seçin" onChange={(e) => setChangefreq(e.target.value)} className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-3 text-sm font-bold focus:outline-none">
                                     <option value="always">Her Zaman</option>
                                     <option value="hourly">Saatlik</option>
                                     <option value="daily">Günlük</option>
@@ -135,7 +135,7 @@ export const SitemapGenerator: React.FC<{ onBack: () => void }> = ({ onBack }) =
                                 {urls.map((u, i) => (
                                     <div key={i} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-white/5 rounded-xl border border-slate-100 dark:border-white/5 group">
                                         <span className="text-xs font-medium text-slate-600 dark:text-slate-400 truncate max-w-[300px]">{u}</span>
-                                        <button onClick={() => removeUrl(i)} className="p-1.5 text-slate-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all">
+                                        <button onClick={() => removeUrl(i)} title="URL Sil" aria-label="URL Sil" className="p-1.5 text-slate-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all">
                                             <Trash2 size={14} />
                                         </button>
                                     </div>
@@ -193,6 +193,29 @@ export const SitemapGenerator: React.FC<{ onBack: () => void }> = ({ onBack }) =
                     </div>
                     <h3 className="font-bold text-slate-800 dark:text-white mb-2">Kolay Kurulum</h3>
                     <p className="text-xs text-slate-500 leading-relaxed font-medium">Oluşturduğunuz sitemap.xml dosyasını sitenizin kök dizinine (public) atın ve Search Console üzerinden Google'a bildirin.</p>
+                </div>
+            </div>
+
+            {/* Hoca Köşesi Academy Section */}
+            <div className="mt-12 p-10 bg-indigo-600 rounded-[3rem] text-white shadow-2xl relative overflow-hidden group/academy">
+                <div className="absolute top-0 right-0 p-10 opacity-10 group-hover/academy:scale-110 transition-transform">
+                    <BookOpen size={150} />
+                </div>
+
+                <div className="relative z-10 flex flex-col md:flex-row gap-8 items-start">
+                    <div className="p-4 bg-white/10 rounded-3xl backdrop-blur-md border border-white/20">
+                        <Sparkles className="w-8 h-8 text-indigo-200" />
+                    </div>
+
+                    <div className="space-y-4 max-w-3xl">
+                        <h3 className="text-2xl font-black uppercase italic tracking-tight">Hoca Köşesi: Sitemap Neden Hayatidir?</h3>
+                        <p className="text-indigo-50 font-bold italic leading-relaxed">
+                            "Hocam, site derya deniz, Googlebot ise o denizde yolunu bulmaya çalışan bir kaptan. Sitemap, ona verdiğiniz en net pusuladır.
+                            'Benim en değerli sayfalarım şunlar, şu sıklıkla güncelliyorum' demiş olursunuz.
+                            Büyük projelerde sitemap kullanmazsanız botlar derin sayfaları keşfedemez ve o sayfalar Google'da asla görünmez.
+                            Ayrıca <span className="underline decoration-indigo-300">priority</span> ve <span className="underline decoration-indigo-300">changefreq</span> değerlerini gerçekçi girin; her şeye 1.0 (en yüksek) priority verirseniz Googlebot 'bu kaptan beni kandırıyor' deyip sitemap'i ciddiye almayabilir!"
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Copy, Check, ShieldCheck, FileText, Globe, RefreshCw, X, Download, AlertCircle, Shield } from 'lucide-react';
+import { ArrowLeft, Copy, Check, ShieldCheck, FileText, Globe, RefreshCw, X, Download, AlertCircle, Shield, BookOpen, Sparkles, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 
 export const RobotsTxtBuilder: React.FC<{ onBack: () => void }> = ({ onBack }) => {
@@ -201,6 +201,31 @@ export const RobotsTxtBuilder: React.FC<{ onBack: () => void }> = ({ onBack }) =
                     <Globe className="text-blue-500 mb-4" size={24} />
                     <h3 className="font-bold text-slate-800 dark:text-white mb-2">Evrensel Standart</h3>
                     <p className="text-xs text-slate-500 leading-relaxed font-medium">Robots.txt internetin anayasasıdır. Tüm büyük botlar (Googlebot, Bingbot, Slurp) bu dosyadaki kuralları öncelikle kontrol eder.</p>
+                </div>
+                {/* Closing the existing grid */}
+            </div>
+
+            {/* Hoca Köşesi Academy Section */}
+            <div className="mt-12 p-10 bg-indigo-600 rounded-[3rem] text-white shadow-2xl relative overflow-hidden group/academy">
+                <div className="absolute top-0 right-0 p-10 opacity-10 group-hover/academy:scale-110 transition-transform">
+                    <BookOpen size={150} />
+                </div>
+
+                <div className="relative z-10 flex flex-col md:flex-row gap-8 items-start">
+                    <div className="p-4 bg-white/10 rounded-3xl backdrop-blur-md border border-white/20">
+                        <Sparkles className="w-8 h-8 text-indigo-200" />
+                    </div>
+
+                    <div className="space-y-4 max-w-3xl">
+                        <h3 className="text-2xl font-black uppercase italic tracking-tight">Hoca Köşesi: Robots.txt Kodun Kapı Görevlisidir</h3>
+                        <p className="text-indigo-50 font-bold italic leading-relaxed">
+                            "Hocam, robots.txt bir 'yasak tabelası' değil, bir 'nezaket ricası'dır.
+                            Google ve diğer saygın arama motorları bu rıcaya uyar ama kötü niyetli botlar (crawler) buna bakmaz bile.
+                            Hassas verilerinizi oraya yazıp 'Disallow: /ozel-sifreler' derseniz, tam tersine hırsıza anahtarı nerede sakladığınızı göstermiş olursunuz!
+                            Gerçek gizlilik için sunucu taraflı yetkilendirme (Auth) şarttır.
+                            Ayrıca <span className="underline decoration-indigo-300">User-agent: *</span> her botu kapsar ama Google için özel kurallar yazmak isterseniz <span className="underline decoration-indigo-300">User-agent: Googlebot</span> olarak ayrı bir blok açmanız gerekir."
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>

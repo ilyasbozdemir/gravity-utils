@@ -23,7 +23,8 @@ import {
     Repeat,
     Terminal,
     Palette,
-    FileSpreadsheet
+    FileSpreadsheet,
+    ArrowLeft, Copy, Check, Download, AlertCircle, Shield, Plus
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 
@@ -38,7 +39,7 @@ export type ToolView =
     | 'iban-checker' | 'tckn-checker' | 'file-size-calc' | 'viewport-calc' | 'exif-viewer' | 'bulk-rename'
     | 'email-header-analyzer' | 'identifier-converter' | 'schema-generator' | 'metadata-generator' | 'document-toolkit' | 'check-toolkit'
     | 'json-to-code' | 'text-diff' | 'exam-generator' | 'pdf-merge' | 'pdf-split' | 'pdf-compress' | 'pdf-watermark' | 'mermaid'
-    | 'codesnap' | 'mock-generator' | 'sql-converter' | 'terminal-mastery' | 'excel-word';
+    | 'codesnap' | 'mock-generator' | 'sql-converter' | 'terminal-mastery' | 'excel-word' | 'sitemap-generator' | 'robots-txt-builder' | 'xml-validator';
 
 interface SidebarProps {
     currentView: ToolView;
@@ -60,6 +61,7 @@ const CATEGORIES = [
     { id: 'text-content', title: 'Metin & İçerik', icon: <Type size={16} /> },
     { id: 'media', title: 'Görsel & Medya', icon: <ImageIcon size={16} /> },
     { id: 'dev', title: 'Geliştirici', icon: <Code size={16} /> },
+    { id: 'seo', title: 'Web & SEO', icon: <Globe size={16} /> },
     { id: 'calculators', title: 'Hesaplamalar', icon: <Calculator size={16} /> },
     { id: 'checks', title: 'Form & Kontrol', icon: <ShieldCheck size={16} /> },
     { id: 'security', title: 'Güvenlik & Gizlilik', icon: <Lock size={16} /> },
@@ -108,8 +110,15 @@ const NAV_ITEMS: NavItem[] = [
     { id: 'sql-converter', title: 'SQL Schema Converter', icon: <Repeat size={18} />, category: 'dev', addedAt: '2026-02-23' },
     { id: 'text-diff', title: 'Metin Karşılaştırıcı', icon: <Split size={18} />, category: 'dev', addedAt: '2026-02-23' },
     { id: 'identifier-converter', title: 'Akıllı İsim Çevirici', icon: <Type size={18} />, category: 'dev', addedAt: '2026-02-20' },
-    { id: 'schema-generator', title: 'Şema & Form Üretici', icon: <Layers size={18} />, category: 'dev', addedAt: '2026-02-20' },
-    { id: 'metadata-generator', title: 'Meta Etiketi Üretici', icon: <Globe size={18} />, category: 'dev', addedAt: '2026-02-20' },
+
+    // Web & SEO
+    { id: 'web-toolkit', title: 'Web Geliştirici Kutusu', icon: <Globe size={18} />, category: 'seo', addedAt: '2026-02-24' },
+    { id: 'sitemap-generator', title: 'Sitemap Oluşturucu', icon: <Network size={18} />, category: 'seo', addedAt: '2026-02-24' },
+    { id: 'robots-txt-builder', title: 'Robots.txt Hazırlayıcı', icon: <FileCode size={18} />, category: 'seo', addedAt: '2026-02-24' },
+    { id: 'xml-validator', title: 'XML / XSD Doğrulayıcı', icon: <Code2 size={18} />, category: 'seo', addedAt: '2026-02-24' },
+    { id: 'schema-generator', title: 'Şema & Form Üretici', icon: <Layers size={18} />, category: 'seo', addedAt: '2026-02-20' },
+    { id: 'metadata-generator', title: 'Meta Etiketi Üretici', icon: <Globe size={18} />, category: 'seo', addedAt: '2026-02-20' },
+    { id: 'json-ld', title: 'JSON-LD Editörü', icon: <FileJson size={18} />, category: 'seo', addedAt: '2026-02-23' },
 
     // Calculators (New)
     { id: 'date-calculator', title: 'Tarih & Gün Hesapla', icon: <Clock size={18} />, category: 'calculators', addedAt: '2026-02-20' },

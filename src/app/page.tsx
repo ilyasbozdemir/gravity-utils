@@ -65,6 +65,10 @@ const CodeSnap = dynamic(() => import('@/components/CodeSnap').then(mod => mod.C
 const SmartMockGenerator = dynamic(() => import('@/components/SmartMockGenerator').then(mod => mod.SmartMockGenerator), { ssr: false });
 const SqlConverter = dynamic(() => import('@/components/SqlConverter').then(mod => mod.SqlConverter), { ssr: false });
 const TerminalMastery = dynamic(() => import('@/components/TerminalMastery').then(mod => mod.TerminalMastery), { ssr: false });
+const SitemapGenerator = dynamic(() => import('@/components/SitemapGenerator').then(mod => mod.SitemapGenerator), { ssr: false });
+const RobotsTxtBuilder = dynamic(() => import('@/components/RobotsTxtBuilder').then(mod => mod.RobotsTxtBuilder), { ssr: false });
+const XmlValidator = dynamic(() => import('@/components/XmlValidator').then(mod => mod.XmlValidator), { ssr: false });
+const ExamGenerator = dynamic(() => import('@/components/ExamGenerator').then(mod => mod.ExamGenerator), { ssr: false });
 
 export default function Home() {
     const [file, setFile] = useState<File | null>(null);
@@ -265,6 +269,10 @@ export default function Home() {
                             {view === 'sql-converter' && <SqlConverter onBack={() => setView('home')} />}
                             {view === 'terminal-mastery' && <TerminalMastery onBack={() => setView('home')} />}
                             {view === 'text-diff' && <TextDiff onBack={() => setView('home')} />}
+                            {view === 'sitemap-generator' && <SitemapGenerator onBack={() => setView('home')} />}
+                            {view === 'robots-txt-builder' && <RobotsTxtBuilder onBack={() => setView('home')} />}
+                            {view === 'xml-validator' && <XmlValidator onBack={() => setView('home')} />}
+                            {view === 'exam-generator' && <ExamGenerator onBack={() => setView('home')} />}
                             {view === 'convert' && <FileConverter file={file} onBack={() => setView('home')} />}
                         </div>
                     )}
