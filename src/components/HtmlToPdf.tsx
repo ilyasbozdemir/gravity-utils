@@ -167,12 +167,10 @@ export const HtmlToPdf: React.FC<{ onBack: () => void }> = ({ onBack }) => {
                     <div className="space-y-4 max-w-3xl">
                         <h3 className="text-2xl font-black uppercase italic tracking-tight">Bilgi Köşesi: PDF Üretmenin 'Client-Side' Yolu</h3>
                         <p className="text-indigo-50 font-bold italic leading-relaxed">
-                            "Hocam, eskiden PDF üretmek için backend taraflı kütüphanelere mecburduk. Ama artık tarayıcı gücü her şeye yetiyor!
-                            <span className="underline decoration-indigo-300">jsPDF</span> kütüphanesi ile client tarafında DOM öğelerini birebir yakalayıp vektörel bir PDF haline getiriyoruz.
-                            Dikkat etmeniz gereken en büyük nokta; PDF'in bir kağıt boyutu olmasıdır.
-                            Web siteniz sonsuza kadar uzasa da PDF'de kesilir.
-                            Bu yüzden <span className="underline decoration-indigo-300">A4 kağıdı için 800-1000px</span> arası bir genişliği (windowWidth) baz alarak tasarım yapmak,
-                            çıktının her zaman mükemmel görünmesini sağlar!"
+                            Web teknolojilerindeki gelişmeler sayesinde artık PDF üretmek için sunucu taraflı kütüphanelere bağımlı kalmamıza gerek yok. Tarayıcı gücü bu işlem için fazlasıyla yeterli!
+                            <span className="underline decoration-indigo-300">jsPDF</span> kütüphanesi ile istemci tarafında DOM öğelerini birebir yakalayıp vektörel bir PDF haline getirebiliyoruz.
+                            Buradaki en kritik nokta, dijital tasarımların bir kağıt boyutu (A4, A3 vb.) sınırına sahip olmasıdır.
+                            Bu nedenle, <span className="underline decoration-indigo-300">800-1000px</span> arası bir genişliği baz alarak mizanpaj oluşturmak, fiziksel çıktıların her zaman profesyonel ve hatasız görünmesini sağlar.
                         </p>
                     </div>
                 </div>

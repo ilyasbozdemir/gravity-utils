@@ -254,10 +254,10 @@ export const XmlValidator: React.FC<{ onBack: () => void }> = ({ onBack }) => {
                     <div className="space-y-4 max-w-3xl">
                         <h3 className="text-2xl font-black uppercase italic tracking-tight">Bilgi Köşesi: XML Dünyasında İki Kritik Kavram</h3>
                         <p className="text-indigo-50 font-bold italic leading-relaxed">
-                            "Hocam, XML'de iki seviye vardır. İlki <span className="underline decoration-indigo-300">Well-formed (İyi Biçimlendirilmiş)</span> olmaktır; yani taglar doğru açılmış, doğru kapanmış demektir. Bu olmazsa zaten XML 'XML' değildir, bozuktur.
-                            İkinci seviye ise <span className="underline decoration-indigo-300">Valid (Geçerli)</span> olmaktır. Bu da XML'in, ona biçilen 'role' (yani XSD şemasına) uygun olması demektir.
-                            Örneğin bir XSD 'İsim alanı sadece harf olmalı' derse ve siz sayı yazarsanız, XML well-formed olsa bile 'invalid' olur.
-                            SEO ve veri entegrasyonu projelerinde bu farkı bilmek sizi binlerce 'neden çalışmıyor?' sorusundan kurtarır!"
+                            XML dünyasında kritik iki seviye vardır. İlki <span className="underline decoration-indigo-300">Well-formed (İyi Biçimlendirilmiş)</span> olmaktır; yani etiketlerin doğru açılıp kapanmasıdır. Bu kurala uyulmazsa veri işlenemez ve yapısal olarak hatalı kabul edilir.
+                            İkinci seviye ise <span className="underline decoration-indigo-300">Valid (Geçerli)</span> olmaktır. Bu, XML verisinin kendisine atanan kurallara (XSD şemasına) tam uyum sağlaması demektir.
+                            Örneğin, bir şema 'İsim alanı sadece harf içermeli' diyorsa ve siz sayı kullanırsanız, XML iyi biçimlendirilmiş olsa dahi 'geçersiz' (invalid) sayılır.
+                            Veri entegrasyonu projelerinde bu ayrımı bilmek, yapısal hataları hızla teşhis etmenizi sağlar.
                         </p>
                     </div>
                 </div>

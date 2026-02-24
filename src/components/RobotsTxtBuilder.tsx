@@ -219,11 +219,10 @@ export const RobotsTxtBuilder: React.FC<{ onBack: () => void }> = ({ onBack }) =
                     <div className="space-y-4 max-w-3xl">
                         <h3 className="text-2xl font-black uppercase italic tracking-tight">Bilgi Köşesi: Robots.txt Kodun Kapı Görevlisidir</h3>
                         <p className="text-indigo-50 font-bold italic leading-relaxed">
-                            "Hocam, robots.txt bir 'yasak tabelası' değil, bir 'nezaket ricası'dır.
-                            Google ve diğer saygın arama motorları bu rıcaya uyar ama kötü niyetli botlar (crawler) buna bakmaz bile.
-                            Hassas verilerinizi oraya yazıp 'Disallow: /ozel-sifreler' derseniz, tam tersine hırsıza anahtarı nerede sakladığınızı göstermiş olursunuz!
-                            Gerçek gizlilik için sunucu taraflı yetkilendirme (Auth) şarttır.
-                            Ayrıca <span className="underline decoration-indigo-300">User-agent: *</span> her botu kapsar ama Google için özel kurallar yazmak isterseniz <span className="underline decoration-indigo-300">User-agent: Googlebot</span> olarak ayrı bir blok açmanız gerekir."
+                            Robots.txt dosyası bir 'yasak tabelası' değil, arama motorları için hazırlanmış bir 'nezaket ricası' rehberidir.
+                            Google ve diğer saygın arama motorları bu kurallara uyar ancak kötü niyetli botlar bu dosyayı dikkate almayabilir.
+                            Bu nedenle, hassas dizinleri burada listelemek yerine gerçek bir gizlilik için sunucu taraflı yetkilendirme (Auth) kullanılmalıdır.
+                            Ayrıca <span className="underline decoration-indigo-300">User-agent: *</span> kuralı tüm botları kapsarken, belirli botlar için (örneğin Googlebot) özel kurallar tanımlayarak tarama bütçenizi çok daha verimli yönetebilirsiniz.
                         </p>
                     </div>
                 </div>

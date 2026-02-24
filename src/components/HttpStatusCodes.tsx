@@ -158,7 +158,7 @@ const STATUS_CODES = [
         example: "Bir web sayfasını başarıyla açmak veya veri listelemek.",
         proTip:
             "En güvenli limandır ama her şeyi 200 dönmek yerine spesifik kodları (201, 204 vb.) kullanmak sizi profesyonel yapar.",
-        lessonNote: "Hocam, 200 demek 'buradayım, her şey yolunda' demektir. Ama bir tweet attığında sunucu 200 yerine 201 Created dönerse, 'sadece tamam demedim, yeni bir şey de yarattım' demiş olur. Bu ince fark projenin kalitesini gösterir.",
+        lessonNote: "200 yanıtı 'İstek başarıyla alındı ve her şey yolunda' demektir. Ancak bir kaynak oluşturulduğunda (örneğin yeni bir kayıt) 201 Created döndürmek, sadece işlemin tamamlandığını değil, yeni bir verinin de sisteme eklendiğini açıkça belirtir. Bu tür ayrımlar API kalitesini yükseltir.",
     },
     {
         code: 201,
@@ -287,7 +287,7 @@ const STATUS_CODES = [
         example: "www.eski-site.com -> www.yeni-site.com.",
         proTip:
             "Arama motorları bu kodu gördüğünde indeksindeki linki de günceller.",
-        lessonNote: "Bakın burası çok önemli; 301 'kalıcı' demektir. Google amcaya 'bu sayfa artık yok, her şeyi şu yeni eve taşıdım' dersiniz. O da tüm SEO gücünü (biz buna link juice diyoruz) yeni sayfaya aktarır. Eğer 302 (geçici) yaparsanız, Google gücü eski sayfada tutar ve yeni sayfa sıralama alamaz.",
+        lessonNote: "301 yönlendirmesi 'kalıcı' bir taşınmayı ifade eder. Arama motorlarına sayfanın artık tamamen yeni bir adreste olduğunu bildirir. Bu sayede eski sayfanın kazandığı tüm SEO değeri (link juice) yeni sayfaya aktarılır. Geçici durumlar için 302 kullanılması, SEO gücünün eski sayfada kalmasına neden olabilir.",
     },
     {
         code: 302,
@@ -436,7 +436,7 @@ const STATUS_CODES = [
         example: "Google'da olmayan bir sayfa aratmak.",
         proTip:
             "Güvenlik için bazen 403 yerine 404 verilir ki kaynağın varlığı bile gizlensin.",
-        lessonNote: "404 sadece 'bulamadım' demek değildir. Bazen 'sana bunu göstermiyorum' demenin kibar yoludur. Eğer bir admin sayfasını 403 (yasak) ile kapatırsanız, hacker orada bir sayfa olduğunu anlar. Ama 404 dönerseniz, orada bir şey yok sanıp gider. Buna 'security by obscurity' (gizleyerek güvenlik) diyoruz.",
+        lessonNote: "404 hatası bazen güvenlik amacıyla bilinçli olarak kullanılır. Örneğin, bir yönetici sayfasına yetkisiz erişim denendiğinde 403 (yasak) yerine 404 dönerek o sayfanın varlığı gizlenebilir. Bu yöntem, potansiyel saldırganların sistem yapısını keşfetmesini zorlaştırır.",
     },
     {
         code: 405,
@@ -878,7 +878,7 @@ const STATUS_CODES = [
         desc: "Ağ Bağlantısı Kesildi.",
         longDesc: "İstek sunucuya hiç ulaşamadı veya arada olan bir proxy bağlantıyı kesti.",
         rootCause: "Proxy ayarları veya ISP kaynaklı bağlantı kopması.",
-        solution: "İnternet kablonu kontrol et hocam, bağlantı gitmiş olabilir.",
+        solution: "Ağ bağlantınızı ve internet kablonuzu kontrol edin, bağlantı kopmuş olabilir.",
         example: "VPN açıkken internetin tamamen kesilmesi ve tarayıcının çökmesi.",
         proTip: "Yine bir HTTP standardı değil, bazı HTTP client kitaplıkları tarafından uydurulmuş 'catch-all' bir hatadır.",
     },

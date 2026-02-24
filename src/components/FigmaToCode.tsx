@@ -179,12 +179,10 @@ export const FigmaToCode: React.FC<{ onBack: () => void }> = ({ onBack }) => {
                     <div className="space-y-4 max-w-3xl">
                         <h3 className="text-2xl font-black uppercase italic tracking-tight">Bilgi Köşesi: Sadece Figma Değil, Her Şeyden HTML!</h3>
                         <p className="text-indigo-50 font-bold italic leading-relaxed">
-                            "Hocam, bazen figma CSS'i yetmez. 'Inline CSS' her zaman can simididir.
-                            HTML maillerinde veya hızlı prototiplerde Tailwind yerine saf HTML/CSS gerekebilir.
-                            Bizim bu yeni <span className="underline decoration-indigo-300">Design → Code Pro</span> aracımızla tek tıkla modlar arasında geçiş yapabilirsiniz.
-                            Özellikle React kullanıyorsanız 'Styled Components' modu, o karışık CSS'i tertemiz bir bileşene (Component) çevirir.
-                            Kod yazarken en önemli kural: 'DRY' (Don't Repeat Yourself) değil, 'WET' (Write Everything Twice) hiç değil;
-                            doğru aracı doğru yerde kullanmaktır!"
+                            Bazı durumlarda sadece Figma çıktısı yeterli olmayabilir; özellikle HTML e-postaları veya hızlı prototipler için 'Saf HTML/CSS' alternatifi hayat kurtarıcıdır.
+                            Yeni <span className="underline decoration-indigo-300">Design → Code Pro</span> aracımızla Tailwind, React ve Styled Components modları arasında anlık geçiş yapabilirsiniz.
+                            Özellikle karmaşık CSS yapılarını temiz birer bileşene (Component) dönüştürmek, kodun sürdürülebilirliğini artırır.
+                            Yazılım geliştirmede en önemli kural, doğru aracı doğru amaca yönelik kullanmak ve kod temizliğini en üst seviyede tutmaktır.
                         </p>
                     </div>
                 </div>
