@@ -1031,7 +1031,7 @@ const StatusCard = ({ item }: { item: any }) => {
                                 <BookOpen size={100} />
                             </div>
                             <p className="text-[10px] font-black uppercase tracking-[0.3em] text-indigo-200 mb-3 flex items-center gap-2">
-                                <Sparkles size={14} /> Hoca Köşesi / Akademi Notu
+                                <Sparkles size={14} /> Bilgi Köşesi / Akademi Notu
                             </p>
                             <p className="text-sm font-bold leading-relaxed italic relative z-10">
                                 "{(item as any).lessonNote}"
@@ -1171,7 +1171,7 @@ export function HttpStatusCodes({ onBack }: { onBack?: () => void }) {
                         İstediğiniz veri protokollerde bulunamadı.
                     </p>
                     <p className="text-sm text-slate-400 mt-4 font-bold">
-                        Arama kriterlerini genişletmeyi deneyin hocam.
+                        Arama kriterlerini genişletmeyi veya farklı bir kategori seçmeyi deneyin.
                     </p>
                 </div>
             )}

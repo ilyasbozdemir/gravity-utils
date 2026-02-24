@@ -205,7 +205,7 @@ export const RobotsTxtBuilder: React.FC<{ onBack: () => void }> = ({ onBack }) =
                 {/* Closing the existing grid */}
             </div>
 
-            {/* Hoca Köşesi Academy Section */}
+            {/* Bilgi Köşesi Academy Section */}
             <div className="mt-12 p-10 bg-indigo-600 rounded-[3rem] text-white shadow-2xl relative overflow-hidden group/academy">
                 <div className="absolute top-0 right-0 p-10 opacity-10 group-hover/academy:scale-110 transition-transform">
                     <BookOpen size={150} />
