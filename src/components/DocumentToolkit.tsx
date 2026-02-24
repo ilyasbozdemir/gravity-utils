@@ -23,13 +23,46 @@ interface DocumentToolkitProps {
 }
 
 export const DocumentToolkit: React.FC<DocumentToolkitProps> = ({ onBack, initialView = 'dashboard', view: externalView }) => {
-    const [view, setView] = useState<DocToolSubView>(initialView);
+    // Initialize states from prop if available to avoid "flash" of dashboard
+    const [view, setView] = useState<DocToolSubView>(() => {
+        if (externalView) {
+            if (externalView.includes('pdf')) {
+                const officeModes: OfficeToolMode[] = ['word-pdf', 'pdf-word', 'excel-pdf', 'pdf-excel', 'ppt-pdf', 'pdf-ppt', 'pdf-image', 'excel-word', 'imagetopdf'];
+                if (officeModes.includes(externalView as any)) return 'office-tools';
+                return 'pdf-manager';
+            }
+            if (externalView.includes('office') || externalView.includes('word') || externalView.includes('excel') || externalView.includes('ppt') || externalView.includes('image')) {
+                return 'office-tools';
+            }
+            if (externalView === 'exam-generator') return 'exam-generator';
+            if (externalView === 'convert') return 'general-converter';
+        }
+        return initialView;
+    });
 
-    // Sync with external view if provided
+    const [officeMode, setOfficeMode] = useState<OfficeToolMode>(() => {
+        if (externalView) {
+            const officeModes: OfficeToolMode[] = ['word-pdf', 'pdf-word', 'excel-pdf', 'pdf-excel', 'ppt-pdf', 'pdf-ppt', 'pdf-image', 'excel-word', 'imagetopdf'];
+            if (officeModes.includes(externalView as any)) return externalView as OfficeToolMode;
+        }
+        return 'word-pdf';
+    });
+
+    const [pdfTab, setPdfTab] = useState<'split' | 'merge' | 'compress' | 'watermark' | 'convert'>(() => {
+        if (externalView && externalView.includes('pdf')) {
+            if (externalView.includes('split')) return 'split';
+            if (externalView.includes('merge')) return 'merge';
+            if (externalView.includes('compress')) return 'compress';
+            if (externalView.includes('watermark')) return 'watermark';
+            if (externalView.includes('convert')) return 'convert';
+        }
+        return 'merge';
+    });
+
+    // Sync with external view if provided (for when the user clicks sidebar while DocumentToolkit is already mounted)
     React.useEffect(() => {
         if (externalView) {
             if (externalView.includes('pdf')) {
-                // Determine if it's an office-to-pdf tool or a pdf-manager tool
                 const officeModes: OfficeToolMode[] = ['word-pdf', 'pdf-word', 'excel-pdf', 'pdf-excel', 'ppt-pdf', 'pdf-ppt', 'pdf-image', 'excel-word', 'imagetopdf'];
                 if (officeModes.includes(externalView as any)) {
                     setView('office-tools');
@@ -56,8 +89,7 @@ export const DocumentToolkit: React.FC<DocumentToolkitProps> = ({ onBack, initia
         }
     }, [externalView]);
 
-    const [officeMode, setOfficeMode] = useState<OfficeToolMode>('word-pdf');
-    const [pdfTab, setPdfTab] = useState<'split' | 'merge' | 'compress' | 'watermark' | 'convert'>('merge');
+    const [pdfTabState, setPdfTabState] = useState<'split' | 'merge' | 'compress' | 'watermark' | 'convert'>('merge'); // Not needed if we use pdfTab
     const [smartFile, setSmartFile] = useState<File | null>(null);
     const [smartFormats, setSmartFormats] = useState<Format[]>([]);
     const [selectedSmartFormat, setSelectedSmartFormat] = useState<Format | null>(null);
