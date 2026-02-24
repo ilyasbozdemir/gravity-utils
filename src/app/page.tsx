@@ -69,6 +69,8 @@ const SitemapGenerator = dynamic(() => import('@/components/SitemapGenerator').t
 const RobotsTxtBuilder = dynamic(() => import('@/components/RobotsTxtBuilder').then(mod => mod.RobotsTxtBuilder), { ssr: false });
 const XmlValidator = dynamic(() => import('@/components/XmlValidator').then(mod => mod.XmlValidator), { ssr: false });
 const ExamGenerator = dynamic(() => import('@/components/ExamGenerator').then(mod => mod.ExamGenerator), { ssr: false });
+const FigmaToCode = dynamic(() => import('@/components/FigmaToCode').then(mod => mod.FigmaToCode), { ssr: false });
+const HtmlToPdf = dynamic(() => import('@/components/HtmlToPdf').then(mod => mod.HtmlToPdf), { ssr: false });
 
 export default function Home() {
     const [file, setFile] = useState<File | null>(null);
@@ -273,6 +275,8 @@ export default function Home() {
                             {view === 'robots-txt-builder' && <RobotsTxtBuilder onBack={() => setView('home')} />}
                             {view === 'xml-validator' && <XmlValidator onBack={() => setView('home')} />}
                             {view === 'exam-generator' && <ExamGenerator onBack={() => setView('home')} />}
+                            {view === 'figma-to-code' && <FigmaToCode onBack={() => setView('home')} />}
+                            {view === 'html-to-pdf' && <HtmlToPdf onBack={() => setView('home')} />}
                             {view === 'convert' && <FileConverter file={file} onBack={() => setView('home')} />}
                         </div>
                     )}
