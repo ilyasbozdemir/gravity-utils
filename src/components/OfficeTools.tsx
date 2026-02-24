@@ -21,7 +21,7 @@ import jsPDF from 'jspdf';
 // Configure PDF.js worker
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
 
-export type OfficeToolMode = 'word-pdf' | 'pdf-word' | 'excel-pdf' | 'pdf-excel' | 'ppt-pdf' | 'pdf-ppt' | 'pdf-image' | 'imagetopdf';
+export type OfficeToolMode = 'word-pdf' | 'pdf-word' | 'excel-pdf' | 'pdf-excel' | 'ppt-pdf' | 'pdf-ppt' | 'pdf-image' | 'imagetopdf' | 'excel-word';
 
 interface OfficeToolsProps {
     mode: OfficeToolMode;
@@ -53,7 +53,8 @@ const TOOL_CONFIG = {
     'ppt-pdf': { title: 'PowerPoint → PDF', accept: '.ppt,.pptx', icon: <FileSpreadsheet size={24} />, color: 'text-orange-500', bg: 'bg-orange-500', real: true },
     'pdf-ppt': { title: 'PDF → PowerPoint', accept: '.pdf', icon: <FileSpreadsheet size={24} />, color: 'text-red-500', bg: 'bg-red-500', real: false },
     'pdf-image': { title: 'PDF → Görsel', accept: '.pdf', icon: <ImageIcon size={24} />, color: 'text-purple-500', bg: 'bg-purple-500', real: true },
-    'imagetopdf': { title: 'Görsel → PDF', accept: 'image/*', icon: <ImageIcon size={24} />, color: 'text-blue-500', bg: 'bg-blue-500', real: true },
+    'imagetopdf': { title: 'Görsel → PDF', accept: 'image/*', icon: <ImageIcon size={24} />, color: 'text-blue-500', bg: 'bg-blue-600', real: true },
+    'excel-word': { title: 'Excel → Word', accept: '.xlsx,.xls', icon: <FileText size={24} />, color: 'text-green-700', bg: 'bg-green-700', real: true },
 };
 
 type PageSize = 'auto' | 'a4' | 'a3' | 'letter' | 'legal';
@@ -484,11 +485,10 @@ export const OfficeTools: React.FC<OfficeToolsProps> = ({ mode, onBack }) => {
     const config = TOOL_CONFIG[mode];
     const isMock = !config.real;
 
-    // eslint-disable-next-line react-hooks/rules-of-hooks
     const [files, setFiles] = useState<FileState[]>([]);
-    // eslint-disable-next-line react-hooks/rules-of-hooks
+    const [orientation, setOrientation] = useState<PageOrientation>('portrait');
+    const [pageSize, setPageSize] = useState<PageSize>('a4');
     const inputRef = useRef<HTMLInputElement>(null);
-    // eslint-disable-next-line react-hooks/rules-of-hooks
     const renderContainerRef = useRef<HTMLDivElement>(null);
 
     const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -728,6 +728,8 @@ export const OfficeTools: React.FC<OfficeToolsProps> = ({ mode, onBack }) => {
                 const formData = new FormData();
                 formData.append('file', item.file);
                 formData.append('type', mode);
+                formData.append('orientation', orientation);
+                formData.append('pageSize', pageSize);
 
                 const response = await fetch('/api/convert', {
                     method: 'POST',
@@ -741,6 +743,42 @@ export const OfficeTools: React.FC<OfficeToolsProps> = ({ mode, onBack }) => {
 
                 result = await response.blob();
                 resultName = item.file.name.replace(/\.[^/.]+$/, '') + '.pdf';
+            }
+            // ── Excel → Word (Structured Table) ──────────────────────────
+            else if (mode === 'excel-word') {
+                const { read, utils } = await import('xlsx');
+                const { Document, Packer, Paragraph, Table, TableRow, TableCell, BorderStyle, WidthType } = await import('docx');
+
+                const arrayBuffer = await item.file.arrayBuffer();
+                const workbook = read(arrayBuffer, { type: 'array' });
+                const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                const jsonData = utils.sheet_to_json(firstSheet, { header: 1 }) as any[][];
+
+                const tableRows = jsonData.map(row =>
+                    new TableRow({
+                        children: row.map(cell =>
+                            new TableCell({
+                                children: [new Paragraph(String(cell || ""))],
+                                width: { size: 100 / (row.length || 1), type: WidthType.PERCENTAGE }
+                            })
+                        )
+                    })
+                );
+
+                const doc = new Document({
+                    sections: [{
+                        children: [
+                            new Paragraph({ text: "Excel verisinden dönüştürüldü", heading: "Heading1" }),
+                            new Table({
+                                rows: tableRows,
+                                width: { size: 100, type: WidthType.PERCENTAGE }
+                            })
+                        ]
+                    }]
+                });
+
+                result = await Packer.toBlob(doc);
+                resultName = item.file.name.replace(/\.[^/.]+$/, '') + '.docx';
             }
             // ── Fallback (mock) ──────────────────────────────────────────
             else {
@@ -826,6 +864,48 @@ export const OfficeTools: React.FC<OfficeToolsProps> = ({ mode, onBack }) => {
                     </div>
                 </div>
             )}
+
+            {/* Simple Preview/Settings Mock */}
+            <div className="bg-slate-50 dark:bg-slate-800/20 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 mb-8 flex flex-wrap items-center gap-8">
+                <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 block">Sayfa Yönü</label>
+                    <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
+                        <button
+                            onClick={() => setOrientation('portrait')}
+                            className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${orientation === 'portrait' ? 'bg-white dark:bg-slate-700 shadow-sm text-blue-600' : 'text-slate-500'}`}
+                        >
+                            Dikey
+                        </button>
+                        <button
+                            onClick={() => setOrientation('landscape')}
+                            className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${orientation === 'landscape' ? 'bg-white dark:bg-slate-700 shadow-sm text-blue-600' : 'text-slate-500'}`}
+                        >
+                            Yatay
+                        </button>
+                    </div>
+                </div>
+
+                <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 block">Kağıt Boyutu</label>
+                    <select
+                        value={pageSize}
+                        title="Sayfa Boyutu"
+                        onChange={(e) => setPageSize(e.target.value as PageSize)}
+                        className="bg-slate-100 dark:bg-slate-800 border-none rounded-xl text-xs font-bold px-4 py-2 text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-blue-500 transition-all outline-none"
+                    >
+                        {Object.entries(PAGE_SIZES).map(([k, v]) => (
+                            <option key={k} value={k}>{v.split(' ')[0]}</option>
+                        ))}
+                    </select>
+                </div>
+
+                <div className="ml-auto hidden md:block">
+                    <div className="flex items-center gap-2 px-4 py-2 bg-blue-500/10 rounded-2xl border border-blue-500/20">
+                        <Info size={14} className="text-blue-500" />
+                        <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-tight">Akıllı Önizleme Aktif</span>
+                    </div>
+                </div>
+            </div>
 
             {/* Dropper */}
             <div className="relative group">

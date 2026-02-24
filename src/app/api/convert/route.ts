@@ -155,6 +155,8 @@ export async function POST(req: NextRequest) {
                 const font = await pdfDoc.embedFont(fontBytes);
                 
                 if (type === 'excel-pdf') {
+                    const orientation = formData?.get('orientation') as string || 'portrait';
+                    const pageSizeParam = formData?.get('pageSize') as string || 'a4';
                     const { read, utils } = await import('xlsx');
                     const workbook = read(arrayBuffer, { type: 'buffer' });
                     
@@ -162,19 +164,36 @@ export async function POST(req: NextRequest) {
                         const worksheet = workbook.Sheets[sheetName];
                         const json = utils.sheet_to_json(worksheet, { header: 1 }) as any[][];
                         
-                        const page = pdfDoc.addPage();
+                        if (json.length === 0) continue;
+                        
+                        let dims: [number, number] = [595.28, 841.89]; // A4
+                        if (pageSizeParam === 'a3') dims = [841.89, 1190.55]; 
+                        if (orientation === 'landscape') dims = [dims[1], dims[0]];
+
+                        const page = pdfDoc.addPage(dims);
                         const { width, height } = page.getSize();
                         let y = height - 50;
 
-                        page.drawText(`Sheet: ${sheetName}`, { x: 50, y, size: 18, font });
+                        page.drawText(`Sayfa: ${sheetName}`, { x: 50, y, size: 16, font, color: rgb(0, 0.4, 0.7) });
                         y -= 30;
 
-                        for (const row of json.slice(0, 50)) {
-                            const rowText = row.map(c => String(c)).join(' | ');
-                            if (y < 40) break;
-                            page.drawText(rowText.substring(0, 100), { x: 50, y, size: 8, font });
-                            y -= 12;
-                        }
+                        const colCount = Math.max(...json.map(r => Array.isArray(r) ? r.length : 0));
+                        const colWidth = (width - 100) / (colCount || 1);
+                        const rowHeight = 20;
+
+                        json.slice(0, 50).forEach((row, rowIndex) => {
+                            if (y < 40) return;
+                            let x = 50;
+                            if (rowIndex === 0) {
+                                page.drawRectangle({ x, y: y-5, width: width-100, height: rowHeight, color: rgb(0.9, 0.9, 0.9) });
+                            }
+                            row.forEach((cell: any) => {
+                                page.drawText(String(cell || "").substring(0, 15), { x: x + 5, y, size: 8, font });
+                                page.drawRectangle({ x, y: y-5, width: colWidth, height: rowHeight, borderWidth: 0.5, borderColor: rgb(0.7, 0.7, 0.7) });
+                                x += colWidth;
+                            });
+                            y -= rowHeight;
+                        });
                     }
                 } else {
                     // PPT to PDF (Text extraction approach)

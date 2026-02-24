@@ -30,13 +30,10 @@ export const DocumentToolkit: React.FC<DocumentToolkitProps> = ({ onBack, initia
         if (externalView) {
             if (externalView.includes('pdf')) {
                 // Determine if it's an office-to-pdf tool or a pdf-manager tool
-                const officeToPdfModes: OfficeToolMode[] = ['word-pdf', 'pdf-word', 'excel-pdf', 'pdf-excel', 'ppt-pdf', 'pdf-ppt', 'pdf-image'];
-                if (officeToPdfModes.includes(externalView as any)) {
+                const officeModes: OfficeToolMode[] = ['word-pdf', 'pdf-word', 'excel-pdf', 'pdf-excel', 'ppt-pdf', 'pdf-ppt', 'pdf-image', 'excel-word', 'imagetopdf'];
+                if (officeModes.includes(externalView as any)) {
                     setView('office-tools');
                     setOfficeMode(externalView as any);
-                } else if (externalView === 'imagetopdf') {
-                    setView('office-tools');
-                    setOfficeMode('imagetopdf');
                 } else {
                     setView('pdf-manager');
                     if (externalView.includes('split')) setPdfTab('split');
@@ -47,8 +44,8 @@ export const DocumentToolkit: React.FC<DocumentToolkitProps> = ({ onBack, initia
                 }
             } else if (externalView.includes('office') || externalView.includes('word') || externalView.includes('excel') || externalView.includes('ppt') || externalView.includes('image')) {
                 setView('office-tools');
-                if (externalView === 'imagetopdf') setOfficeMode('imagetopdf');
-                else if (externalView.includes('pdf')) setOfficeMode(externalView as any);
+                const officeModes: OfficeToolMode[] = ['word-pdf', 'pdf-word', 'excel-pdf', 'pdf-excel', 'ppt-pdf', 'pdf-ppt', 'pdf-image', 'excel-word', 'imagetopdf'];
+                if (officeModes.includes(externalView as any)) setOfficeMode(externalView as any);
             } else if (externalView === 'exam-generator') {
                 setView('exam-generator');
             } else if (externalView === 'convert') {
