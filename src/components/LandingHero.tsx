@@ -49,17 +49,15 @@ export const LandingHero: React.FC<LandingHeroProps> = ({ onToolSelect }) => {
                 </p>
 
                 {/* Main Tool Grid */}
-                <div className="w-full max-w-[1000px] grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-20 relative z-20">
-                    <div className="w-full max-w-[1100px] grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-20 relative z-20">
-                        <HeroLink title="Design → Code" desc="Figma'dan Temiz Kod Üret" icon={<Smartphone />} color="pink" onClick={() => onToolSelect('figma-to-code')} />
-                        <HeroLink title="Sitemap Pro" desc="Gelişmiş XML Haritası Oluştur" icon={<Globe />} color="blue" onClick={() => onToolSelect('sitemap-generator')} />
-                        <HeroLink title="Web → PDF Pro" desc="Web Sayfalarını PDF'e Çevir" icon={<FileText />} color="rose" onClick={() => onToolSelect('html-to-pdf')} />
-                        <HeroLink title="Terminal Mastery" desc="Komut Satırı Uzmanlık Rehberi" icon={<Terminal />} color="indigo" onClick={() => onToolSelect('terminal-mastery')} />
-                        <HeroLink title="XML / JSON Pro" desc="Gelişmiş Veri Doğrulayıcı" icon={<FileCode />} color="emerald" onClick={() => onToolSelect('xml-validator')} />
-                        <HeroLink title="CSS / Dev Units" desc="px ↔ rem ↔ em ↔ vw" icon={<Code />} color="sky" onClick={() => onToolSelect('css-units')} />
-                        <HeroLink title="Case Converter" desc="camelCase, snake_case Pro" icon={<Type />} color="indigo" onClick={() => onToolSelect('case-converter-pro')} />
-                        <HeroLink title="Belge & Ofis" desc="PDF, Word, Excel, PPT Dönüştür" icon={<Archive />} color="blue" onClick={() => onToolSelect('document-toolkit')} />
-                    </div>
+                <div className="w-full max-w-[1100px] grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-20 relative z-20">
+                    <HeroLink title="Design → Code" desc="Figma'dan Temiz Kod Üret" icon={<Smartphone />} color="pink" onClick={() => onToolSelect('figma-to-code')} />
+                    <HeroLink title="Sitemap Pro" desc="Gelişmiş XML Haritası Oluştur" icon={<Globe />} color="blue" onClick={() => onToolSelect('sitemap-generator')} />
+                    <HeroLink title="Web → PDF Pro" desc="Web Sayfalarını PDF'e Çevir" icon={<FileText />} color="rose" onClick={() => onToolSelect('html-to-pdf')} />
+                    <HeroLink title="Terminal Mastery" desc="Komut Satırı Uzmanlık Rehberi" icon={<Terminal />} color="indigo" onClick={() => onToolSelect('terminal-mastery')} />
+                    <HeroLink title="XML / JSON Pro" desc="Gelişmiş Veri Doğrulayıcı" icon={<FileCode />} color="emerald" onClick={() => onToolSelect('xml-validator')} />
+                    <HeroLink title="CSS / Dev Units" desc="px ↔ rem ↔ em ↔ vw" icon={<Code />} color="sky" onClick={() => onToolSelect('css-units')} />
+                    <HeroLink title="Case Converter" desc="camelCase, snake_case Pro" icon={<Type />} color="indigo" onClick={() => onToolSelect('case-converter-pro')} />
+                    <HeroLink title="Belge & Ofis" desc="PDF, Word, Excel, PPT Dönüştür" icon={<Archive />} color="blue" onClick={() => onToolSelect('document-toolkit')} />
                 </div>
 
                 {/* Quick Search */}
@@ -137,7 +135,56 @@ export const LandingHero: React.FC<LandingHeroProps> = ({ onToolSelect }) => {
                             <QuickAction title="IBAN Kontrol" onClick={() => onToolSelect('iban-checker')} icon={<CheckCircle2 size={16} />} color="emerald" />
                             <QuickAction title="Şifre Üretici" onClick={() => onToolSelect('password-generator')} icon={<Lock size={16} />} color="indigo" />
                             <QuickAction title="Giriş Ayıklayıcı" onClick={() => onToolSelect('check-toolkit')} icon={<Settings size={16} />} color="orange" />
-                            {/* ... more could be added ... */}
+                            <QuickAction title="Dosya Şifrele" onClick={() => onToolSelect('encrypt')} icon={<Lock size={16} />} color="rose" />
+                            <QuickAction title="Hash Üret" onClick={() => onToolSelect('hash')} icon={<Hash size={16} />} color="sky" />
+                        </div>
+                    </section>
+
+                    {/* Category: Metin & İçerik */}
+                    <section>
+                        <div className="flex items-center gap-3 mb-8">
+                            <div className="p-2 bg-indigo-50 dark:bg-indigo-500/10 rounded-lg text-indigo-600 dark:text-indigo-400"><Type size={20} /></div>
+                            <h3 className="text-xl font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">Metin & İçerik İşleme</h3>
+                        </div>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+                            <QuickAction title="Metin Temizle" onClick={() => onToolSelect('text-cleaner')} icon={<RefreshCw size={16} />} color="indigo" />
+                            <QuickAction title="Case Converter" onClick={() => onToolSelect('case-converter-pro')} icon={<Type size={16} />} color="blue" />
+                            <QuickAction title="Lorem Ipsum" onClick={() => onToolSelect('lorem-ipsum')} icon={<FileText size={16} />} color="amber" />
+                            <QuickAction title="Markdown Edit" onClick={() => onToolSelect('markdown-editor')} icon={<FileCode size={16} />} color="emerald" />
+                            <QuickAction title="JSON ↔ CSV" onClick={() => onToolSelect('json-csv')} icon={<Database size={16} />} color="orange" />
+                            <QuickAction title="Metin Analiz" onClick={() => onToolSelect('text')} icon={<Search size={16} />} color="sky" />
+                        </div>
+                    </section>
+
+                    {/* Category: Medya Araçları */}
+                    <section>
+                        <div className="flex items-center gap-3 mb-8">
+                            <div className="p-2 bg-orange-50 dark:bg-orange-500/10 rounded-lg text-orange-600 dark:text-orange-400"><ImageIcon size={20} /></div>
+                            <h3 className="text-xl font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">Medya & Görsel Araçları</h3>
+                        </div>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+                            <QuickAction title="Resim Sıkıştır" onClick={() => onToolSelect('optimize')} icon={<Minimize2 size={16} />} color="emerald" />
+                            <QuickAction title="Exif Viewer" onClick={() => onToolSelect('exif-viewer')} icon={<Camera size={16} />} color="orange" />
+                            <QuickAction title="Bulk Rename" onClick={() => onToolSelect('bulk-rename')} icon={<Type size={16} />} color="blue" />
+                            <QuickAction title="Sosyal Medya" onClick={() => onToolSelect('social')} icon={<Smartphone size={16} />} color="pink" />
+                            <QuickAction title="Favicon Üret" onClick={() => onToolSelect('favicon')} icon={<Star size={16} />} color="amber" />
+                            <QuickAction title="QR Manager" onClick={() => onToolSelect('qr')} icon={<QrCode size={16} />} color="indigo" />
+                        </div>
+                    </section>
+
+                    {/* Category: Akıllı Hesaplayıcılar */}
+                    <section>
+                        <div className="flex items-center gap-3 mb-8">
+                            <div className="p-2 bg-blue-50 dark:bg-blue-500/10 rounded-lg text-blue-600 dark:text-blue-400"><Calculator size={20} /></div>
+                            <h3 className="text-xl font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">Akıllı Hesaplayıcılar</h3>
+                        </div>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+                            <QuickAction title="Tarih & Gün" onClick={() => onToolSelect('date-calculator')} icon={<Clock size={16} />} color="blue" />
+                            <QuickAction title="İndirme Süresi" onClick={() => onToolSelect('internet-speed')} icon={<Zap size={16} />} color="amber" />
+                            <QuickAction title="Dosya Tahmini" onClick={() => onToolSelect('file-size-calc')} icon={<Layers size={16} />} color="indigo" />
+                            <QuickAction title="Birim Çevirici" onClick={() => onToolSelect('units')} icon={<Calculator size={16} />} color="emerald" />
+                            <QuickAction title="Aspect Ratio" onClick={() => onToolSelect('aspect-ratio')} icon={<Layers size={16} />} color="orange" />
+                            <QuickAction title="CSS Units" onClick={() => onToolSelect('css-units')} icon={<Code size={16} />} color="sky" />
                         </div>
                     </section>
                 </div>
