@@ -32,8 +32,9 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: 'İşlem tipi belirtilmedi' }, { status: 400 });
         }
 
-        // --- PDF Operations (Requires ArrayBuffer/FormData) ---
-        if (type.startsWith('pdf-') && arrayBuffer) {
+        // --- File Based Operations (Requires ArrayBuffer) ---
+        if (arrayBuffer) {
+            // PDF Watermark
             if (type === 'pdf-watermark') {
                 const text = formData?.get('text') as string || 'GİZLİ';
                 const opacity = parseFloat(formData?.get('opacity') as string) || 0.3;
@@ -73,6 +74,7 @@ export async function POST(req: NextRequest) {
                 });
             }
 
+            // PDF Merge
             if (type === 'pdf-merge') {
                 const otherFiles = formData?.getAll('otherFiles') as File[];
                 const mainPdf = await PDFDocument.load(arrayBuffer);
@@ -93,6 +95,7 @@ export async function POST(req: NextRequest) {
                 });
             }
 
+            // PDF Split
             if (type === 'pdf-split') {
                 const pagesStr = formData?.get('pages') as string;
                 const selectedIndices = pagesStr.split(',').map(n => parseInt(n) - 1);
@@ -112,6 +115,7 @@ export async function POST(req: NextRequest) {
                 });
             }
 
+            // PDF Compress
             if (type === 'pdf-compress') {
                 const pdfDoc = await PDFDocument.load(arrayBuffer);
                 const pdfBytes = await pdfDoc.save({ useObjectStreams: true });
@@ -124,6 +128,7 @@ export async function POST(req: NextRequest) {
                 });
             }
 
+            // PDF Protect
             if (type === 'pdf-protect') {
                 const password = formData?.get('password') as string;
                 if (!password) {
@@ -139,6 +144,81 @@ export async function POST(req: NextRequest) {
                         'Content-Disposition': `attachment; filename="protected-${fileName}"`,
                     },
                 });
+            }
+
+            // Excel / PPT to PDF
+            if (type === 'excel-pdf' || type === 'ppt-pdf') {
+                const pdfDoc = await PDFDocument.create();
+                pdfDoc.registerFontkit(fontkit);
+                const fontRes = await fetch('https://cdn.jsdelivr.net/gh/googlefonts/roboto@master/src/hinted/Roboto-Regular.ttf');
+                const fontBytes = await fontRes.arrayBuffer();
+                const font = await pdfDoc.embedFont(fontBytes);
+                
+                if (type === 'excel-pdf') {
+                    const { read, utils } = await import('xlsx');
+                    const workbook = read(arrayBuffer, { type: 'buffer' });
+                    
+                    for (const sheetName of workbook.SheetNames) {
+                        const worksheet = workbook.Sheets[sheetName];
+                        const json = utils.sheet_to_json(worksheet, { header: 1 }) as any[][];
+                        
+                        const page = pdfDoc.addPage();
+                        const { width, height } = page.getSize();
+                        let y = height - 50;
+
+                        page.drawText(`Sheet: ${sheetName}`, { x: 50, y, size: 18, font });
+                        y -= 30;
+
+                        for (const row of json.slice(0, 50)) {
+                            const rowText = row.map(c => String(c)).join(' | ');
+                            if (y < 40) break;
+                            page.drawText(rowText.substring(0, 100), { x: 50, y, size: 8, font });
+                            y -= 12;
+                        }
+                    }
+                } else {
+                    const JSZip = (await import('jszip')).default;
+                    const zip = await JSZip.loadAsync(arrayBuffer);
+                    const slides = Object.keys(zip.files).filter(f => f.startsWith('ppt/slides/slide'));
+                    
+                    for (let i = 1; i <= slides.length; i++) {
+                        const slideContent = await zip.file(`ppt/slides/slide${i}.xml`)?.async('string');
+                        const page = pdfDoc.addPage();
+                        const { width, height } = page.getSize();
+                        
+                        page.drawText(`Slide ${i}`, { x: width/2 - 30, y: height - 50, size: 20, font });
+                        
+                        if (slideContent) {
+                            const textMatches = slideContent.match(/<a:t>([^<]+)<\/a:t>/g);
+                            if (textMatches) {
+                                let y = height - 100;
+                                for (const match of textMatches.slice(0, 20)) {
+                                    const txt = match.replace(/<[^>]+>/g, '');
+                                    page.drawText(txt.substring(0, 100), { x: 50, y, size: 10, font });
+                                    y -= 15;
+                                    if (y < 50) break;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                const pdfBytes = await pdfDoc.save();
+                return new Response(Buffer.from(pdfBytes), {
+                    headers: {
+                        'Content-Type': 'application/pdf',
+                        'Content-Disposition': `attachment; filename="converted-${fileName}.pdf"`,
+                    },
+                });
+            }
+
+            // PDF to Excel (Offload from client)
+            if (type === 'pdf-excel') {
+                const { read, utils, write } = await import('xlsx');
+                // Note: Simplified server-side PDF to Excel would need a real PDF parser.
+                // For now, we'll return a placeholder or use a library if available.
+                // This is a sign to use a more robust PDF parsing solution on server if needed.
+                return NextResponse.json({ error: 'Bu işlem için sunucu tarafında gelişmiş parser gereklidir. Yerel dönüştürücü önerilir.' }, { status: 501 });
             }
         }
 

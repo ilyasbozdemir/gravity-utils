@@ -113,43 +113,29 @@ export const FileConverter: React.FC<FileConverterProps> = ({ file: initialFile,
                         });
 
                         // Wait for images to load if any
-                        await new Promise(r => setTimeout(r, 1000));
+                        await new Promise(r => setTimeout(r, 1200));
 
                         setProgress('Döküman tarayıcıda render ediliyor...');
-                        const canvas = await html2canvas(container, {
-                            scale: 2,
-                            useCORS: true,
-                            logging: false
+                        const pdf = new jsPDF('p', 'mm', 'a4');
+                        const width = pdf.internal.pageSize.getWidth();
+
+                        await pdf.html(container, {
+                            callback: (doc) => {
+                                doc.save(finalName);
+                                setIsProcessing(false);
+                            },
+                            x: 0,
+                            y: 0,
+                            width: width,
+                            windowWidth: 800,
+                            autoPaging: 'text'
                         });
 
-                        setProgress('PDF sayfaları oluşturuluyor...');
-                        const imgData = canvas.toDataURL('image/jpeg', 0.95);
-                        const pdf = new jsPDF('p', 'mm', 'a4'); // This is the jsPDF instance
-
-                        const imgProps = pdf.getImageProperties(imgData);
-                        const pdfWidth = pdf.internal.pageSize.getWidth();
-                        const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-
-                        // If it's a long scrollable doc, we might need multiple pages
-                        // Simple version: fit it into pages
-                        let heightLeft = pdfHeight;
-                        let position = 0;
-                        const pageHeight = pdf.internal.pageSize.getHeight();
-
-                        pdf.addImage(imgData, 'JPEG', 0, position, pdfWidth, pdfHeight);
-                        heightLeft -= pageHeight;
-
-                        while (heightLeft >= 0) {
-                            position = heightLeft - pdfHeight;
-                            pdf.addPage();
-                            pdf.addImage(imgData, 'JPEG', 0, position, pdfWidth, pdfHeight);
-                            heightLeft -= pageHeight;
-                        }
-
-                        pdf.save(finalName);
                         container.innerHTML = '';
+                        return; // Callback handles the state update
                     }
-                } else if (file.type.startsWith('text/') || /\.(txt|md|js|ts|json|xml)$/i.test(file.name)) {
+                }
+                else if (file.type.startsWith('text/') || /\.(txt|md|js|ts|json|xml)$/i.test(file.name)) {
                     setProgress('Metin işleniyor ve Türkçe font yükleniyor...');
                     const text = await file.text();
 
@@ -380,6 +366,21 @@ export const FileConverter: React.FC<FileConverterProps> = ({ file: initialFile,
                 }
             }
 
+            // Excel / PPT to PDF via API
+            if (targetExt === 'pdf' && (file.name.toLowerCase().endsWith('.xlsx') || file.name.toLowerCase().endsWith('.pptx'))) {
+                setProgress('Bulut sunucusunda işleniyor...');
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('type', file.name.toLowerCase().endsWith('.xlsx') ? 'excel-pdf' : 'ppt-pdf');
+
+                const response = await fetch('/api/convert', { method: 'POST', body: formData });
+                if (!response.ok) throw new Error('Sunucu hatası');
+                const resultBlob = await response.blob();
+                saveAs(resultBlob, finalName);
+                setIsProcessing(false);
+                return;
+            }
+
             // 4. Fallback / Rename Logic
             saveAs(file, finalName);
 
@@ -419,24 +420,50 @@ export const FileConverter: React.FC<FileConverterProps> = ({ file: initialFile,
 
             <div className="space-y-8">
                 {!file ? (
-                    <div
-                        onClick={() => fileInputRef.current?.click()}
-                        className="w-full py-24 border-2 border-dashed border-slate-300 dark:border-white/10 rounded-2xl flex flex-col items-center justify-center gap-4 hover:border-blue-500/50 hover:bg-slate-50 dark:hover:bg-white/5 transition-all cursor-pointer group shadow-inner"
-                    >
-                        <div className="p-5 bg-blue-100 dark:bg-blue-500/10 rounded-full text-blue-600 dark:text-blue-400 group-hover:scale-110 transition-transform shadow-[0_0_20px_rgba(59,130,246,0.1)]">
-                            <RefreshCw size={36} />
+                    <div className="relative group">
+                        <div
+                            onClick={() => fileInputRef.current?.click()}
+                            className="w-full py-24 border-2 border-dashed border-slate-300 dark:border-white/10 rounded-2xl flex flex-col items-center justify-center gap-4 hover:border-blue-500/50 hover:bg-slate-50 dark:hover:bg-white/5 transition-all cursor-pointer group shadow-inner"
+                        >
+                            <div className="p-5 bg-blue-100 dark:bg-blue-500/10 rounded-full text-blue-600 dark:text-blue-400 group-hover:scale-110 transition-transform shadow-[0_0_20px_rgba(59,130,246,0.1)]">
+                                <RefreshCw size={36} />
+                            </div>
+                            <div className="text-center px-4">
+                                <p className="font-bold text-xl mb-1 text-slate-700 dark:text-slate-200">Dosya Seçin</p>
+                                <p className="text-sm text-slate-500">Dönüştürmek istediğiniz dosyayı sürükleyin veya seçin</p>
+                            </div>
+                            <input
+                                type="file"
+                                ref={fileInputRef}
+                                onChange={handleFileChange}
+                                className="hidden"
+                                title="Dosya Seç"
+                            />
                         </div>
-                        <div className="text-center px-4">
-                            <p className="font-bold text-xl mb-1 text-slate-700 dark:text-slate-200">Dosya Seçin</p>
-                            <p className="text-sm text-slate-500">Dönüştürmek istediğiniz dosyayı sürükleyin veya seçin</p>
+
+                        {/* Sample File Button */}
+                        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-3">
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    const dummy = new File(["Örnek Word İçeriği"], "ornek-belge.docx", { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+                                    setFile(dummy);
+                                }}
+                                className="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-xl text-[10px] font-bold text-blue-600 dark:text-blue-400 shadow-xl hover:-translate-y-1 transition-all"
+                            >
+                                Örnek .DOCX
+                            </button>
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    const dummy = new File(["Örnek Excel"], "ornek-tablo.xlsx", { type: 'application/octet-stream' });
+                                    setFile(dummy);
+                                }}
+                                className="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-xl text-[10px] font-bold text-emerald-600 dark:text-emerald-400 shadow-xl hover:-translate-y-1 transition-all"
+                            >
+                                Örnek .XLSX
+                            </button>
                         </div>
-                        <input
-                            type="file"
-                            ref={fileInputRef}
-                            onChange={handleFileChange}
-                            className="hidden"
-                            title="Dosya Seç"
-                        />
                     </div>
                 ) : (
                     <div className="flex flex-col gap-8">

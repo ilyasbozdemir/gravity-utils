@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { ArrowLeft, FileText, Scissors, Download, Layers, Minimize2, Stamp, RefreshCw, Plus, Trash2, ArrowUp, ArrowDown, LayoutGrid, GripVertical, Image as ImageIcon, Database, Info, Lock, Unlock, Search, PenTool, Hash, RotateCw, Edit3 } from 'lucide-react';
+import { ArrowLeft, FileText, Scissors, Download, Layers, Minimize2, Stamp, RefreshCw, Plus, Trash2, ArrowUp, ArrowDown, LayoutGrid, GripVertical, Image as ImageIcon, Database, Info, Lock, Unlock, Search, PenTool, Hash, RotateCw, Edit3, Settings2 } from 'lucide-react';
 import { PDFDocument, degrees, rgb, PDFImage, PageSizes } from 'pdf-lib';
 import * as pdfjsLib from 'pdfjs-dist';
 import fontkit from '@pdf-lib/fontkit';
@@ -814,6 +814,18 @@ export const PdfManager: React.FC<PdfManagerProps> = ({ file, onBack, initialTab
                         <div className="max-w-md mx-auto space-y-2">
                             <h3 className="text-2xl font-bold text-slate-800 dark:text-white">PDF İşlemeye Başlayın</h3>
                             <p className="text-slate-500 dark:text-slate-400">PDF dosyalarınızı birleştirin, ayırın, sıkıştırın veya filigran ekleyin.</p>
+
+                            <button
+                                onClick={() => {
+                                    // Simple mock PDF for testing
+                                    const dummy = new File(["%PDF-1.4\n1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] >>\nendobj\nxref\n0 4\n0000000000 65535 f\n0000000009 00000 n\n0000000052 00000 n\n0000000101 00000 n\ntrailer\n<< /Size 4 /Root 1 0 R >>\nstartxref\n178\n%%EOF"], "ornek-dokuman.pdf", { type: 'application/pdf' });
+                                    handleFileInput({ target: { files: [dummy] } } as any);
+                                }}
+                                className="mt-4 px-6 py-2 bg-red-100 dark:bg-red-900/10 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800 rounded-xl text-xs font-bold hover:bg-red-500 hover:text-white transition-all shadow-lg active:scale-95 mx-auto flex items-center gap-2"
+                            >
+                                <Settings2 size={16} />
+                                Örnek PDF ile Dene
+                            </button>
                         </div>
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-4xl px-8">

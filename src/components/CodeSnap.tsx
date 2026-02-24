@@ -129,7 +129,15 @@ export function CodeSnap({ onBack }: { onBack: () => void }) {
                     <div className="bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-white/5 rounded-3xl p-6 space-y-6 shadow-xl">
                         {/* Editor Section */}
                         <div className="space-y-4">
-                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 block px-1">Kod Editörü</label>
+                            <div className="flex items-center justify-between px-1">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 block">Kod Editörü</label>
+                                <button
+                                    onClick={() => setCode(`const GravityUtils = () => {\n  const [active, setActive] = useState(true);\n\n  return (\n    <div className="p-8 bg-gradient-to-br from-blue-500 to-purple-600">\n      <h1>Gravity Utils Premium</h1>\n      <p>Local-first toolkit for designers.</p>\n    </div>\n  );\n};`)}
+                                    className="text-[10px] font-bold text-purple-500 hover:text-purple-600 underline"
+                                >
+                                    Örnek Kod Yükle
+                                </button>
+                            </div>
                             <textarea
                                 value={code}
                                 title="Kodunuzu Buraya Girin"

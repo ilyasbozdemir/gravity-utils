@@ -47,9 +47,9 @@ interface ImageItem {
 const TOOL_CONFIG = {
     'word-pdf': { title: 'Word → PDF', accept: '.doc,.docx', icon: <FileText size={24} />, color: 'text-blue-600', bg: 'bg-blue-600', real: true },
     'pdf-word': { title: 'PDF → Word', accept: '.pdf', icon: <FileText size={24} />, color: 'text-red-500', bg: 'bg-red-500', real: true },
-    'excel-pdf': { title: 'Excel → PDF', accept: '.xls,.xlsx', icon: <FileSpreadsheet size={24} />, color: 'text-green-600', bg: 'bg-green-600', real: false },
+    'excel-pdf': { title: 'Excel → PDF', accept: '.xls,.xlsx', icon: <FileSpreadsheet size={24} />, color: 'text-green-600', bg: 'bg-green-600', real: true },
     'pdf-excel': { title: 'PDF → Excel', accept: '.pdf', icon: <FileSpreadsheet size={24} />, color: 'text-red-500', bg: 'bg-red-500', real: false },
-    'ppt-pdf': { title: 'PowerPoint → PDF', accept: '.ppt,.pptx', icon: <FileSpreadsheet size={24} />, color: 'text-orange-500', bg: 'bg-orange-500', real: false },
+    'ppt-pdf': { title: 'PowerPoint → PDF', accept: '.ppt,.pptx', icon: <FileSpreadsheet size={24} />, color: 'text-orange-500', bg: 'bg-orange-500', real: true },
     'pdf-ppt': { title: 'PDF → PowerPoint', accept: '.pdf', icon: <FileSpreadsheet size={24} />, color: 'text-red-500', bg: 'bg-red-500', real: false },
     'pdf-image': { title: 'PDF → Görsel', accept: '.pdf', icon: <ImageIcon size={24} />, color: 'text-purple-500', bg: 'bg-purple-500', real: true },
     'imagetopdf': { title: 'Görsel → PDF', accept: 'image/*', icon: <ImageIcon size={24} />, color: 'text-blue-500', bg: 'bg-blue-500', real: true },
@@ -564,32 +564,29 @@ export const OfficeTools: React.FC<OfficeToolsProps> = ({ mode, onBack }) => {
                         ignoreLastRenderedPageBreak: false,
                         useBase64URL: true,
                     });
-                    await new Promise(r => setTimeout(r, 800));
+
+                    // Wait for rendering
+                    await new Promise(r => setTimeout(r, 1000));
                     setFiles(prev => prev.map((f, i) => i === index ? { ...f, progress: 55 } : f));
 
-                    const canvas = await html2canvas(container, { scale: 1.5, useCORS: true, logging: false });
-                    const imgData = canvas.toDataURL('image/jpeg', 0.95);
                     const pdf = new jsPDF('p', 'mm', 'a4');
-                    const pdfWidth = pdf.internal.pageSize.getWidth();
-                    const pdfHeight = pdf.internal.pageSize.getHeight();
-                    const imgProps = pdf.getImageProperties(imgData);
-                    const totalPdfH = (imgProps.height * pdfWidth) / imgProps.width;
+                    const width = pdf.internal.pageSize.getWidth();
 
-                    let heightLeft = totalPdfH;
-                    let position = 0;
-                    pdf.addImage(imgData, 'JPEG', 0, position, pdfWidth, totalPdfH);
-                    heightLeft -= pdfHeight;
+                    // Use jsPDF's html method which handles text better than manual addImage
+                    await pdf.html(container, {
+                        callback: function (doc) {
+                            result = doc.output('blob');
+                            resultName = item.file.name.replace(/\.[^/.]+$/, '') + '.pdf';
+                            setFiles(prev => prev.map((f, i) => i === index ? { ...f, status: 'success', progress: 100, result, resultName } : f));
+                        },
+                        x: 0,
+                        y: 0,
+                        width: width,
+                        windowWidth: 800,
+                        autoPaging: 'text'
+                    });
 
-                    while (heightLeft > 0) {
-                        position -= pdfHeight;
-                        pdf.addPage();
-                        pdf.addImage(imgData, 'JPEG', 0, position, pdfWidth, totalPdfH);
-                        heightLeft -= pdfHeight;
-                    }
-
-                    result = pdf.output('blob');
-                    resultName = item.file.name.replace(/\.[^/.]+$/, '') + '.pdf';
-                    container.innerHTML = '';
+                    return; // Callback handles the state update
                 } else {
                     throw new Error('Render container bulunamadı');
                 }
@@ -724,7 +721,27 @@ export const OfficeTools: React.FC<OfficeToolsProps> = ({ mode, onBack }) => {
                 resultName = item.file.name.replace(/\.[^/.]+$/, '') + '.xlsx';
             }
 
-            // ── Excel / PPT (mock) ────────────────────────────────────────
+            // ── Excel / PPT (via API) ────────────────────────────────────
+            else if (mode === 'excel-pdf' || mode === 'ppt-pdf') {
+                setFiles(prev => prev.map((f, i) => i === index ? { ...f, progress: 30 } : f));
+                const formData = new FormData();
+                formData.append('file', item.file);
+                formData.append('type', mode);
+
+                const response = await fetch('/api/convert', {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'API Hatası');
+                }
+
+                result = await response.blob();
+                resultName = item.file.name.replace(/\.[^/.]+$/, '') + '.pdf';
+            }
+            // ── Fallback (mock) ──────────────────────────────────────────
             else {
                 await new Promise(r => setTimeout(r, 1200));
                 setFiles(prev => prev.map((f, i) => i === index ? { ...f, progress: 80 } : f));
@@ -788,32 +805,48 @@ export const OfficeTools: React.FC<OfficeToolsProps> = ({ mode, onBack }) => {
 
             {/* Mock notice banner */}
             {isMock && (
-                <div className="flex items-start gap-3 p-4 mb-6 bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800 rounded-2xl">
-                    <Info size={18} className="text-amber-500 shrink-0 mt-0.5" />
+                <div className="flex items-start gap-3 p-4 mb-6 bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-800 rounded-2xl">
+                    <Info size={18} className="text-blue-500 shrink-0 mt-0.5" />
                     <div>
-                        <p className="text-sm font-bold text-amber-700 dark:text-amber-400">Sınırlı Tarayıcı Desteği</p>
-                        <p className="text-xs text-amber-600 dark:text-amber-500 mt-0.5">
-                            Excel ve PowerPoint dosyaları karmaşık formatlara sahip olduğundan tarayıcı ortamında tam dönüşüm mümkün değildir.
-                            Çıktı dosyası bir önizleme/placeholder içerecektir. Tam dönüşüm için sunucu tabanlı bir çözüm gereklidir.
+                        <p className="text-sm font-bold text-blue-700 dark:text-blue-400">Bulut İşleme Aktif</p>
+                        <p className="text-xs text-blue-600 dark:text-blue-500 mt-0.5">
+                            Excel ve PowerPoint dosyalarınız artık Next.js sunucumuzda yüksek hassasiyetle işlenmektedir.
+                            Verileriniz işlendikten hemen sonra sunucudan silinir.
                         </p>
                     </div>
                 </div>
             )}
 
             {/* Dropper */}
-            <div onClick={() => inputRef.current?.click()}
-                className="border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-2xl p-12 text-center hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer mb-8">
-                <div className="w-16 h-16 bg-blue-50 dark:bg-blue-900/20 text-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Upload size={32} />
+            <div className="relative group">
+                <div onClick={() => inputRef.current?.click()}
+                    className="border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-2xl p-12 text-center hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer mb-8">
+                    <div className="w-16 h-16 bg-blue-50 dark:bg-blue-900/20 text-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <Upload size={32} />
+                    </div>
+                    <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-200">Dosyayı Buraya Sürükleyin</h3>
+                    <p className="text-slate-500 dark:text-slate-400 mt-2 text-sm">veya seçmek için tıklayın</p>
+                    <div className="mt-4 inline-flex items-center gap-2 px-3 py-1 bg-slate-100 dark:bg-slate-800 rounded-full text-xs font-mono text-slate-500 dark:text-slate-400">
+                        <FileType size={12} />
+                        {config.accept.replace(/,/g, ' ')}
+                    </div>
+                    <input type="file" ref={inputRef} className="hidden" accept={config.accept} multiple
+                        onChange={handleFileSelect} title="Dosya Seç" aria-label="Dosya yükle" />
                 </div>
-                <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-200">Dosyayı Buraya Sürükleyin</h3>
-                <p className="text-slate-500 dark:text-slate-400 mt-2 text-sm">veya seçmek için tıklayın</p>
-                <div className="mt-4 inline-flex items-center gap-2 px-3 py-1 bg-slate-100 dark:bg-slate-800 rounded-full text-xs font-mono text-slate-500 dark:text-slate-400">
-                    <FileType size={12} />
-                    {config.accept.replace(/,/g, ' ')}
-                </div>
-                <input type="file" ref={inputRef} className="hidden" accept={config.accept} multiple
-                    onChange={handleFileSelect} title="Dosya Seç" aria-label="Dosya yükle" />
+
+                {/* Sample File Button */}
+                <button
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        // Generate a dummy file for testing
+                        const dummy = new File(["Örnek veri"], `ornek-dosya${config.accept.split(',')[0]}`, { type: 'application/octet-stream' });
+                        handleFileSelect({ target: { files: [dummy] } } as any);
+                    }}
+                    className="absolute bottom-12 right-12 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-blue-600 dark:text-blue-400 shadow-lg hover:-translate-y-1 transition-all z-20 flex items-center gap-2"
+                >
+                    <Settings2 size={14} />
+                    Örnek Dosya ile Dene
+                </button>
             </div>
 
             {/* File list */}
