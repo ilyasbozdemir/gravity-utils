@@ -61,14 +61,14 @@ export const LandingHero: React.FC<LandingHeroProps> = ({ onToolSelect }) => {
                 </div>
 
                 {/* Quick Search */}
-                <div className="relative w-full max-w-xl mx-auto mb-20 px-4">
-                    <Search className="absolute left-10 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
+                <div className="relative w-full max-w-xl mx-auto mb-20 group">
+                    <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors" size={20} />
                     <input
                         type="text"
                         placeholder="Hangi aracı arıyorsun? (Örn: pdf birleştir, exif temizle)"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-3xl py-4 pl-14 pr-4 text-base focus:outline-none focus:border-blue-500/50 focus:ring-8 focus:ring-blue-500/5 transition-all text-slate-700 dark:text-slate-300 placeholder:text-slate-400 dark:placeholder:text-slate-500 shadow-2xl shadow-blue-500/10 dark:shadow-none"
+                        className="w-full bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-3xl py-5 pl-14 pr-8 text-base focus:outline-none focus:border-blue-500/50 focus:ring-8 focus:ring-blue-500/5 transition-all text-slate-700 dark:text-slate-300 placeholder:text-slate-400 dark:placeholder:text-slate-500 shadow-2xl shadow-blue-500/10 dark:shadow-none font-medium"
                     />
                 </div>
             </div>

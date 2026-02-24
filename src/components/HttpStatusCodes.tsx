@@ -1091,7 +1091,7 @@ export function HttpStatusCodes({ onBack }: { onBack?: () => void }) {
                     </div>
                 </div>
                 <div className="relative w-full lg:w-96 group">
-                    <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 w-6 h-6 group-focus-within:text-indigo-500 transition-colors" />
+                    <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5 group-focus-within:text-indigo-500 transition-colors" />
                     <input
                         type="text"
                         title="Kod veya isim ara"
