@@ -177,29 +177,42 @@ export async function POST(req: NextRequest) {
                         }
                     }
                 } else {
-                    const JSZip = (await import('jszip')).default;
-                    const zip = await JSZip.loadAsync(arrayBuffer);
-                    const slides = Object.keys(zip.files).filter(f => f.startsWith('ppt/slides/slide'));
-                    
-                    for (let i = 1; i <= slides.length; i++) {
-                        const slideContent = await zip.file(`ppt/slides/slide${i}.xml`)?.async('string');
-                        const page = pdfDoc.addPage();
-                        const { width, height } = page.getSize();
+                    // PPT to PDF (Text extraction approach)
+                    try {
+                        const JSZip = (await import('jszip')).default;
+                        const zip = await JSZip.loadAsync(arrayBuffer);
+                        const slides = Object.keys(zip.files).filter(f => f.startsWith('ppt/slides/slide'));
                         
-                        page.drawText(`Slide ${i}`, { x: width/2 - 30, y: height - 50, size: 20, font });
-                        
-                        if (slideContent) {
-                            const textMatches = slideContent.match(/<a:t>([^<]+)<\/a:t>/g);
-                            if (textMatches) {
-                                let y = height - 100;
-                                for (const match of textMatches.slice(0, 20)) {
-                                    const txt = match.replace(/<[^>]+>/g, '');
-                                    page.drawText(txt.substring(0, 100), { x: 50, y, size: 10, font });
-                                    y -= 15;
-                                    if (y < 50) break;
+                        if (slides.length === 0) {
+                            const page = pdfDoc.addPage();
+                            page.drawText('Hata: PPTX dosyası içinde slayt bulunamadı.', { x: 50, y: 700, size: 14, font });
+                        }
+
+                        for (let i = 1; i <= slides.length; i++) {
+                            const slideContent = await zip.file(`ppt/slides/slide${i}.xml`)?.async('string');
+                            const page = pdfDoc.addPage();
+                            const { width, height } = page.getSize();
+                            
+                            page.drawText(`Slide ${i}`, { x: width/2 - 30, y: height - 50, size: 20, font });
+                            
+                            if (slideContent) {
+                                const textMatches = slideContent.match(/<a:t>([^<]+)<\/a:t>/g);
+                                if (textMatches) {
+                                    let y = height - 100;
+                                    for (const match of textMatches.slice(0, 20)) {
+                                        const txt = match.replace(/<[^>]+>/g, '');
+                                        page.drawText(txt.substring(0, 100), { x: 50, y, size: 10, font });
+                                        y -= 15;
+                                        if (y < 50) break;
+                                    }
                                 }
                             }
                         }
+                    } catch (zipErr) {
+                        const page = pdfDoc.addPage();
+                        page.drawText('Hata: Dosya bir ZIP arşivi değil (Eski .ppt formatı olabilir).', { x: 50, y: 700, size: 14, font });
+                        page.drawText('Not: Sadece modern .pptx (XML tabanlı) dosyalar desteklenmektedir.', { x: 50, y: 680, size: 10, font });
+                        page.drawText(`Teknik Detay: ${(zipErr as Error).message}`, { x: 50, y: 660, size: 8, font });
                     }
                 }
 

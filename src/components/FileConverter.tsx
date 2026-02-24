@@ -454,14 +454,33 @@ export const FileConverter: React.FC<FileConverterProps> = ({ file: initialFile,
                                 Örnek .DOCX
                             </button>
                             <button
-                                onClick={(e) => {
+                                onClick={async (e) => {
                                     e.stopPropagation();
-                                    const dummy = new File(["Örnek Excel"], "ornek-tablo.xlsx", { type: 'application/octet-stream' });
+                                    const { utils, write } = await import('xlsx');
+                                    const ws = utils.aoa_to_sheet([["Aylık Gelir", "Miktar"], ["Ocak", 5000], ["Şubat", 6500]]);
+                                    const wb = utils.book_new();
+                                    utils.book_append_sheet(wb, ws, "Rapor");
+                                    const buf = write(wb, { type: 'array', bookType: 'xlsx' });
+                                    const dummy = new File([buf], "ornek-tablo.xlsx", { type: 'application/octet-stream' });
                                     setFile(dummy);
                                 }}
                                 className="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-xl text-[10px] font-bold text-emerald-600 dark:text-emerald-400 shadow-xl hover:-translate-y-1 transition-all"
                             >
                                 Örnek .XLSX
+                            </button>
+                            <button
+                                onClick={async (e) => {
+                                    e.stopPropagation();
+                                    const JSZip = (await import('jszip')).default;
+                                    const zip = new JSZip();
+                                    zip.file("ppt/slides/slide1.xml", `<?xml version="1.0" encoding="UTF-8"?><p:sld xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main"><p:cSld><p:spTree><p:sp><p:txBody><a:p><a:r><a:t>Gravity Utils Örnek Sunum</a:t></a:r></a:p></p:txBody></p:sp></p:spTree></p:cSld></p:sld>`);
+                                    const blob = await zip.generateAsync({ type: 'blob' });
+                                    const dummy = new File([blob], "ornek-sunum.pptx", { type: 'application/octet-stream' });
+                                    setFile(dummy);
+                                }}
+                                className="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-xl text-[10px] font-bold text-orange-600 dark:text-orange-400 shadow-xl hover:-translate-y-1 transition-all"
+                            >
+                                Örnek .PPTX
                             </button>
                         </div>
                     </div>

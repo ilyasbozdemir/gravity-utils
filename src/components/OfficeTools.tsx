@@ -836,10 +836,35 @@ export const OfficeTools: React.FC<OfficeToolsProps> = ({ mode, onBack }) => {
 
                 {/* Sample File Button */}
                 <button
-                    onClick={(e) => {
+                    onClick={async (e) => {
                         e.stopPropagation();
-                        // Generate a dummy file for testing
-                        const dummy = new File(["Örnek veri"], `ornek-dosya${config.accept.split(',')[0]}`, { type: 'application/octet-stream' });
+                        let dummy: File;
+                        const ext = config.accept.split(',')[0];
+
+                        try {
+                            if (ext === '.xlsx') {
+                                const { utils, write } = await import('xlsx');
+                                const ws = utils.aoa_to_sheet([["Ürün", "Fiyat"], ["Elma", 10], ["Armut", 15]]);
+                                const wb = utils.book_new();
+                                utils.book_append_sheet(wb, ws, "Örnek");
+                                const buf = write(wb, { type: 'array', bookType: 'xlsx' });
+                                dummy = new File([buf], `ornek-tablo${ext}`, { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+                            } else if (ext === '.pptx' || ext === '.ppt') {
+                                const JSZip = (await import('jszip')).default;
+                                const zip = new JSZip();
+                                // PPTX structure is complex, providing a minimal valid-ish XML slice
+                                zip.file("ppt/slides/slide1.xml", `<?xml version="1.0" encoding="UTF-8"?><p:sld xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main"><p:cSld><p:spTree><p:sp><p:txBody><a:p><a:r><a:t>Hizli Taslak: Örnek Sunum</a:t></a:r></a:p></p:txBody></p:sp></p:spTree></p:cSld></p:sld>`);
+                                const blob = await zip.generateAsync({ type: 'blob' });
+                                dummy = new File([blob], `ornek-sunum.pptx`, { type: 'application/vnd.openxmlformats-officedocument.presentationml.presentation' });
+                            } else if (ext === '.docx' || ext === '.doc') {
+                                dummy = new File(["Bu bir örnek Word belgesi içeriğidir. Bulut dönüşüm testi için oluşturulmuştur."], `ornek-belge${ext}`, { type: 'text/plain' });
+                            } else {
+                                dummy = new File(["Örnek veri"], `ornek-dosya${ext}`, { type: 'application/octet-stream' });
+                            }
+                        } catch {
+                            dummy = new File(["Örnek veri"], `ornek-dosya${ext}`, { type: 'application/octet-stream' });
+                        }
+
                         handleFileSelect({ target: { files: [dummy] } } as any);
                     }}
                     className="absolute bottom-12 right-12 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-blue-600 dark:text-blue-400 shadow-lg hover:-translate-y-1 transition-all z-20 flex items-center gap-2"
