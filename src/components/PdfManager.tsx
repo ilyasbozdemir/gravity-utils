@@ -782,38 +782,56 @@ export const PdfManager: React.FC<PdfManagerProps> = ({ file, onBack, initialTab
                     </div>
                 </div>
                 {pdfFiles.length > 0 && (
-                    <div className="flex gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl flex-wrap">
-                        {(['merge', 'split', 'compress', 'watermark', 'convert', 'protect', 'unlock', 'edit', 'ocr', 'sign'] as TabType[]).map((tab) => (
-                            <button
-                                key={tab}
-                                onClick={() => setActiveTab(tab)}
-                                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === tab
-                                    ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm'
-                                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
-                                    }`}
-                            >
-                                {tab === 'merge' && <Layers size={16} className="inline mr-2" />}
-                                {tab === 'split' && <Scissors size={16} className="inline mr-2" />}
-                                {tab === 'compress' && <Minimize2 size={16} className="inline mr-2" />}
-                                {tab === 'watermark' && <Stamp size={16} className="inline mr-2" />}
-                                {tab === 'convert' && <RefreshCw size={16} className="inline mr-2" />}
-                                {tab === 'protect' && <Lock size={16} className="inline mr-2" />}
-                                {tab === 'unlock' && <RefreshCw size={16} className="inline mr-2" />}
-                                {tab === 'edit' && <Edit3 size={16} className="inline mr-2" />}
-                                {tab === 'ocr' && <Search size={16} className="inline mr-2" />}
-                                {tab === 'sign' && <PenTool size={16} className="inline mr-2" />}
-
-                                {tab === 'merge' ? 'Birleştir' :
-                                    tab === 'split' ? 'Ayır' :
-                                        tab === 'compress' ? 'Sıkıştır' :
-                                            tab === 'watermark' ? 'Filigran' :
-                                                tab === 'convert' ? 'Dönüştür' :
-                                                    tab === 'protect' ? 'Şifrele' :
-                                                        tab === 'unlock' ? 'Şifre Kaldır' :
-                                                            tab === 'edit' ? 'Düzenle' :
-                                                                tab === 'ocr' ? 'OCR' : 'İmzala'}
-                            </button>
-                        ))}
+                    <div className="flex flex-col gap-3">
+                        <div className="flex items-center gap-6 overflow-x-auto pb-2 no-scrollbar">
+                            {[
+                                { id: 'org', label: 'DÜZENLEME', tools: ['merge', 'split', 'edit', 'sign'] },
+                                { id: 'opt', label: 'OPTİMİZE', tools: ['compress', 'convert', 'ocr'] },
+                                { id: 'sec', label: 'GÜVENLİK', tools: ['protect', 'unlock', 'watermark'] }
+                            ].map((group) => (
+                                <div key={group.id} className="flex flex-col gap-1.5 min-w-max">
+                                    <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 tracking-[0.2em] ml-1 uppercase">{group.label}</span>
+                                    <div className="flex gap-1 p-1 bg-slate-100 dark:bg-slate-800/50 border border-slate-200 dark:border-white/5 rounded-xl">
+                                        {group.tools.map((tabId) => {
+                                            const tab = tabId as TabType;
+                                            const isActive = activeTab === tab;
+                                            return (
+                                                <button
+                                                    key={tab}
+                                                    onClick={() => setActiveTab(tab)}
+                                                    className={`px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 whitespace-nowrap ${isActive
+                                                        ? 'bg-white dark:bg-slate-700 text-red-600 dark:text-white shadow-sm ring-1 ring-black/5 dark:ring-white/10 scale-[1.02]'
+                                                        : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-white/50 dark:hover:bg-white/5'
+                                                        }`}
+                                                >
+                                                    <span className={`${isActive ? 'text-red-500' : 'text-slate-400'}`}>
+                                                        {tab === 'merge' && <Layers size={14} />}
+                                                        {tab === 'split' && <Scissors size={14} />}
+                                                        {tab === 'compress' && <Minimize2 size={14} />}
+                                                        {tab === 'watermark' && <Stamp size={14} />}
+                                                        {tab === 'convert' && <RefreshCw size={14} />}
+                                                        {tab === 'protect' && <Lock size={14} />}
+                                                        {tab === 'unlock' && <Unlock size={14} />}
+                                                        {tab === 'edit' && <Edit3 size={14} />}
+                                                        {tab === 'ocr' && <Search size={14} />}
+                                                        {tab === 'sign' && <PenTool size={14} />}
+                                                    </span>
+                                                    {tab === 'merge' ? 'Birleştir' :
+                                                        tab === 'split' ? 'Ayır' :
+                                                            tab === 'compress' ? 'Sıkıştır' :
+                                                                tab === 'watermark' ? 'Filigran' :
+                                                                    tab === 'convert' ? 'Dönüştür' :
+                                                                        tab === 'protect' ? 'Şifrele' :
+                                                                            tab === 'unlock' ? 'Kilit Aç' :
+                                                                                tab === 'edit' ? 'Düzenle' :
+                                                                                    tab === 'ocr' ? 'OCR' : 'İmzala'}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 )}
             </div>
@@ -869,7 +887,7 @@ export const PdfManager: React.FC<PdfManagerProps> = ({ file, onBack, initialTab
                                                                 activeTab === 'sign' ? 'PDF İmzala' : 'Format Dönüştür'}
                                 </h4>
                                 <p className="text-sm text-slate-500 dark:text-slate-400 mb-8 max-w-[300px] mx-auto">
-                                    PDF dosyalarını sürükleyin veya <span className="text-red-500 font-bold underline">buraya tıklayarak</span> seçin.
+                                    PDF veya Resim dosyalarını sürükleyin veya <span className="text-red-500 font-bold underline">buraya tıklayarak</span> seçin.
                                 </p>
                                 <div className="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-700 rounded-full text-[10px] font-black uppercase tracking-widest text-slate-400 shadow-sm">
                                     <ShieldCheck size={12} className="text-emerald-500" /> %100 Güvenli & Yerel
@@ -879,7 +897,7 @@ export const PdfManager: React.FC<PdfManagerProps> = ({ file, onBack, initialTab
 
                         <input
                             type="file"
-                            accept="application/pdf,image/*,.doc,.docx,.xls,.xlsx,.ppt,.pptx"
+                            accept="application/pdf,image/*"
                             multiple
                             ref={mergeInputRef}
                             className="hidden"
