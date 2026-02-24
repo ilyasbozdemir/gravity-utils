@@ -252,7 +252,7 @@ export const XmlValidator: React.FC<{ onBack: () => void }> = ({ onBack }) => {
                     </div>
 
                     <div className="space-y-4 max-w-3xl">
-                        <h3 className="text-2xl font-black uppercase italic tracking-tight">Hoca Köşesi: XML Dünyasında İki Kritik Kavram</h3>
+                        <h3 className="text-2xl font-black uppercase italic tracking-tight">Bilgi Köşesi: XML Dünyasında İki Kritik Kavram</h3>
                         <p className="text-indigo-50 font-bold italic leading-relaxed">
                             "Hocam, XML'de iki seviye vardır. İlki <span className="underline decoration-indigo-300">Well-formed (İyi Biçimlendirilmiş)</span> olmaktır; yani taglar doğru açılmış, doğru kapanmış demektir. Bu olmazsa zaten XML 'XML' değildir, bozuktur.
                             İkinci seviye ise <span className="underline decoration-indigo-300">Valid (Geçerli)</span> olmaktır. Bu da XML'in, ona biçilen 'role' (yani XSD şemasına) uygun olması demektir.

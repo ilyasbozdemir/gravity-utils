@@ -208,7 +208,7 @@ export const SitemapGenerator: React.FC<{ onBack: () => void }> = ({ onBack }) =
                     </div>
 
                     <div className="space-y-4 max-w-3xl">
-                        <h3 className="text-2xl font-black uppercase italic tracking-tight">Hoca Köşesi: Sitemap Neden Hayatidir?</h3>
+                        <h3 className="text-2xl font-black uppercase italic tracking-tight">Bilgi Köşesi: Sitemap Neden Hayatidir?</h3>
                         <p className="text-indigo-50 font-bold italic leading-relaxed">
                             "Hocam, site derya deniz, Googlebot ise o denizde yolunu bulmaya çalışan bir kaptan. Sitemap, ona verdiğiniz en net pusuladır.
                             'Benim en değerli sayfalarım şunlar, şu sıklıkla güncelliyorum' demiş olursunuz.

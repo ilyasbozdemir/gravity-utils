@@ -110,14 +110,14 @@ const NAV_ITEMS: NavItem[] = [
     { id: 'sql-converter', title: 'SQL Schema Converter', icon: <Repeat size={18} />, category: 'dev', addedAt: '2026-02-23' },
     { id: 'text-diff', title: 'Metin Karşılaştırıcı', icon: <Split size={18} />, category: 'dev', addedAt: '2026-02-23' },
     { id: 'identifier-converter', title: 'Akıllı İsim Çevirici', icon: <Type size={18} />, category: 'dev', addedAt: '2026-02-20' },
-    { id: 'figma-to-code', title: 'Figma → Tailwind', icon: <Code size={18} />, category: 'dev', addedAt: '2026-02-24' },
+    { id: 'figma-to-code', title: 'Design → Code Pro', icon: <Code size={18} />, category: 'dev', addedAt: '2026-02-24' },
 
     // Web & SEO
     { id: 'web-toolkit', title: 'Web Geliştirici Kutusu', icon: <Globe size={18} />, category: 'seo', addedAt: '2026-02-24' },
     { id: 'sitemap-generator', title: 'Sitemap Oluşturucu', icon: <Network size={18} />, category: 'seo', addedAt: '2026-02-24' },
     { id: 'robots-txt-builder', title: 'Robots.txt Hazırlayıcı', icon: <FileCode size={18} />, category: 'seo', addedAt: '2026-02-24' },
     { id: 'xml-validator', title: 'XML / XSD / JSON Pro', icon: <FileCode size={18} />, category: 'seo', addedAt: '2026-02-24' },
-    { id: 'html-to-pdf', title: 'HTML → PDF Dönüştür', icon: <FileText size={18} />, category: 'seo', addedAt: '2026-02-24' },
+    { id: 'html-to-pdf', title: 'Web → PDF Pro', icon: <FileText size={18} />, category: 'seo', addedAt: '2026-02-24' },
     { id: 'schema-generator', title: 'Şema & Form Üretici', icon: <Layers size={18} />, category: 'seo', addedAt: '2026-02-20' },
     { id: 'metadata-generator', title: 'Meta Etiketi Üretici', icon: <Globe size={18} />, category: 'seo', addedAt: '2026-02-20' },
     { id: 'json-ld', title: 'JSON-LD Editörü', icon: <FileJson size={18} />, category: 'seo', addedAt: '2026-02-23' },

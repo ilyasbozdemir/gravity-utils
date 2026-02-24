@@ -217,7 +217,7 @@ export const RobotsTxtBuilder: React.FC<{ onBack: () => void }> = ({ onBack }) =
                     </div>
 
                     <div className="space-y-4 max-w-3xl">
-                        <h3 className="text-2xl font-black uppercase italic tracking-tight">Hoca Köşesi: Robots.txt Kodun Kapı Görevlisidir</h3>
+                        <h3 className="text-2xl font-black uppercase italic tracking-tight">Bilgi Köşesi: Robots.txt Kodun Kapı Görevlisidir</h3>
                         <p className="text-indigo-50 font-bold italic leading-relaxed">
                             "Hocam, robots.txt bir 'yasak tabelası' değil, bir 'nezaket ricası'dır.
                             Google ve diğer saygın arama motorları bu rıcaya uyar ama kötü niyetli botlar (crawler) buna bakmaz bile.
