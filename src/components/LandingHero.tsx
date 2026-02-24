@@ -2,7 +2,7 @@ import React from 'react';
 import {
     Lock, Share2, MousePointer2, Settings, Smartphone, RefreshCw, Layers, Globe,
     Type, Clock, Camera, Zap, Star, Calculator, FileText, Minimize2, Hash, Code, Search, QrCode, Archive, Database,
-    Split, FileCode,
+    Split, FileCode, CheckCircle2, ShieldCheck, Layout, Terminal,
     Image as ImageIcon
 } from 'lucide-react';
 
@@ -16,7 +16,8 @@ export type ToolView =
     | 'json-csv' | 'text-cleaner' | 'case-converter-pro' | 'css-units' | 'date-calculator' | 'internet-speed'
     | 'iban-checker' | 'tckn-checker' | 'file-size-calc' | 'viewport-calc' | 'exif-viewer' | 'bulk-rename'
     | 'email-header-analyzer' | 'identifier-converter' | 'schema-generator' | 'metadata-generator' | 'document-toolkit'
-    | 'json-to-code' | 'text-diff';
+    | 'json-to-code' | 'text-diff' | 'figma-to-code' | 'html-to-pdf' | 'sitemap-generator' | 'robots-txt-builder'
+    | 'xml-validator' | 'terminal-mastery' | 'mermaid' | 'codesnap' | 'mock-generator' | 'check-toolkit';
 
 interface LandingHeroProps {
     onFileSelect: (file: File) => void;
@@ -49,14 +50,16 @@ export const LandingHero: React.FC<LandingHeroProps> = ({ onToolSelect }) => {
 
                 {/* Main Tool Grid */}
                 <div className="w-full max-w-[1000px] grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-20 relative z-20">
-                    <HeroLink title="Belge & Ofis" desc="PDF, Word, Excel, PPT Dönüştür" icon={<FileText />} color="blue" onClick={() => onToolSelect('document-toolkit')} />
-                    <HeroLink title="Resim Sıkıştır" desc="%80 tasarruf ile ölçekle" icon={<ImageIcon />} color="emerald" onClick={() => onToolSelect('optimize')} />
-                    <HeroLink title="Case Converter" desc="camelCase, snake_case Pro" icon={<Type />} color="indigo" onClick={() => onToolSelect('case-converter-pro')} />
-                    <HeroLink title="Metin Temizleyici" desc="Boşluk, Emoji, Normalizasyon" icon={<RefreshCw />} color="amber" onClick={() => onToolSelect('text-cleaner')} />
-                    <HeroLink title="Tarih Hesaplayıcı" desc="İki tarih arası gün say" icon={<Clock />} color="purple" onClick={() => onToolSelect('date-calculator')} />
-                    <HeroLink title="Hız & Süre" desc="Dosya kaç dakikada iner?" icon={<Zap />} color="rose" onClick={() => onToolSelect('internet-speed')} />
-                    <HeroLink title="CSS / Dev Units" desc="px ↔ rem ↔ em ↔ vw" icon={<Code />} color="sky" onClick={() => onToolSelect('css-units')} />
-                    <HeroLink title="Media EXIF" desc="Görsel metadata görüntüle" icon={<Camera />} color="orange" onClick={() => onToolSelect('exif-viewer')} />
+                    <div className="w-full max-w-[1100px] grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-20 relative z-20">
+                        <HeroLink title="Design → Code" desc="Figma'dan Temiz Kod Üret" icon={<Smartphone />} color="pink" onClick={() => onToolSelect('figma-to-code')} />
+                        <HeroLink title="Sitemap Pro" desc="Gelişmiş XML Haritası Oluştur" icon={<Globe />} color="blue" onClick={() => onToolSelect('sitemap-generator')} />
+                        <HeroLink title="Web → PDF Pro" desc="Web Sayfalarını PDF'e Çevir" icon={<FileText />} color="rose" onClick={() => onToolSelect('html-to-pdf')} />
+                        <HeroLink title="Terminal Mastery" desc="Komut Satırı Uzmanlık Rehberi" icon={<Terminal />} color="indigo" onClick={() => onToolSelect('terminal-mastery')} />
+                        <HeroLink title="XML / JSON Pro" desc="Gelişmiş Veri Doğrulayıcı" icon={<FileCode />} color="emerald" onClick={() => onToolSelect('xml-validator')} />
+                        <HeroLink title="CSS / Dev Units" desc="px ↔ rem ↔ em ↔ vw" icon={<Code />} color="sky" onClick={() => onToolSelect('css-units')} />
+                        <HeroLink title="Case Converter" desc="camelCase, snake_case Pro" icon={<Type />} color="indigo" onClick={() => onToolSelect('case-converter-pro')} />
+                        <HeroLink title="Belge & Ofis" desc="PDF, Word, Excel, PPT Dönüştür" icon={<Archive />} color="blue" onClick={() => onToolSelect('document-toolkit')} />
+                    </div>
                 </div>
 
                 {/* Quick Search */}
@@ -91,21 +94,50 @@ export const LandingHero: React.FC<LandingHeroProps> = ({ onToolSelect }) => {
                         </div>
                     </section>
 
-                    {/* Category: Geliştirici Araçları */}
+                    {/* Category: Tasarım & Kod */}
                     <section>
                         <div className="flex items-center gap-3 mb-8">
-                            <div className="p-2 bg-blue-50 dark:bg-blue-500/10 rounded-lg text-blue-600 dark:text-blue-400"><Code size={20} /></div>
-                            <h3 className="text-xl font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">Geliştirici Araçları</h3>
+                            <div className="p-2 bg-pink-50 dark:bg-pink-500/10 rounded-lg text-pink-600 dark:text-pink-400"><Layout size={20} /></div>
+                            <h3 className="text-xl font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">Tasarım & Kod Pro</h3>
                         </div>
                         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-                            <QuickAction title="İsim Çevirici" onClick={() => onToolSelect('identifier-converter')} icon={<Type size={16} />} color="blue" />
-                            <QuickAction title="Şema Üretici" onClick={() => onToolSelect('schema-generator')} icon={<Layers size={16} />} color="indigo" />
-                            <QuickAction title="Meta Üretici" onClick={() => onToolSelect('metadata-generator')} icon={<Globe size={16} />} color="emerald" />
-                            <QuickAction title="Viewport Calc" onClick={() => onToolSelect('viewport-calc')} icon={<Smartphone size={16} />} color="orange" />
-                            <QuickAction title="JSON Schema" onClick={() => onToolSelect('json-ld')} icon={<Search size={16} />} color="amber" />
+                            <QuickAction title="Design → Code" onClick={() => onToolSelect('figma-to-code')} icon={<Smartphone size={16} />} color="pink" />
+                            <QuickAction title="Mermaid Diyagram" onClick={() => onToolSelect('mermaid')} icon={<Share2 size={16} />} color="indigo" />
+                            <QuickAction title="CodeSnap Pro" onClick={() => onToolSelect('codesnap')} icon={<Camera size={16} />} color="blue" />
+                            <QuickAction title="Mock Generator" onClick={() => onToolSelect('mock-generator')} icon={<Database size={16} />} color="emerald" />
+                            <QuickAction title="SVG Optimizer" onClick={() => onToolSelect('svg-optimizer')} icon={<Minimize2 size={16} />} color="orange" />
                             <QuickAction title="JSON ↔ Code" onClick={() => onToolSelect('json-to-code')} icon={<FileCode size={16} />} color="blue" />
-                            <QuickAction title="Metin Diff" onClick={() => onToolSelect('text-diff')} icon={<Split size={16} />} color="indigo" />
-                            <QuickAction title="SQL Format" onClick={() => onToolSelect('sql-formatter')} icon={<Database size={16} />} color="rose" />
+                        </div>
+                    </section>
+
+                    {/* Category: SEO & Web */}
+                    <section>
+                        <div className="flex items-center gap-3 mb-8">
+                            <div className="p-2 bg-emerald-50 dark:bg-emerald-500/10 rounded-lg text-emerald-600 dark:text-emerald-400"><Globe size={20} /></div>
+                            <h3 className="text-xl font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">SEO & Web Araçları</h3>
+                        </div>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+                            <QuickAction title="Sitemap Pro" onClick={() => onToolSelect('sitemap-generator')} icon={<Globe size={16} />} color="blue" />
+                            <QuickAction title="Robots.txt" onClick={() => onToolSelect('robots-txt-builder')} icon={<FileCode size={16} />} color="indigo" />
+                            <QuickAction title="Web → PDF Pro" onClick={() => onToolSelect('html-to-pdf')} icon={<FileText size={16} />} color="rose" />
+                            <QuickAction title="XML Validator" onClick={() => onToolSelect('xml-validator')} icon={<CheckCircle2 size={16} />} color="emerald" />
+                            <QuickAction title="Meta Üretici" onClick={() => onToolSelect('metadata-generator')} icon={<Search size={16} />} color="amber" />
+                            <QuickAction title="HTTP Status" onClick={() => onToolSelect('http-status')} icon={<Globe size={16} />} color="sky" />
+                        </div>
+                    </section>
+
+                    {/* Category: Güvenlik & Doğrulama */}
+                    <section>
+                        <div className="flex items-center gap-3 mb-8">
+                            <div className="p-2 bg-rose-50 dark:bg-rose-500/10 rounded-lg text-rose-600 dark:text-rose-400"><ShieldCheck size={20} /></div>
+                            <h3 className="text-xl font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">Güvenlik & Doğrulama</h3>
+                        </div>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+                            <QuickAction title="TCKN Doğrula" onClick={() => onToolSelect('tckn-checker')} icon={<ShieldCheck size={16} />} color="blue" />
+                            <QuickAction title="IBAN Kontrol" onClick={() => onToolSelect('iban-checker')} icon={<CheckCircle2 size={16} />} color="emerald" />
+                            <QuickAction title="Şifre Üretici" onClick={() => onToolSelect('password-generator')} icon={<Lock size={16} />} color="indigo" />
+                            <QuickAction title="Giriş Ayıklayıcı" onClick={() => onToolSelect('check-toolkit')} icon={<Settings size={16} />} color="orange" />
+                            {/* ... more could be added ... */}
                         </div>
                     </section>
                 </div>
@@ -128,6 +160,7 @@ const HeroLink = ({ title, desc, icon, color, onClick }: { title: string, desc: 
             ${color === 'rose' ? 'bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400' : ''}
             ${color === 'sky' ? 'bg-sky-50 dark:bg-sky-500/10 text-sky-600 dark:text-sky-400' : ''}
             ${color === 'orange' ? 'bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400' : ''}
+            ${color === 'pink' ? 'bg-pink-50 dark:bg-pink-500/10 text-pink-600 dark:text-pink-400' : ''}
         `}>
             {React.isValidElement(icon) ? React.cloneElement(icon as React.ReactElement, { size: 28 } as any) : icon}
         </div>
@@ -148,6 +181,8 @@ const QuickAction = ({ title, onClick, icon, color }: { title: string, onClick: 
             ${color === 'sky' ? 'bg-sky-50 dark:bg-sky-500/10 text-sky-600 dark:text-sky-400' : ''}
             ${color === 'indigo' ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400' : ''}
             ${color === 'orange' ? 'bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400' : ''}
+            ${color === 'pink' ? 'bg-pink-50 dark:bg-pink-500/10 text-pink-600 dark:text-pink-400' : ''}
+            ${color === 'amber' ? 'bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400' : ''}
         `}>
             {icon}
         </div>
