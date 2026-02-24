@@ -791,18 +791,24 @@ export const OfficeTools: React.FC<OfficeToolsProps> = ({ mode, onBack }) => {
                 className="fixed -left-[9999px] top-0 w-[800px] bg-white text-black pointer-events-none overflow-hidden font-sans" />
 
             {/* Header */}
-            <div className="flex items-center gap-4 mb-8">
-                <button onClick={handleBack} title="Geri Dön" aria-label="Geri Dön"
-                    className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">
-                    <ArrowLeft className="w-6 h-6 text-slate-600 dark:text-slate-400" />
+            <div className="flex items-center gap-6 mb-12">
+                <button
+                    onClick={handleBack}
+                    title="Geri Dön"
+                    aria-label="Geri Dön"
+                    className="p-3 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl hover:bg-slate-50 dark:hover:bg-white/10 transition-all shadow-sm hover:scale-105 active:scale-95 group"
+                >
+                    <ArrowLeft className="w-6 h-6 text-slate-600 dark:text-slate-400 group-hover:text-blue-500 transition-colors" />
                 </button>
                 <div>
-                    <h2 className="text-2xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
-                        <span className={config.color}>{config.icon}</span>
+                    <h2 className="text-3xl font-black text-slate-900 dark:text-white flex items-center gap-3 uppercase tracking-tight italic">
+                        <div className="p-2 bg-blue-500/10 rounded-xl">
+                            {config.icon}
+                        </div>
                         {config.title}
                     </h2>
-                    <p className="text-slate-500 dark:text-slate-400 text-sm">
-                        Güvenli, hızlı ve ücretsiz dosya dönüştürme aracı.
+                    <p className="text-sm text-slate-500 dark:text-slate-400 font-medium mt-1">
+                        Gravity Utils • Güvenli, hızlı ve tamamen yerel dosya aracı.
                     </p>
                 </div>
             </div>
