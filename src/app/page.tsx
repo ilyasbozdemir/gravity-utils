@@ -197,7 +197,7 @@ export default function Home() {
                             )}
 
                             {/* Dynamic Components Rendering */}
-                            {(view === 'pdf' || view === 'pdf-word' || view === 'word-pdf' || view === 'pdf-image' || view === 'pdf-split' || view === 'pdf-text' || view === 'imagetopdf' || view === 'exam-generator' || view === 'pdf-merge' || view === 'pdf-compress' || view === 'pdf-watermark') &&
+                            {(view === 'pdf' || view === 'pdf-word' || view === 'word-pdf' || view === 'pdf-image' || view === 'pdf-split' || view === 'pdf-text' || view === 'imagetopdf' || view === 'exam-generator' || view === 'pdf-merge' || view === 'pdf-compress' || view === 'pdf-watermark' || view === 'excel-pdf' || view === 'pdf-excel' || view === 'ppt-pdf' || view === 'pdf-ppt') &&
                                 <DocumentToolkit view={view} onBack={() => setView('home')} />}
 
                             {view === 'encrypt' && <FileEncryptor file={file} onBack={() => setView('home')} />}

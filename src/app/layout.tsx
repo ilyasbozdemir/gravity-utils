@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google"; // Using google fonts via next/font
 import "./globals.css";
+import { Toaster } from 'sonner';
 // We need to move ThemeProvider to a Client Component wrapper if it's using hooks directly in the layout, or keep it if it's "use client"
 import { ThemeProvider } from "@/context/ThemeContext";
 
@@ -26,7 +27,10 @@ export default function RootLayout({
                     {/* We need to ensure ThemeProvider wraps correctly. If it's not a client component, we error. */}
                     {/* I will add 'use client' to ThemeContext.tsx next. */}
                     <ThemeProvider>
-                        {children}
+                        <div className="min-h-screen">
+                            {children}
+                        </div>
+                        <Toaster richColors position="top-right" closeButton />
                     </ThemeProvider>
                 </div>
             </body>

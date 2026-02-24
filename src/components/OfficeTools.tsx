@@ -7,6 +7,7 @@ import {
     GripVertical, ArrowUp, ArrowDown, Plus, Layers,
     Settings2, CheckCircle2, Loader2, Info
 } from 'lucide-react';
+import { toast } from 'sonner';
 import { PDFDocument, PageSizes } from 'pdf-lib';
 import * as pdfjsLib from 'pdfjs-dist';
 import { saveAs } from 'file-saver';
@@ -766,12 +767,15 @@ export const OfficeTools: React.FC<OfficeToolsProps> = ({ mode, onBack }) => {
             }
 
             setFiles(prev => prev.map((f, i) => i === index ? { ...f, status: 'success', progress: 100, result, resultName } : f));
+            toast.success(`${item.file.name} hazırlandı.`);
         } catch (error) {
             console.error(error);
+            const msg = (error as Error).message || 'Bilinmeyen hata';
             setFiles(prev => prev.map((f, i) => i === index ? {
                 ...f, status: 'error',
-                errorMsg: (error as Error).message || 'Bilinmeyen hata'
+                errorMsg: msg
             } : f));
+            toast.error(`${item.file.name} dönüştürülürken hata: ${msg}`);
         }
     };
 

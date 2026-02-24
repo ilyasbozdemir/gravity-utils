@@ -30,14 +30,14 @@ export type ToolView =
     | 'home' | 'convert' | 'inspect' | 'base64' | 'optimize' | 'hash' | 'json' | 'text' | 'pdf' | 'exif' | 'qr'
     | 'social' | 'favicon' | 'units' | 'encrypt' | 'uuid' | 'yaml' | 'jwt' | 'url' | 'imagetopdf' | 'case' | 'string'
     | 'json-xml' | 'date-time' | 'sql-formatter' | 'word-pdf' | 'pdf-word' | 'excel-pdf' | 'pdf-excel' | 'ppt-pdf'
-    | 'pdf-ppt' | 'pdf-image' | 'pdf-split' | 'word-html' | 'pdf-text' | 'web-toolkit' | 'network-toolkit' | 'color-toolkit'
+    | 'pdf-ppt' | 'pdf-image' | 'word-html' | 'pdf-text' | 'web-toolkit' | 'network-toolkit' | 'color-toolkit'
     | 'regex-tester' | 'csv-viewer' | 'markdown-editor' | 'password-generator' | 'svg-optimizer' | 'cron-builder'
     | 'timezone-converter' | 'json-ld' | 'network-cable' | 'lorem-ipsum' | 'aspect-ratio' | 'social-guide' | 'http-status'
     | 'json-csv' | 'text-cleaner' | 'case-converter-pro' | 'css-units' | 'date-calculator' | 'internet-speed'
     | 'iban-checker' | 'tckn-checker' | 'file-size-calc' | 'viewport-calc' | 'exif-viewer' | 'bulk-rename'
     | 'email-header-analyzer' | 'identifier-converter' | 'schema-generator' | 'metadata-generator' | 'document-toolkit' | 'check-toolkit'
     | 'json-to-code' | 'text-diff' | 'exam-generator' | 'pdf-merge' | 'pdf-split' | 'pdf-compress' | 'pdf-watermark' | 'mermaid'
-    | 'codesnap' | 'mock-generator' | 'sql-converter' | 'terminal-mastery' | 'color-toolkit';
+    | 'codesnap' | 'mock-generator' | 'sql-converter' | 'terminal-mastery';
 
 interface SidebarProps {
     currentView: ToolView;

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { ArrowLeft, FileText, Scissors, Download, Layers, Minimize2, Stamp, RefreshCw, Plus, Trash2, ArrowUp, ArrowDown, LayoutGrid, GripVertical, Image as ImageIcon, Database, Info, Lock, Unlock, Search, PenTool, Hash, RotateCw, Edit3, Settings2 } from 'lucide-react';
+import { ArrowLeft, FileText, Scissors, Download, Layers, Minimize2, Stamp, RefreshCw, Plus, Trash2, ArrowUp, ArrowDown, LayoutGrid, GripVertical, Image as ImageIcon, Database, Info, Lock, Unlock, Search, PenTool, Hash, RotateCw, Edit3, Settings2, CheckCircle2 } from 'lucide-react';
+import { toast } from 'sonner';
 import { PDFDocument, degrees, rgb, PDFImage, PageSizes } from 'pdf-lib';
 import * as pdfjsLib from 'pdfjs-dist';
 import fontkit from '@pdf-lib/fontkit';
@@ -38,6 +39,14 @@ interface PdfFileInfo {
 
 export const PdfManager: React.FC<PdfManagerProps> = ({ file, onBack, initialTab = 'merge' }) => {
     const [activeTab, setActiveTab] = useState<TabType>(initialTab);
+
+    // Sync activeTab with prop changes (for deep linking)
+    useEffect(() => {
+        if (initialTab) {
+            setActiveTab(initialTab);
+        }
+    }, [initialTab]);
+
     const [processing, setProcessing] = useState(false);
     const [statusText, setStatusText] = useState('');
 
@@ -227,9 +236,10 @@ export const PdfManager: React.FC<PdfManagerProps> = ({ file, onBack, initialTab
 
             const pdfBytes = await newDoc.save();
             downloadPdf(pdfBytes, `split-${mainFile.name}`);
+            toast.success("PDF başarıyla ayrıldı.");
         } catch (err) {
             console.error(err);
-            alert('Dosya ayrılırken hata oluştu: ' + (err as Error).message);
+            toast.error('Dosya ayrılırken hata oluştu: ' + (err as Error).message);
         }
         setProcessing(false);
         setStatusText('');
@@ -258,9 +268,10 @@ export const PdfManager: React.FC<PdfManagerProps> = ({ file, onBack, initialTab
 
             const pdfBytes = await mergedPdf.save();
             downloadPdf(pdfBytes, `birlestirilmis-${Date.now()}.pdf`);
+            toast.success("PDF dökümanları başarıyla birleştirildi.");
         } catch (err) {
             console.error(err);
-            alert('Birleştirme hatası: ' + (err as Error).message);
+            toast.error('Birleştirme hatası: ' + (err as Error).message);
         }
         setProcessing(false);
         setStatusText('');
@@ -362,9 +373,10 @@ export const PdfManager: React.FC<PdfManagerProps> = ({ file, onBack, initialTab
 
             const pdfBytes = await newPdfDoc.save();
             downloadPdf(pdfBytes, `sikistirilmis-${mainFile.name}`);
+            toast.success("PDF başarıyla sıkıştırıldı.");
         } catch (err: unknown) {
             console.error(err);
-            alert(`Sıkıştırma hatası: ${err instanceof Error ? err.message : String(err)}`);
+            toast.error(`Sıkıştırma hatası: ${err instanceof Error ? err.message : String(err)}`);
         }
         setProcessing(false);
         setStatusText('');

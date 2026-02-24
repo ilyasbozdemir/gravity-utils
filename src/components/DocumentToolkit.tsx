@@ -29,20 +29,32 @@ export const DocumentToolkit: React.FC<DocumentToolkitProps> = ({ onBack, initia
     React.useEffect(() => {
         if (externalView) {
             if (externalView.includes('pdf')) {
-                setView('pdf-manager');
-                if (externalView.includes('split')) setPdfTab('split');
-                else if (externalView.includes('merge')) setPdfTab('merge');
-                else if (externalView.includes('compress')) setPdfTab('compress');
-                else if (externalView.includes('watermark')) setPdfTab('watermark');
-                else if (externalView.includes('convert') || externalView.includes('image') || externalView.includes('text') || externalView.includes('word-pdf') || externalView.includes('pdf-word')) setPdfTab('convert');
+                // Determine if it's an office-to-pdf tool or a pdf-manager tool
+                const officeToPdfModes: OfficeToolMode[] = ['word-pdf', 'pdf-word', 'excel-pdf', 'pdf-excel', 'ppt-pdf', 'pdf-ppt', 'pdf-image'];
+                if (officeToPdfModes.includes(externalView as any)) {
+                    setView('office-tools');
+                    setOfficeMode(externalView as any);
+                } else if (externalView === 'imagetopdf') {
+                    setView('office-tools');
+                    setOfficeMode('imagetopdf');
+                } else {
+                    setView('pdf-manager');
+                    if (externalView.includes('split')) setPdfTab('split');
+                    else if (externalView.includes('merge')) setPdfTab('merge');
+                    else if (externalView.includes('compress')) setPdfTab('compress');
+                    else if (externalView.includes('watermark')) setPdfTab('watermark');
+                    else if (externalView.includes('convert')) setPdfTab('convert');
+                }
             } else if (externalView.includes('office') || externalView.includes('word') || externalView.includes('excel') || externalView.includes('ppt') || externalView.includes('image')) {
                 setView('office-tools');
-                if (externalView.includes('pdf')) setOfficeMode(externalView as any);
                 if (externalView === 'imagetopdf') setOfficeMode('imagetopdf');
+                else if (externalView.includes('pdf')) setOfficeMode(externalView as any);
             } else if (externalView === 'exam-generator') {
                 setView('exam-generator');
             } else if (externalView === 'convert') {
                 setView('general-converter');
+            } else {
+                setView('dashboard');
             }
         }
     }, [externalView]);
@@ -56,11 +68,13 @@ export const DocumentToolkit: React.FC<DocumentToolkitProps> = ({ onBack, initia
     const handleOfficeTool = (mode: OfficeToolMode) => {
         setOfficeMode(mode);
         setView('office-tools');
+        window.location.hash = `/${mode}`;
     };
 
     const handlePdfTool = (tab: 'split' | 'merge' | 'compress' | 'watermark' | 'convert') => {
         setPdfTab(tab);
         setView('pdf-manager');
+        window.location.hash = `/pdf-${tab}`;
     };
 
     const handleSmartUpload = (file: File) => {

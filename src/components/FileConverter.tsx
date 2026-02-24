@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, RefreshCw, AlertCircle } from 'lucide-react';
+import { ArrowLeft, RefreshCw, AlertCircle, Settings2, Download, CheckCircle2 } from 'lucide-react';
+import { toast } from 'sonner';
 import jsPDF from 'jspdf';
 import { getAvailableFormats, type Format } from '../utils/formats';
 import { saveAs } from 'file-saver';
@@ -383,10 +384,11 @@ export const FileConverter: React.FC<FileConverterProps> = ({ file: initialFile,
 
             // 4. Fallback / Rename Logic
             saveAs(file, finalName);
+            toast.success("Dosya başarıyla hazırlandı.");
 
         } catch (error) {
             console.error(error);
-            alert("İşlem sırasında bir hata oluştu.");
+            toast.error("İşlem sırasında bir hata oluştu: " + (error as Error).message);
         } finally {
             setIsProcessing(false);
         }
