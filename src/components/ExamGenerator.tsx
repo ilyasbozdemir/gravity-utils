@@ -26,11 +26,24 @@ interface ExamGeneratorProps {
 export const ExamGenerator: React.FC<ExamGeneratorProps> = ({ onBack }) => {
     const [title, setTitle] = useState('Yeni Sınav / Test');
     const [questions, setQuestions] = useState<Question[]>([
-        { id: 'json-to-code', text: 'JSON → Type/Code', options: [], correctIndex: 0 },
-        { id: 'sitemap-generator', text: 'Sitemap Oluşturucu', options: [], correctIndex: 0 },
-        { id: 'robots-txt-builder', text: 'Robots.txt Hazırlayıcı', options: [], correctIndex: 0 },
-        { id: 'xml-validator', text: 'XML / XSD Doğrulayıcı', options: [], correctIndex: 0 },
-        { id: 'css-units', text: 'CSS Birim Çevirici', options: [], correctIndex: 0 },
+        {
+            id: '1',
+            text: 'Işığın boşluktaki hızı yaklaşık saniyede kaç kilometredir?',
+            options: ['150.000', '210.000', '300.000', '450.000', '600.000'],
+            correctIndex: 2
+        },
+        {
+            id: '2',
+            text: 'Mona Lisa tablosu hangi ünlü sanatçıya aittir?',
+            options: ['Vincent van Gogh', 'Pablo Picasso', 'Leonardo da Vinci', 'Claude Monet', 'Salvador Dalí'],
+            correctIndex: 2
+        },
+        {
+            id: '3',
+            text: 'Kod yazarken hata takibi (debugging) için en yaygın kullanılan araç hangisidir?',
+            options: ['Compiler', 'Console', 'Profiler', 'Debugger', 'Linker'],
+            correctIndex: 1
+        }
     ]);
     const [jsonInput, setJsonInput] = useState('');
     const [showJsonInput, setShowJsonInput] = useState(false);
@@ -54,7 +67,7 @@ export const ExamGenerator: React.FC<ExamGeneratorProps> = ({ onBack }) => {
         const newQ: Question = {
             id: Date.now().toString(),
             text: '',
-            options: ['', '', '', ''],
+            options: ['', '', '', '', ''],
             correctIndex: 0
         };
         setQuestions([...questions, newQ]);
@@ -136,6 +149,7 @@ export const ExamGenerator: React.FC<ExamGeneratorProps> = ({ onBack }) => {
                 y -= 25;
 
                 q.options.forEach((opt, oIdx) => {
+                    if (!opt.trim()) return; // Skip empty options
                     const label = String.fromCharCode(65 + oIdx) + ') ';
                     page.drawText(label + opt, {
                         x: margin + 20,

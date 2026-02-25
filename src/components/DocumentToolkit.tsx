@@ -149,7 +149,7 @@ export const DocumentToolkit: React.FC<DocumentToolkitProps> = ({ onBack, initia
                     <ArrowLeft className="group-hover:-translate-x-1 transition-transform" />
                 </button>
                 <div>
-                    <h1 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight">Belge & Ofis Çıkın</h1>
+                    <h1 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight">Belge & Ofis Atölyesi</h1>
                     <p className="text-slate-500 text-sm font-medium">PDF yönetimi, ofis dökümanı dönüşümleri ve akıllı dosya araçları.</p>
                 </div>
             </div>

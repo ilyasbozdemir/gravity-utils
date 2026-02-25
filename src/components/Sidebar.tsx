@@ -70,13 +70,7 @@ const CATEGORIES = [
 const NAV_ITEMS: NavItem[] = [
     // Office & Documents
     // Office & Documents
-    { id: 'document-toolkit', title: 'Belge & Ofis Çıkın', icon: <FileText size={18} />, category: 'office', addedAt: '2026-02-20' },
-    { id: 'exam-generator', title: 'Sınav Hazırlayıcı', icon: <HelpCircle size={18} />, category: 'office', addedAt: '2026-02-23' },
-    { id: 'pdf-merge', title: 'PDF Birleştir', icon: <Merge size={18} />, category: 'office', addedAt: '2026-02-23' },
-    { id: 'pdf-split', title: 'PDF Ayırıcı', icon: <Scissors size={18} />, category: 'office', addedAt: '2026-02-23' },
-    { id: 'pdf-compress', title: 'PDF Boyut Küçült', icon: <Minimize2 size={18} />, category: 'office', addedAt: '2026-02-23' },
-    { id: 'pdf-watermark', title: 'PDF Filigran Ekle', icon: <Stamp size={18} />, category: 'office', addedAt: '2026-02-23' },
-    { id: 'excel-word', title: 'Excel → Word (Tablo)', icon: <FileSpreadsheet size={18} />, category: 'office', addedAt: '2026-02-24' },
+    { id: 'document-toolkit', title: 'Belge & Ofis Atölyesi', icon: <FileText size={18} />, category: 'office', addedAt: '2026-02-20' },
     { id: 'convert', title: 'Dosya Dönüştürücü', icon: <Layers size={18} />, category: 'office' },
 
     // Text & Content (New)
