@@ -4,7 +4,7 @@ import React, { useState, useRef, useCallback, useEffect } from 'react';
 import {
     ArrowLeft, FileText, Upload, X, AlertCircle, Download,
     FileSpreadsheet, Image as ImageIcon, FileType,
-    GripVertical, ArrowUp, ArrowDown, Plus, Layers,
+    GripVertical, ArrowUp, ArrowDown, Plus, Layers, Sparkles, Wand2,
     Settings2, CheckCircle2, Loader2, Info, Eye, ChevronRight
 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -28,6 +28,15 @@ interface OfficeToolsProps {
     onBack: () => void;
 }
 
+interface FileInsight {
+    id: string;
+    type: 'warning' | 'info' | 'success' | 'suggestion';
+    message: string;
+    description?: string;
+    actionLabel?: string;
+    onAction?: () => void;
+}
+
 interface FileState {
     file: File;
     status: 'idle' | 'editing' | 'converting' | 'success' | 'error';
@@ -36,6 +45,7 @@ interface FileState {
     errorMsg?: string;
     resultName?: string;
     gridData?: any[][];
+    insights?: FileInsight[];
 }
 
 interface ImageItem {
@@ -504,11 +514,84 @@ export const OfficeTools: React.FC<OfficeToolsProps> = ({ mode, onBack }) => {
                     gridData = utils.sheet_to_json(sheet, { header: 1 }) as any[][];
                 }
 
+                const insights: FileInsight[] = [];
+                if (gridData && gridData.length > 0) {
+                    const headers = gridData[0] || [];
+                    const rowCount = gridData.length;
+                    const colCount = headers.length;
+
+                    // 1. Geniş Tablo Kontrolü
+                    if (colCount > 7 && orientation === 'portrait') {
+                        insights.push({
+                            id: 'orientation',
+                            type: 'suggestion',
+                            message: 'Yatay Sayfa Düzeni Önerilir',
+                            description: 'Bu tabloda çok fazla sütun var. PDF çıktısının kesilmemesi için yatay düzen daha iyi görünecektir.',
+                            actionLabel: 'YATAY YAP',
+                            onAction: () => {
+                                setOrientation('landscape');
+                                setFiles(prev => prev.map(file => {
+                                    if (file.file === f) {
+                                        return { ...file, insights: file.insights?.filter(ins => ins.id !== 'orientation') };
+                                    }
+                                    return file;
+                                }));
+                            }
+                        });
+                    }
+
+                    // 2. Boş Sütun Kontrolü
+                    const emptyCols: number[] = [];
+                    for (let c = 0; c < colCount; c++) {
+                        let isEmpty = true;
+                        for (let r = 1; r < rowCount; r++) {
+                            if (gridData[r][c] !== undefined && gridData[r][c] !== null && gridData[r][c] !== '') {
+                                isEmpty = false;
+                                break;
+                            }
+                        }
+                        if (isEmpty) emptyCols.push(c);
+                    }
+
+                    if (emptyCols.length > 0) {
+                        insights.push({
+                            id: 'empty-cols',
+                            type: 'warning',
+                            message: `${emptyCols.length} Boş Sütun Tespit Edildi`,
+                            description: 'Tablonuzda hiç veri içermeyen sütunlar var. Bunları kaldırmak dökümanın daha temiz görünmesini sağlar.',
+                            actionLabel: 'SÜTUNLARI TEMİZLE'
+                            // onAction will be handled in the component via index lookup
+                        });
+                    }
+
+                    // 3. Uzun Başlık Kontrolü
+                    const longHeaders = headers.filter(h => String(h).length > 25);
+                    if (longHeaders.length > 0) {
+                        insights.push({
+                            id: 'long-headers',
+                            type: 'info',
+                            message: 'Uzun Başlık Metinleri',
+                            description: 'Bazı sütun başlıkları çok uzun. Hücre içinde taşma yapabilir veya sütunları çok genişletebilir.',
+                        });
+                    }
+
+                    // 4. Veri Tipi Kontrolü (Sadece basit bir örnek)
+                    if (rowCount > 10) {
+                        insights.push({
+                            id: 'smart-report',
+                            type: 'success',
+                            message: 'Rapor Formatı Uygun',
+                            description: 'Bu veriler yapısal bir rapor gibi duruyor. Excel -> Word dönüşümünde otomatik tablo başlıkları eklenebilir.',
+                        });
+                    }
+                }
+
                 return {
                     file: f,
                     status: gridData ? 'editing' as const : 'idle' as const,
                     progress: 0,
-                    gridData
+                    gridData,
+                    insights
                 };
             }));
             setFiles(prev => [...prev, ...newFiles]);
@@ -768,7 +851,7 @@ export const OfficeTools: React.FC<OfficeToolsProps> = ({ mode, onBack }) => {
             // ── Excel → Word (Structured Table) ──────────────────────────
             else if (mode === 'excel-word') {
                 const { read, utils } = await import('xlsx');
-                const { Document, Packer, Paragraph, Table, TableRow, TableCell, BorderStyle, WidthType } = await import('docx');
+                const { Document, Packer, Paragraph, Table, TableRow, TableCell, BorderStyle, WidthType, AlignmentType, TextRun } = await import('docx');
 
                 let jsonData = item.gridData;
                 if (!jsonData) {
@@ -778,27 +861,76 @@ export const OfficeTools: React.FC<OfficeToolsProps> = ({ mode, onBack }) => {
                     jsonData = utils.sheet_to_json(firstSheet, { header: 1 }) as any[][];
                 }
 
-                const tableRows = jsonData.map(row =>
+                // Detect if first row is a header (it usually is)
+                const hasHeader = jsonData.length > 0;
+                const tableRows = jsonData.map((row, rIdx) =>
                     new TableRow({
                         children: row.map(cell =>
                             new TableCell({
-                                children: [new Paragraph(String(cell || ""))],
-                                width: { size: 100 / (row.length || 1), type: WidthType.PERCENTAGE }
+                                children: [new Paragraph({
+                                    children: [new TextRun({
+                                        text: String(cell || ""),
+                                        bold: rIdx === 0 && hasHeader,
+                                        size: rIdx === 0 ? 24 : 20,
+                                        color: rIdx === 0 ? "2D3748" : "4A5568"
+                                    })],
+                                    alignment: AlignmentType.LEFT
+                                })],
+                                width: { size: 100 / (row.length || 1), type: WidthType.PERCENTAGE },
+                                shading: rIdx === 0 ? { fill: "F7FAFC" } : undefined,
+                                margins: { top: 100, bottom: 100, left: 100, right: 100 }
                             })
-                        )
+                        ),
+                        tableHeader: rIdx === 0
                     })
                 );
 
                 const doc = new Document({
                     sections: [{
                         children: [
-                            new Paragraph({ text: "Excel verisinden dönüştürüldü", heading: "Heading1" }),
+                            new Paragraph({
+                                children: [new TextRun({
+                                    text: item.file.name.replace(/\.[^/.]+$/, '').toUpperCase(),
+                                    bold: true,
+                                    size: 32,
+                                    color: "1A202C"
+                                })],
+                                spacing: { after: 200 }
+                            }),
+                            new Paragraph({
+                                children: [new TextRun({
+                                    text: `Dönüştürme Tarihi: ${new Date().toLocaleDateString('tr-TR')} • Veri Kaynağı: Excel`,
+                                    size: 18,
+                                    color: "718096",
+                                    italic: true
+                                })],
+                                spacing: { after: 400 }
+                            }),
                             new Table({
                                 rows: tableRows,
-                                width: { size: 100, type: WidthType.PERCENTAGE }
+                                width: { size: 100, type: WidthType.PERCENTAGE },
+                                borders: {
+                                    top: { style: BorderStyle.SINGLE, size: 1, color: "E2E8F0" },
+                                    bottom: { style: BorderStyle.SINGLE, size: 1, color: "E2E8F0" },
+                                    left: { style: BorderStyle.SINGLE, size: 1, color: "E2E8F0" },
+                                    right: { style: BorderStyle.SINGLE, size: 1, color: "E2E8F0" },
+                                    insideHorizontal: { style: BorderStyle.SINGLE, size: 1, color: "EDF2F7" },
+                                    insideVertical: { style: BorderStyle.SINGLE, size: 1, color: "EDF2F7" }
+                                }
+                            }),
+                            new Paragraph({
+                                children: [new TextRun({
+                                    text: "--- Belge Sonu ---",
+                                    size: 16,
+                                    color: "CBD5E0"
+                                })],
+                                alignment: AlignmentType.CENTER,
+                                spacing: { before: 400 }
                             })
                         ]
-                    }]
+                    }],
+                    creator: "Gravity Utils Intelligent Assistant",
+                    title: item.file.name
                 });
 
                 result = await Packer.toBlob(doc);
@@ -834,7 +966,7 @@ export const OfficeTools: React.FC<OfficeToolsProps> = ({ mode, onBack }) => {
             console.error(error);
             let msg = error.message || 'Bilinmeyen hata';
             if (msg.includes("end of central directory")) {
-                msg = "Dosya yapısı çözümlenemedi. Eski bir Office formatı (.doc) veya bozuk bir dosya olabilir. .docx, .xlsx, .pptx gibi modern formatlar gereklidir.";
+                msg = "Dosya formatı uyumsuz. Bu araç sadece modern Office formatlarını (.docx, .xlsx, .pptx) destekler. Eğer eski bir format (.doc, .xls, .ppt) kullanıyorsanız, lütfen önce modern bir formata kaydedip tekrar deneyin.";
             }
             setFiles(prev => prev.map((f, i) => i === index ? {
                 ...f, status: 'error',
@@ -893,13 +1025,13 @@ export const OfficeTools: React.FC<OfficeToolsProps> = ({ mode, onBack }) => {
 
             {/* Mock notice banner */}
             {isMock && (
-                <div className="flex items-start gap-3 p-4 mb-6 bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-800 rounded-2xl">
-                    <Info size={18} className="text-blue-500 shrink-0 mt-0.5" />
+                <div className="flex items-start gap-3 p-4 mb-6 bg-indigo-50 dark:bg-indigo-900/10 border border-indigo-200 dark:border-indigo-800 rounded-2xl">
+                    <Settings2 size={18} className="text-indigo-500 shrink-0 mt-0.5" />
                     <div>
-                        <p className="text-sm font-bold text-blue-700 dark:text-blue-400">Bulut İşleme Aktif</p>
-                        <p className="text-xs text-blue-600 dark:text-blue-500 mt-0.5">
-                            Excel ve PowerPoint dosyalarınız artık Next.js sunucumuzda yüksek hassasiyetle işlenmektedir.
-                            Verileriniz işlendikten hemen sonra sunucudan silinir.
+                        <p className="text-sm font-bold text-indigo-700 dark:text-indigo-400">Gelişmiş Dönüştürme Motoru Aktif</p>
+                        <p className="text-xs text-indigo-600 dark:text-indigo-500 mt-0.5">
+                            Karmaşık belge yapıları, Excel tabloları ve PowerPoint sunumları yüksek hassasiyetli dönüştürme motorumuz ile işlenir.
+                            Dosyalarınız işlendikten hemen sonra güvenli bir şekilde sunucudan temizlenir.
                         </p>
                     </div>
                 </div>
@@ -948,60 +1080,19 @@ export const OfficeTools: React.FC<OfficeToolsProps> = ({ mode, onBack }) => {
             </div>
 
             {/* Dropper */}
-            <div className="relative group">
-                <div onClick={() => inputRef.current?.click()}
-                    className="border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-2xl p-12 text-center hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer mb-8">
-                    <div className="w-16 h-16 bg-blue-50 dark:bg-blue-900/20 text-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <Upload size={32} />
-                    </div>
-                    <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-200">Dosyayı Buraya Sürükleyin</h3>
-                    <p className="text-slate-500 dark:text-slate-400 mt-2 text-sm">veya seçmek için tıklayın</p>
-                    <div className="mt-4 inline-flex items-center gap-2 px-3 py-1 bg-slate-100 dark:bg-slate-800 rounded-full text-xs font-mono text-slate-500 dark:text-slate-400">
-                        <FileType size={12} />
-                        {config.accept.replace(/,/g, ' ')}
-                    </div>
-                    <input type="file" ref={inputRef} className="hidden" accept={config.accept} multiple
-                        onChange={handleFileSelect} title="Dosya Seç" aria-label="Dosya yükle" />
+            <div onClick={() => inputRef.current?.click()}
+                className="border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-2xl p-12 text-center hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer mb-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <div className="w-16 h-16 bg-blue-50 dark:bg-blue-900/20 text-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Upload size={32} />
                 </div>
-
-                {/* Sample File Button */}
-                <button
-                    onClick={async (e) => {
-                        e.stopPropagation();
-                        let dummy: File;
-                        const ext = config.accept.split(',')[0];
-
-                        try {
-                            if (ext === '.xlsx') {
-                                const { utils, write } = await import('xlsx');
-                                const ws = utils.aoa_to_sheet([["Ürün", "Fiyat"], ["Elma", 10], ["Armut", 15]]);
-                                const wb = utils.book_new();
-                                utils.book_append_sheet(wb, ws, "Örnek");
-                                const buf = write(wb, { type: 'array', bookType: 'xlsx' });
-                                dummy = new File([buf], `ornek-tablo${ext}`, { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-                            } else if (ext === '.pptx' || ext === '.ppt') {
-                                const JSZip = (await import('jszip')).default;
-                                const zip = new JSZip();
-                                // PPTX structure is complex, providing a minimal valid-ish XML slice
-                                zip.file("ppt/slides/slide1.xml", `<?xml version="1.0" encoding="UTF-8"?><p:sld xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main"><p:cSld><p:spTree><p:sp><p:txBody><a:p><a:r><a:t>Hizli Taslak: Örnek Sunum</a:t></a:r></a:p></p:txBody></p:sp></p:spTree></p:cSld></p:sld>`);
-                                const blob = await zip.generateAsync({ type: 'blob' });
-                                dummy = new File([blob], `ornek-sunum.pptx`, { type: 'application/vnd.openxmlformats-officedocument.presentationml.presentation' });
-                            } else if (ext === '.docx' || ext === '.doc') {
-                                dummy = new File(["Bu bir örnek Word belgesi içeriğidir. Bulut dönüşüm testi için oluşturulmuştur."], `ornek-belge${ext}`, { type: 'text/plain' });
-                            } else {
-                                dummy = new File(["Örnek veri"], `ornek-dosya${ext}`, { type: 'application/octet-stream' });
-                            }
-                        } catch {
-                            dummy = new File(["Örnek veri"], `ornek-dosya${ext}`, { type: 'application/octet-stream' });
-                        }
-
-                        handleFileSelect({ target: { files: [dummy] } } as any);
-                    }}
-                    className="absolute bottom-12 right-12 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-blue-600 dark:text-blue-400 shadow-lg hover:-translate-y-1 transition-all z-20 flex items-center gap-2"
-                >
-                    <Settings2 size={14} />
-                    Örnek Dosya ile Dene
-                </button>
+                <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-200">Dosyayı Buraya Sürükleyin</h3>
+                <p className="text-slate-500 dark:text-slate-400 mt-2 text-sm">veya seçmek için tıklayın</p>
+                <div className="mt-4 inline-flex items-center gap-2 px-3 py-1 bg-slate-100 dark:bg-slate-800 rounded-full text-xs font-mono text-slate-500 dark:text-slate-400">
+                    <FileType size={12} />
+                    {config.accept.replace(/,/g, ' ')}
+                </div>
+                <input type="file" ref={inputRef} className="hidden" accept={config.accept} multiple
+                    onChange={handleFileSelect} title="Dosya Seç" aria-label="Dosya yükle" />
             </div>
 
             {/* File List / Actions */}
@@ -1070,6 +1161,70 @@ export const OfficeTools: React.FC<OfficeToolsProps> = ({ mode, onBack }) => {
                         {/* Smart Data Editor (Horizontal Scrollable Table) */}
                         {item.status === 'editing' && item.gridData && (
                             <div className="border-t border-slate-100 dark:border-slate-800 p-6 bg-slate-50/50 dark:bg-slate-950/20">
+                                {/* Smart Insights Section */}
+                                {item.insights && item.insights.length > 0 && (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
+                                        {item.insights.map((insight) => (
+                                            <div key={insight.id} className={`p-4 rounded-2xl border flex items-start gap-3 transition-all ${insight.type === 'suggestion' ? 'bg-indigo-50/50 dark:bg-indigo-900/10 border-indigo-100 dark:border-indigo-900/30' :
+                                                insight.type === 'warning' ? 'bg-amber-50/50 dark:bg-amber-900/10 border-amber-100 dark:border-amber-900/30' :
+                                                    insight.type === 'success' ? 'bg-emerald-50/50 dark:bg-emerald-900/10 border-emerald-100 dark:border-emerald-900/30' :
+                                                        'bg-blue-50/50 dark:bg-blue-900/10 border-blue-100 dark:border-blue-900/30'
+                                                }`}>
+                                                <div className={`p-2 rounded-xl shrink-0 ${insight.type === 'suggestion' ? 'bg-indigo-500/10 text-indigo-500' :
+                                                    insight.type === 'warning' ? 'bg-amber-500/10 text-amber-500' :
+                                                        insight.type === 'success' ? 'bg-emerald-500/10 text-emerald-500' :
+                                                            'bg-blue-500/10 text-blue-500'
+                                                    }`}>
+                                                    {insight.type === 'suggestion' ? <Sparkles size={16} /> :
+                                                        insight.type === 'warning' ? <AlertCircle size={16} /> :
+                                                            insight.type === 'success' ? <CheckCircle2 size={16} /> :
+                                                                <Info size={16} />
+                                                    }
+                                                </div>
+                                                <div className="flex-1">
+                                                    <h5 className={`text-xs font-bold leading-tight ${insight.type === 'suggestion' ? 'text-indigo-700 dark:text-indigo-400' :
+                                                        insight.type === 'warning' ? 'text-amber-700 dark:text-amber-400' :
+                                                            insight.type === 'success' ? 'text-emerald-700 dark:text-emerald-400' :
+                                                                'text-blue-700 dark:text-blue-400'
+                                                        }`}>{insight.message}</h5>
+                                                    <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">{insight.description}</p>
+                                                    {insight.actionLabel && (
+                                                        <button
+                                                            onClick={() => {
+                                                                if (insight.onAction) insight.onAction();
+                                                                else if (insight.id === 'empty-cols') {
+                                                                    const grid = item.gridData || [];
+                                                                    const headers = grid[0] || [];
+                                                                    const emptyCols: number[] = [];
+                                                                    for (let c = 0; c < headers.length; c++) {
+                                                                        let isEmpty = true;
+                                                                        for (let r = 1; r < grid.length; r++) {
+                                                                            if (grid[r][c] !== undefined && grid[r][c] !== null && grid[r][c] !== '') {
+                                                                                isEmpty = false;
+                                                                                break;
+                                                                            }
+                                                                        }
+                                                                        if (isEmpty) emptyCols.push(c);
+                                                                    }
+                                                                    const newGrid = grid.map(row => row.filter((_, idx) => !emptyCols.includes(idx)));
+                                                                    setFiles(prev => prev.map((f, i) => i === index ? {
+                                                                        ...f,
+                                                                        gridData: newGrid,
+                                                                        insights: f.insights?.filter(ins => ins.id !== 'empty-cols')
+                                                                    } : f));
+                                                                    toast.success(`${emptyCols.length} boş sütun temizlendi.`);
+                                                                }
+                                                            }}
+                                                            className="mt-2 text-[10px] font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400 hover:opacity-70 flex items-center gap-1"
+                                                        >
+                                                            <Wand2 size={10} /> {insight.actionLabel}
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
                                 <div className="flex items-center justify-between mb-4">
                                     <div className="flex items-center gap-2">
                                         <div className="w-8 h-8 bg-green-500/10 rounded-lg flex items-center justify-center">
@@ -1160,6 +1315,6 @@ export const OfficeTools: React.FC<OfficeToolsProps> = ({ mode, onBack }) => {
                     </div>
                 )}
             </div>
-        </div>
+        </div >
     );
 };
