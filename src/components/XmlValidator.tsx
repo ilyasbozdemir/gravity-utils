@@ -1,10 +1,10 @@
 'use client';
 
 import React, { useState, useCallback } from 'react';
-import { ArrowLeft, FileJson, AlertCircle, CheckCircle2, Copy, Download, Code, Play, Trash2, BookOpen, Sparkles, Braces, FileCode, RefreshCw } from 'lucide-react';
+import { ArrowLeft, FileJson, AlertCircle, CheckCircle2, Copy, Download, Code, Play, Trash2, BookOpen, Sparkles, Braces, FileCode, RefreshCw, FileSpreadsheet, Globe } from 'lucide-react';
 import { toast } from 'sonner';
 
-type XmlMode = 'validate' | 'format' | 'xml-json' | 'json-xml';
+type XmlMode = 'validate' | 'format' | 'xml-json' | 'json-xml' | 'xml-excel' | 'xml-html';
 
 export const XmlValidator: React.FC<{ onBack: () => void }> = ({ onBack }) => {
     const [xml, setXml] = useState('<?xml version="1.0" encoding="UTF-8"?>\n<note>\n  <to>Tove</to>\n  <from>Jani</from>\n  <heading>Reminder</heading>\n  <body>Benim için xml xsd vs gibi şeylere yer ver!</body>\n</note>');
@@ -102,7 +102,7 @@ export const XmlValidator: React.FC<{ onBack: () => void }> = ({ onBack }) => {
         return `<?xml version="1.0" encoding="UTF-8"?>\n` + toXml(obj[rootName], rootName);
     };
 
-    const runAction = () => {
+    const runAction = async () => {
         setResult({ status: 'idle', message: '' });
         try {
             if (mode === 'validate') {
@@ -126,6 +126,65 @@ export const XmlValidator: React.FC<{ onBack: () => void }> = ({ onBack }) => {
             } else if (mode === 'json-xml') {
                 setXml(formatXml(jsonToXml(xml)));
                 toast.success('XML\'e dönüştürüldü');
+            } else if (mode === 'xml-excel') {
+                const jsonObj = xmlToJson(xml);
+                // Flatten logic: Extract first level array or objects
+                const rootKey = Object.keys(jsonObj)[0];
+                const data = jsonObj[rootKey];
+                const rows: any[] = [];
+
+                if (Array.isArray(data)) {
+                    data.forEach(item => rows.push(item));
+                } else if (typeof data === 'object') {
+                    // Try to find an array inside
+                    const arrayKey = Object.keys(data).find(k => Array.isArray(data[k]));
+                    if (arrayKey) {
+                        data[arrayKey].forEach((item: any) => rows.push(item));
+                    } else {
+                        rows.push(data);
+                    }
+                }
+
+                if (rows.length === 0) throw new Error("Excel için uygun tablo yapısı bulunamadı.");
+
+                const { utils, writeFile } = await import('xlsx');
+                const ws = utils.json_to_sheet(rows);
+                const wb = utils.book_new();
+                utils.book_append_sheet(wb, ws, "XML Verisi");
+                writeFile(wb, "xml_to_excel.xlsx");
+                toast.success('Excel dosyası indirildi');
+            } else if (mode === 'xml-html') {
+                const jsonObj = xmlToJson(xml);
+                const htmlContent = `
+                    <html>
+                    <head>
+                        <title>XML Veri Raporu</title>
+                        <style>
+                            body { font-family: sans-serif; padding: 40px; background: #f8fafc; color: #334155; }
+                            .card { background: white; border-radius: 12px; padding: 24px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
+                            h1 { color: #2563eb; border-bottom: 2px solid #e2e8f0; padding-bottom: 12px; }
+                            pre { background: #f1f5f9; padding: 16px; border-radius: 8px; overflow-x: auto; }
+                            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                            th, td { text-align: left; padding: 12px; border-bottom: 1px solid #e2e8f0; }
+                            th { background: #f8fafc; font-size: 12px; text-transform: uppercase; color: #64748b; }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="card">
+                            <h1>XML Veri Raporu</h1>
+                            <p><strong>Dönüştürme Tarihi:</strong> ${new Date().toLocaleString()}</p>
+                            <pre>${JSON.stringify(jsonObj, null, 2)}</pre>
+                        </div>
+                    </body>
+                    </html>
+                `;
+                const blob = new Blob([htmlContent], { type: 'text/html' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'xml_rapor.html';
+                a.click();
+                toast.success('HTML raporu hazır');
             }
         } catch (err: any) {
             setResult({ status: 'error', message: err.message });
@@ -163,6 +222,8 @@ export const XmlValidator: React.FC<{ onBack: () => void }> = ({ onBack }) => {
                                 { id: 'format', label: 'Formatla', icon: <Braces size={14} /> },
                                 { id: 'xml-json', label: '→ JSON', icon: <FileJson size={14} /> },
                                 { id: 'json-xml', label: '← JSON', icon: <FileCode size={14} /> },
+                                { id: 'xml-excel', label: '→ Excel', icon: <FileSpreadsheet size={14} /> },
+                                { id: 'xml-html', label: '→ HTML', icon: <Globe size={14} /> },
                             ].map(m => (
                                 <button
                                     key={m.id}

@@ -149,7 +149,7 @@ export const DocumentToolkit: React.FC<DocumentToolkitProps> = ({ onBack, initia
                     <ArrowLeft className="group-hover:-translate-x-1 transition-transform" />
                 </button>
                 <div>
-                    <h1 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight">Belge & Ofis Atölyesi</h1>
+                    <h1 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight">Döküman İşleme & Dönüşüm Laboratuvarı</h1>
                     <p className="text-slate-500 text-sm font-medium">PDF yönetimi, ofis dökümanı dönüşümleri ve akıllı dosya araçları.</p>
                 </div>
             </div>
@@ -335,7 +335,7 @@ export const DocumentToolkit: React.FC<DocumentToolkitProps> = ({ onBack, initia
                         onClick={() => handlePdfTool('compress')}
                     />
                     <BigActionCard
-                        title="Filigran Ekle"
+                        title="Dijital Mühür & Onay"
                         desc="Dökümana güvenli mühür/yazı ekle"
                         icon={<Stamp size={24} />}
                         color="purple"
@@ -363,10 +363,10 @@ export const DocumentToolkit: React.FC<DocumentToolkitProps> = ({ onBack, initia
                 </div>
                 <div className="p-8 bg-blue-600 rounded-[2.5rem] text-white shadow-xl shadow-blue-500/20">
                     <h3 className="text-lg font-black flex items-center gap-2">
-                        <FileType size={20} /> Belge İpucu
+                        <RefreshCw size={20} className="animate-spin-slow" /> Zincirleme Dönüşüm (X → A → B)
                     </h3>
                     <p className="text-sm text-blue-100 leading-relaxed">
-                        PDF dosyalarını Word'e çevirirken yüksek doğruluk için 'Görsel Fidelity' modunu kullanabilirsiniz. Form kaybı yaşamadan en iyi görüntüyü yakalarsınız.
+                        Bir dosyayı doğrudan istediğiniz formata çeviremiyorsanız; örneğin <strong>Excel → Word</strong> yapıp, sonra o Word'ü <strong>PDF</strong>'e çevirerek dolaylı ama kayıpsız sonuçlar alabilirsiniz.
                     </p>
                 </div>
             </div>

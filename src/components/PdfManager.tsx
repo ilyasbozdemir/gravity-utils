@@ -330,7 +330,7 @@ export const PdfManager: React.FC<PdfManagerProps> = ({ file, onBack, initialTab
             }
 
             const pdfBytes = await pdfDoc.save();
-            downloadPdf(pdfBytes, `filigran-${mainFile.name}`);
+            downloadPdf(pdfBytes, `${mainFile.name.replace('.pdf', '')} - (Mühürlü).pdf`);
         } catch (err) {
             console.error(err);
             alert('Filigran eklenemedi: ' + (err as Error).message);
