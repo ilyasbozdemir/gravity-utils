@@ -173,7 +173,7 @@ export async function POST(req: NextRequest) {
                     // Fallback to original file if no edited data
                     if (dataToProcess.length === 0) {
                         const { read, utils } = await import('xlsx');
-                        const workbook = read(arrayBuffer, { type: 'buffer' });
+                        const workbook = read(new Uint8Array(arrayBuffer), { type: 'array' });
                         for (const name of workbook.SheetNames) {
                             const sheet = workbook.Sheets[name];
                             dataToProcess.push(utils.sheet_to_json(sheet, { header: 1 }) as any[][]);
@@ -217,38 +217,46 @@ export async function POST(req: NextRequest) {
                     try {
                         const JSZip = (await import('jszip')).default;
                         const zip = await JSZip.loadAsync(arrayBuffer);
-                        const slides = Object.keys(zip.files).filter(f => f.startsWith('ppt/slides/slide'));
                         
-                        if (slides.length === 0) {
-                            const page = pdfDoc.addPage();
-                            page.drawText('Hata: PPTX dosyası içinde slayt bulunamadı.', { x: 50, y: 700, size: 14, font });
-                        }
-
-                        for (let i = 1; i <= slides.length; i++) {
-                            const slideContent = await zip.file(`ppt/slides/slide${i}.xml`)?.async('string');
+                        // Extract slides
+                        let i = 1;
+                        let hasMore = true;
+                        while(hasMore) {
+                            const slidePath = `ppt/slides/slide${i}.xml`;
+                            const slideFile = zip.file(slidePath);
+                            if (!slideFile) {
+                                hasMore = false;
+                                break;
+                            }
+                            
+                            const slideContent = await slideFile.async('string');
                             const page = pdfDoc.addPage();
                             const { width, height } = page.getSize();
                             
-                            page.drawText(`Slide ${i}`, { x: width/2 - 30, y: height - 50, size: 20, font });
+                            page.drawText(`Sayfa ${i}`, { x: width/2 - 20, y: height - 40, size: 10, font });
                             
-                            if (slideContent) {
-                                const textMatches = slideContent.match(/<a:t>([^<]+)<\/a:t>/g);
-                                if (textMatches) {
-                                    let y = height - 100;
-                                    for (const match of textMatches.slice(0, 20)) {
-                                        const txt = match.replace(/<[^>]+>/g, '');
-                                        page.drawText(txt.substring(0, 100), { x: 50, y, size: 10, font });
-                                        y -= 15;
-                                        if (y < 50) break;
+                            // Basic text extraction from slide XML
+                            const texts = slideContent.match(/<a:t>([^<]*)<\/a:t>/g);
+                            if (texts) {
+                                let yPos = height - 100;
+                                texts.forEach(t => {
+                                    const match = t.match(/<a:t>([^<]*)<\/a:t>/);
+                                    const txt = match ? match[1] : '';
+                                    if (txt.trim()) {
+                                        page.drawText(txt, { x: 50, y: yPos, size: 12, font });
+                                        yPos -= 20;
                                     }
-                                }
+                                });
                             }
+                            i++;
+                            if (i > 50) break; // Safety limit
                         }
-                    } catch (zipErr) {
+                    } catch (zipErr: any) {
                         const page = pdfDoc.addPage();
-                        page.drawText('Hata: Dosya bir ZIP arşivi değil (Eski .ppt formatı olabilir).', { x: 50, y: 700, size: 14, font });
-                        page.drawText('Not: Sadece modern .pptx (XML tabanlı) dosyalar desteklenmektedir.', { x: 50, y: 680, size: 10, font });
-                        page.drawText(`Teknik Detay: ${(zipErr as Error).message}`, { x: 50, y: 660, size: 8, font });
+                        const font = await pdfDoc.embedFont(fontBytes);
+                        page.drawText('Hata: Dosya bir ZIP arşivi değil veya modern bir format değil.', { x: 50, y: 700, size: 14, font });
+                        page.drawText('Modern PowerPoint (.pptx) formatı gereklidir. Eski .ppt formatı desteklenmez.', { x: 50, y: 680, size: 10, font });
+                        page.drawText(`Teknik Detay: ${zipErr.message}`, { x: 50, y: 660, size: 8, font });
                     }
                 }
 

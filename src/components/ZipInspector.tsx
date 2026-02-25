@@ -148,6 +148,7 @@ export const ZipInspector: React.FC<ZipInspectorProps> = ({ file: initialFile, o
                 const isOffice = /\.(docx|xlsx|pptx|odt|ods|odp)$/i.test(file.name);
 
                 if (isArchive) {
+                    const JSZip = (await import('jszip')).default;
                     const zip = new JSZip();
                     const loadedZip = await zip.loadAsync(file);
                     const fileItems: ZipItem[] = [];
@@ -194,8 +195,15 @@ export const ZipInspector: React.FC<ZipInspectorProps> = ({ file: initialFile, o
                 }
 
                 setLoading(false);
-            } catch (e: unknown) {
+            } catch (e: any) {
                 console.error(e);
+                const errorMsg = e.message || '';
+                if (errorMsg.includes("end of central directory")) {
+                    setError("Dosya yapısı çözümlenemedi. Bu dosya bozuk olabilir veya eski bir formatta (örneğin .doc yerine .docx değil) olabilir. ZIP tabanlı modern formatlar gereklidir.");
+                } else {
+                    setError("Arşiv açılırken bir hata oluştu: " + errorMsg);
+                }
+
                 if (file) {
                     const singleItem: ZipItem = {
                         path: file.name,

@@ -386,9 +386,17 @@ export const FileConverter: React.FC<FileConverterProps> = ({ file: initialFile,
             saveAs(file, finalName);
             toast.success("Dosya başarıyla hazırlandı.");
 
-        } catch (error) {
+        } catch (error: any) {
             console.error(error);
-            toast.error("İşlem sırasında bir hata oluştu: " + (error as Error).message);
+            let msg = error.message || 'Bilinmeyen hata';
+            if (msg.includes("end of central directory")) {
+                msg = "Dosya yapısı çözümlenemedi. Dosyanın modern bir Office formatı (.docx, .xlsx, .pptx) veya geçerli bir ZIP arşivi olduğundan emin olun. Eski formatlar (örneğin .doc) desteklenmez.";
+            } else if (msg.includes("Corrupted zip") || msg.includes("invalid signature")) {
+                msg = "Arşiv dosyası bozuk veya geçersiz. Lütfen geçerli bir ZIP tabanlı dosya (örneğin .docx, .xlsx, .pptx) yükleyin.";
+            } else if (msg.includes("PDF.js")) {
+                msg = "PDF dosyası işlenirken bir hata oluştu. Dosya bozuk olabilir veya desteklenmeyen bir formatta olabilir.";
+            }
+            toast.error("İşlem sırasında bir hata oluştu: " + msg);
         } finally {
             setIsProcessing(false);
         }

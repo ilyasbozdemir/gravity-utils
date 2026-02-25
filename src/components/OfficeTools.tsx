@@ -498,8 +498,8 @@ export const OfficeTools: React.FC<OfficeToolsProps> = ({ mode, onBack }) => {
                 let gridData: any[][] | undefined;
                 if ((mode === 'excel-word' || mode === 'excel-pdf') && (f.name.endsWith('.xlsx') || f.name.endsWith('.xls'))) {
                     const { read, utils } = await import('xlsx');
-                    const buffer = await f.arrayBuffer();
-                    const wb = read(buffer, { type: 'array' });
+                    const arrayBuffer = await f.arrayBuffer();
+                    const wb = read(new Uint8Array(arrayBuffer), { type: 'array' });
                     const sheet = wb.Sheets[wb.SheetNames[0]];
                     gridData = utils.sheet_to_json(sheet, { header: 1 }) as any[][];
                 }
@@ -557,8 +557,9 @@ export const OfficeTools: React.FC<OfficeToolsProps> = ({ mode, onBack }) => {
                         zip.forEach(({ name, blob }) => z.file(name, blob));
                         result = await z.generateAsync({ type: 'blob' });
                         resultName = item.file.name.replace(/\.[^/.]+$/, '') + '-sayfalar.zip';
-                    } catch {
-                        // JSZip yoksa sadece ilk sayfayı ver
+                    } catch (e: any) {
+                        console.error('ZIP generation failed', e);
+                        // JSZip yoksa veya hata oluşursa sadece ilk sayfayı ver
                         result = zip[0].blob;
                         resultName = item.file.name.replace(/\.[^/.]+$/, '') + '-sayfa1.jpg';
                     }
@@ -827,9 +828,12 @@ export const OfficeTools: React.FC<OfficeToolsProps> = ({ mode, onBack }) => {
 
             setFiles(prev => prev.map((f, i) => i === index ? { ...f, status: 'success', progress: 100, result, resultName } : f));
             toast.success(`${item.file.name} hazırlandı.`);
-        } catch (error) {
+        } catch (error: any) {
             console.error(error);
-            const msg = (error as Error).message || 'Bilinmeyen hata';
+            let msg = error.message || 'Bilinmeyen hata';
+            if (msg.includes("end of central directory")) {
+                msg = "Dosya yapısı çözümlenemedi. Eski bir Office formatı (.doc) veya bozuk bir dosya olabilir. .docx, .xlsx, .pptx gibi modern formatlar gereklidir.";
+            }
             setFiles(prev => prev.map((f, i) => i === index ? {
                 ...f, status: 'error',
                 errorMsg: msg
