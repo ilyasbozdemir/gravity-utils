@@ -6,6 +6,7 @@ import { Menu } from 'lucide-react';
 import { Sidebar, ToolView as ViewType } from '@/components/Sidebar';
 import { LandingHero } from '@/components/LandingHero';
 import { ActionPanel } from '@/components/ActionPanel';
+import { RevisionNotes } from '@/components/RevisionNotes';
 
 // Dynamically import components to improve initial load
 const FileConverter = dynamic(() => import('@/components/FileConverter').then(mod => mod.FileConverter));
@@ -284,6 +285,8 @@ export default function Home() {
                     <footer className="text-sm p-8 text-center opacity-30 mt-auto">
                         <p>© 2026 Gravity Utils • %100 Yerel Veri İşleme</p>
                     </footer>
+
+                    <RevisionNotes />
                 </main>
             </div>
         </div>

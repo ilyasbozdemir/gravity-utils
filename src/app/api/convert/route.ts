@@ -150,9 +150,22 @@ export async function POST(req: NextRequest) {
             if (type === 'excel-pdf' || type === 'ppt-pdf') {
                 const pdfDoc = await PDFDocument.create();
                 pdfDoc.registerFontkit(fontkit);
-                const fontRes = await fetch('https://cdn.jsdelivr.net/gh/googlefonts/roboto@master/src/hinted/Roboto-Regular.ttf');
-                const fontBytes = await fontRes.arrayBuffer();
-                const font = await pdfDoc.embedFont(fontBytes);
+                
+                let fontBytes: ArrayBuffer;
+                try {
+                    // Cache/Optimized fetch for Roboto
+                    const fontRes = await fetch('https://cdn.jsdelivr.net/gh/googlefonts/roboto@master/src/hinted/Roboto-Regular.ttf', {
+                        next: { revalidate: 3600 } // Next.js caching hint
+                    } as any);
+                    if (!fontRes.ok) throw new Error('Font fetch failed');
+                    fontBytes = await fontRes.arrayBuffer();
+                } catch (e) {
+                    console.error('Font loading error, using standard font fallback', e);
+                    // Fallback will happen below if we can't embed
+                    fontBytes = new ArrayBuffer(0);
+                }
+
+                const font = fontBytes.byteLength > 0 ? await pdfDoc.embedFont(fontBytes) : null;
                 
                 if (type === 'excel-pdf') {
                     const orientation = formData?.get('orientation') as string || 'portrait';
@@ -164,13 +177,12 @@ export async function POST(req: NextRequest) {
                     if (gridDataStr) {
                         try {
                             const editedData = JSON.parse(gridDataStr);
-                            dataToProcess = [editedData]; // Treat edited grid as a single sheet
+                            dataToProcess = [editedData]; 
                         } catch (e) {
                             console.error('Grid data parse error:', e);
                         }
                     }
                     
-                    // Fallback to original file if no edited data
                     if (dataToProcess.length === 0) {
                         const { read, utils } = await import('xlsx');
                         const workbook = read(new Uint8Array(arrayBuffer), { type: 'array' });
@@ -187,33 +199,57 @@ export async function POST(req: NextRequest) {
                         if (pageSizeParam === 'a3') dims = [841.89, 1190.55]; 
                         if (orientation === 'landscape') dims = [dims[1], dims[0]];
 
+                        // Excel scale/limit fix: prevent colCount > 255 or large layouts from breaking coordinates
+                        const maxCols = 50; // Safety limit for PDF view
                         const page = pdfDoc.addPage(dims);
                         const { width, height } = page.getSize();
                         let y = height - 50;
 
-                        page.drawText(`Sayfa ${sheetIdx + 1}`, { x: 50, y, size: 16, font, color: rgb(0, 0.4, 0.7) });
+                        if (font) {
+                            page.drawText(`Sayfa ${sheetIdx + 1}`, { x: 50, y, size: 14, font, color: rgb(0, 0.4, 0.7) });
+                        }
                         y -= 30;
 
-                        const colCount = Math.max(...json.map(r => Array.isArray(r) ? r.length : 0));
+                        const colCount = Math.min(maxCols, Math.max(...json.map(r => Array.isArray(r) ? r.length : 0)));
                         const colWidth = (width - 100) / (colCount || 1);
-                        const rowHeight = 20;
+                        const rowHeight = 18;
 
-                        json.slice(0, 50).forEach((row, rowIndex) => {
+                        json.slice(0, 100).forEach((row, rowIndex) => { // Increased to 100 rows
                             if (y < 40) return;
                             let x = 50;
+                            
+                            // Row Background for Header
                             if (rowIndex === 0) {
-                                page.drawRectangle({ x, y: y-5, width: width-100, height: rowHeight, color: rgb(0.9, 0.9, 0.9) });
+                                page.drawRectangle({ x, y: y-5, width: width-100, height: rowHeight, color: rgb(0.95, 0.95, 0.95) });
                             }
-                            row.forEach((cell: any) => {
-                                page.drawText(String(cell || "").substring(0, 15), { x: x + 5, y, size: 8, font });
-                                page.drawRectangle({ x, y: y-5, width: colWidth, height: rowHeight, borderWidth: 0.5, borderColor: rgb(0.7, 0.7, 0.7) });
+
+                            row.slice(0, maxCols).forEach((cellValue: any) => {
+                                const text = String(cellValue || "").substring(0, 20); // Longer cell text
+                                if (font) {
+                                    page.drawText(text, { x: x + 4, y: y + 2, size: 7, font });
+                                }
+                                page.drawRectangle({ 
+                                    x, 
+                                    y: y - 5, 
+                                    width: colWidth, 
+                                    height: rowHeight, 
+                                    borderWidth: 0.5, 
+                                    borderColor: rgb(0.8, 0.8, 0.8) 
+                                });
                                 x += colWidth;
                             });
                             y -= rowHeight;
                         });
+
+                        if (json.length > 100) {
+                            page.drawText(`... Ve ${json.length - 100} satır daha (Tam versiyon için Excel indiriniz)`, { 
+                                x: 50, y: 20, size: 8, font: font || undefined, color: rgb(0.5, 0.5, 0.5) 
+                            });
+                        }
                     });
                 } else {
                     // PPT to PDF (Text extraction approach)
+                    const font = fontBytes.byteLength > 0 ? await pdfDoc.embedFont(fontBytes) : null;
                     try {
                         const JSZip = (await import('jszip')).default;
                         const zip = await JSZip.loadAsync(arrayBuffer);
@@ -233,7 +269,7 @@ export async function POST(req: NextRequest) {
                             const page = pdfDoc.addPage();
                             const { width, height } = page.getSize();
                             
-                            page.drawText(`Sayfa ${i}`, { x: width/2 - 20, y: height - 40, size: 10, font });
+                            if (font) page.drawText(`Sayfa ${i}`, { x: width/2 - 20, y: height - 40, size: 10, font });
                             
                             // Basic text extraction from slide XML
                             const texts = slideContent.match(/<a:t>([^<]*)<\/a:t>/g);
@@ -243,20 +279,23 @@ export async function POST(req: NextRequest) {
                                     const match = t.match(/<a:t>([^<]*)<\/a:t>/);
                                     const txt = match ? match[1] : '';
                                     if (txt.trim()) {
-                                        page.drawText(txt, { x: 50, y: yPos, size: 12, font });
-                                        yPos -= 20;
+                                        if (font) {
+                                            page.drawText(txt.substring(0, 200), { x: 50, y: yPos, size: 11, font });
+                                        }
+                                        yPos -= 18;
                                     }
                                 });
                             }
                             i++;
-                            if (i > 50) break; // Safety limit
+                            if (i > 60) break; // Increased safety limit
                         }
                     } catch (zipErr: any) {
                         const page = pdfDoc.addPage();
-                        const font = await pdfDoc.embedFont(fontBytes);
-                        page.drawText('Hata: Dosya bir ZIP arşivi değil veya modern bir format değil.', { x: 50, y: 700, size: 14, font });
-                        page.drawText('Modern PowerPoint (.pptx) formatı gereklidir. Eski .ppt formatı desteklenmez.', { x: 50, y: 680, size: 10, font });
-                        page.drawText(`Teknik Detay: ${zipErr.message}`, { x: 50, y: 660, size: 8, font });
+                        if (font) {
+                            page.drawText('Hata: Dosya bir ZIP arşivi değil veya modern bir format değil.', { x: 50, y: 700, size: 14, font });
+                            page.drawText('Modern PowerPoint (.pptx) formatı gereklidir. Eski .ppt formatı desteklenmez.', { x: 50, y: 680, size: 10, font });
+                            page.drawText(`Teknik Detay: ${zipErr.message}`, { x: 50, y: 660, size: 8, font });
+                        }
                     }
                 }
 

@@ -621,10 +621,8 @@ export const OfficeTools: React.FC<OfficeToolsProps> = ({ mode, onBack }) => {
                     const items = textContent.items as any[];
 
                     if (items.length === 0) {
-                        // Boş sayfa veya sadece görsel var, eski yöntemi (görsel) kullanabiliriz veya boş geçebiliriz
-                        sections.push({
-                            children: [new Paragraph({ text: "" })]
-                        });
+                        toast.info(`PDF Sayfa ${i} boş veya bir görselden oluşuyor. Metin bulunamadı.`);
+                        sections.push({ children: [new Paragraph({ text: "[Taranmış Sayfa İçeriği Ayrıştırılamadı]" })] });
                         continue;
                     }
 
@@ -712,6 +710,9 @@ export const OfficeTools: React.FC<OfficeToolsProps> = ({ mode, onBack }) => {
                     const page = await pdf.getPage(i);
                     const textContent = await page.getTextContent();
                     const items = textContent.items as any[];
+                    if (items.length === 0) {
+                        toast.info(`Sayfa ${i} metin içermiyor (taranmış belge olabilir).`);
+                    }
 
                     const lines: Record<number, any[]> = {};
                     items.forEach(it => {
@@ -721,7 +722,8 @@ export const OfficeTools: React.FC<OfficeToolsProps> = ({ mode, onBack }) => {
                     });
 
                     Object.keys(lines).sort((a, b) => Number(b) - Number(a)).forEach(y => {
-                        const row = lines[Number(y)].sort((a, b) => a.transform[4] - b.transform[4]).map(it => it.str);
+                        // Limit columns to 100 to avoid Excel structure errors and "255" issues
+                        const row = lines[Number(y)].sort((a, b) => a.transform[4] - b.transform[4]).map(it => it.str).slice(0, 100);
                         allRows.push(row);
                     });
                     setFiles(prev => prev.map((f, idx) => idx === index ? { ...f, progress: 20 + Math.round((i / pdf.numPages) * 70) } : f));

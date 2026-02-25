@@ -199,7 +199,8 @@ export const FileConverter: React.FC<FileConverterProps> = ({ file: initialFile,
                         const items = textContent.items as any[];
 
                         if (items.length === 0) {
-                            sections.push({ children: [new Paragraph({ text: "" })] });
+                            toast.info(`Sayfa ${i} metin içermiyor (taranmış belge olabilir).`);
+                            sections.push({ children: [new Paragraph({ text: "[Taranmış Sayfa İçeriği Ayrıştırılamadı]" })] });
                             continue;
                         }
 

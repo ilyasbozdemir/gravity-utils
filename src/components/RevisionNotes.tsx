@@ -70,6 +70,7 @@ export const RevisionNotes: React.FC = () => {
                     </div>
                     <button
                         onClick={() => setIsOpen(false)}
+                        title="Kapat"
                         className="p-2 hover:bg-slate-200 dark:hover:bg-white/10 rounded-full transition-colors text-slate-500"
                     >
                         <X size={24} />
