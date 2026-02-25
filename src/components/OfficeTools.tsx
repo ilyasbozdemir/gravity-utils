@@ -902,7 +902,7 @@ export const OfficeTools: React.FC<OfficeToolsProps> = ({ mode, onBack }) => {
                                     text: `Dönüştürme Tarihi: ${new Date().toLocaleDateString('tr-TR')} • Veri Kaynağı: Excel`,
                                     size: 18,
                                     color: "718096",
-                                    italic: true
+                                    italics: true
                                 })],
                                 spacing: { after: 400 }
                             }),
