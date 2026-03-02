@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { ArrowLeft, QrCode, Upload, Download, Copy, Check, Trash2, Plus, Share2, Search, Eye } from 'lucide-react';
 import { Html5Qrcode } from 'html5-qrcode';
 import QRCode from 'qrcode';
+import { unifiedSave } from '../utils/helpers/fileSystem';
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 export interface QrEntry {
@@ -155,10 +156,7 @@ export const QrManager: React.FC<QrManagerProps> = ({ file: initialFile, onBack 
     };
 
     const download = (entry: QrEntry) => {
-        const a = document.createElement('a');
-        a.href = entry.dataUrl;
-        a.download = `qr-${entry.id.slice(0, 8)}.png`;
-        a.click();
+        unifiedSave(entry.dataUrl, `qr-${entry.id.slice(0, 8)}.png`);
     };
 
     const getShareUrl = (id: string) =>

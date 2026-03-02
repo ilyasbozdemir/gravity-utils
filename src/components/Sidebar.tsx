@@ -24,9 +24,10 @@ import {
     Terminal,
     Palette,
     FileSpreadsheet,
-    ArrowLeft, Copy, Check, Download, AlertCircle, Shield, Plus
+    ArrowLeft, Copy, Check, Download, AlertCircle, Shield, Plus, Monitor
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
+import { isElectron, openDesktopFolder } from '../utils/electron';
 
 export type ToolView =
     | 'home' | 'convert' | 'inspect' | 'base64' | 'optimize' | 'hash' | 'json' | 'text' | 'pdf' | 'exif' | 'qr'
@@ -39,7 +40,7 @@ export type ToolView =
     | 'iban-checker' | 'tckn-checker' | 'file-size-calc' | 'viewport-calc' | 'exif-viewer' | 'bulk-rename'
     | 'email-header-analyzer' | 'identifier-converter' | 'schema-generator' | 'metadata-generator' | 'document-toolkit' | 'check-toolkit'
     | 'json-to-code' | 'text-diff' | 'exam-generator' | 'pdf-merge' | 'pdf-split' | 'pdf-compress' | 'pdf-watermark' | 'mermaid'
-    | 'codesnap' | 'mock-generator' | 'sql-converter' | 'terminal-mastery' | 'excel-word' | 'sitemap-generator' | 'robots-txt-builder' | 'xml-validator' | 'figma-to-code' | 'html-to-pdf';
+    | 'codesnap' | 'mock-generator' | 'sql-converter' | 'terminal-mastery' | 'excel-word' | 'sitemap-generator' | 'robots-txt-builder' | 'xml-validator' | 'figma-to-code' | 'html-to-pdf' | 'desktop-toolkit' | 'ota-guide';
 
 interface SidebarProps {
     currentView: ToolView;
@@ -65,15 +66,15 @@ const CATEGORIES = [
     { id: 'calculators', title: 'Hesaplamalar', icon: <Calculator size={16} /> },
     { id: 'checks', title: 'Form & Kontrol', icon: <ShieldCheck size={16} /> },
     { id: 'security', title: 'Güvenlik & Gizlilik', icon: <Lock size={16} /> },
+    { id: 'desktop', title: 'Masaüstü Araçları', icon: <Monitor size={16} /> },
 ];
 
 const NAV_ITEMS: NavItem[] = [
     // Office & Documents
-    // Office & Documents
     { id: 'document-toolkit', title: 'Belge & Ofis Atölyesi', icon: <FileText size={18} />, category: 'office', addedAt: '2026-02-20' },
     { id: 'convert', title: 'Dosya Dönüştürücü', icon: <Layers size={18} />, category: 'office' },
 
-    // Text & Content (New)
+    // Text & Content
     { id: 'text-cleaner', title: 'Metin Temizleyici Pro', icon: <RefreshCw size={18} />, category: 'text-content', addedAt: '2026-02-20' },
     { id: 'case-converter-pro', title: 'Case Converter Pro', icon: <CaseSensitive size={18} />, category: 'text-content', addedAt: '2026-02-20' },
     { id: 'lorem-ipsum', title: 'Lorem Ipsum Üretici', icon: <Type size={18} />, category: 'text-content' },
@@ -116,21 +117,24 @@ const NAV_ITEMS: NavItem[] = [
     { id: 'metadata-generator', title: 'Meta Etiketi Üretici', icon: <Globe size={18} />, category: 'seo', addedAt: '2026-02-20' },
     { id: 'json-ld', title: 'JSON-LD Editörü', icon: <FileJson size={18} />, category: 'seo', addedAt: '2026-02-23' },
 
-    // Calculators (New)
+    // Calculators
     { id: 'date-calculator', title: 'Tarih & Gün Hesapla', icon: <Clock size={18} />, category: 'calculators', addedAt: '2026-02-20' },
     { id: 'internet-speed', title: 'Download Süresi', icon: <Zap size={18} />, category: 'calculators', addedAt: '2026-02-20' },
     { id: 'file-size-calc', title: 'Dosya Boyutu Tahmin', icon: <Layers size={18} />, category: 'calculators', addedAt: '2026-02-20' },
     { id: 'units', title: 'Birim Dönüştürücü', icon: <Calculator size={18} />, category: 'calculators' },
     { id: 'aspect-ratio', title: 'Aspect Ratio', icon: <Layers size={18} />, category: 'calculators' },
 
-    // Checks (New)
-    // Verification Tools
+    // Checks
     { id: 'check-toolkit', title: 'Güvenlik & Doğrulama', icon: <ShieldCheck size={18} />, category: 'checks', addedAt: '2026-02-20' },
 
     // Security
     { id: 'encrypt', title: 'Dosya Şifreleyici', icon: <Lock size={18} />, category: 'security' },
     { id: 'hash', title: 'Hash Oluşturucu', icon: <Hash size={18} />, category: 'security' },
     { id: 'password-generator', title: 'Şifre Üretici', icon: <Lock size={18} />, category: 'security' },
+
+    // Desktop
+    { id: 'desktop-toolkit', title: 'Desktop Engine Paneli', icon: <Monitor size={18} />, category: 'desktop' },
+    { id: 'ota-guide', title: 'Akıllı Güncelleme (OTA)', icon: <Zap size={18} />, category: 'desktop' },
 ];
 
 function isNew(dateStr?: string) {
@@ -148,6 +152,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onViewChange, isO
     const filteredItems = NAV_ITEMS.filter(item =>
         item.title.toLowerCase().includes(searchQuery.toLowerCase())
     );
+
+    const handleItemClick = (id: ToolView) => {
+        onViewChange(id);
+        onClose();
+    };
 
     return (
         <>
@@ -184,9 +193,16 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onViewChange, isO
                                 <span className="text-lg font-black tracking-tight text-slate-900 dark:text-white uppercase italic">Gravity</span>
                                 <span className="text-lg font-black tracking-tight text-blue-600 uppercase italic ml-1">Utils</span>
                             </div>
-                            <a href="https://ilyasbozdemir.dev" target="_blank" rel="noopener noreferrer" className="text-[10px] font-bold text-slate-400 dark:text-slate-500 tracking-wider -mt-1 hover:text-blue-500 transition-colors">
-                                ilyasbozdemir.dev
-                            </a>
+                            <div className="flex flex-col">
+                                <a href="https://ilyasbozdemir.dev" target="_blank" rel="noopener noreferrer" className="text-[10px] font-bold text-slate-400 dark:text-slate-500 tracking-wider -mt-1 hover:text-blue-500 transition-colors">
+                                    ilyasbozdemir.dev
+                                </a>
+                                {isElectron() && (
+                                    <span className="text-[8px] font-black bg-blue-500/10 text-blue-500 px-1.5 py-0.5 rounded-md mt-1 self-start border border-blue-500/20">
+                                        BOZDEMIR ENGINE v1.0
+                                    </span>
+                                )}
+                            </div>
                         </div>
                     </div>
                     <button
@@ -227,6 +243,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onViewChange, isO
                     </button>
 
                     {CATEGORIES.map(cat => {
+                        // Only show desktop category if running in Electron
+                        if (cat.id === 'desktop' && !isElectron()) return null;
+
                         const catItems = filteredItems.filter(item => item.category === cat.id);
                         if (catItems.length === 0) return null;
 
@@ -239,7 +258,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onViewChange, isO
                                     {catItems.map(item => (
                                         <button
                                             key={item.id}
-                                            onClick={() => { onViewChange(item.id); onClose(); }}
+                                            onClick={() => handleItemClick(item.id)}
                                             className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all group ${currentView === item.id
                                                 ? 'bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400 font-bold'
                                                 : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white'

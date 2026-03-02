@@ -1,12 +1,48 @@
 {
   "name": "gravity-utils-next",
-  "version": "0.1.0",
+  "version": "1.0.0",
+  "author": "Ilyas Bozdemir",
   "private": true,
+  "main": "electron/main.js",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "electron:dev": "concurrently \"pnpm run dev\" \"wait-on http://localhost:3000 && cross-env NODE_ENV=development electron .\"",
+    "electron:build": "pnpm run build && electron-builder",
+    "postinstall": "electron-builder install-app-deps"
+  },
+  "build": {
+    "appId": "com.gravity.utils",
+    "productName": "Gravity Utils Desktop",
+    "copyright": "Copyright © 2026 Ilyas Bozdemir",
+    "extraMetadata": {
+      "description": "Premium Utility Toolkit by Ilyas Bozdemir"
+    },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "ilyas-bozdemir",
+        "repo": "gravity-utils"
+      }
+    ],
+    "directories": {
+      "output": "dist-electron"
+    },
+    "files": [
+      "out/**/*",
+      "electron/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "public/logo.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
   },
   "dependencies": {
     "@pdf-lib/fontkit": "^1.1.1",
@@ -16,6 +52,7 @@
     "date-fns": "^4.1.0",
     "docx": "^9.5.3",
     "docx-preview": "^0.3.7",
+    "electron-updater": "^6.8.3",
     "exifr": "^7.1.3",
     "file-saver": "^2.0.5",
     "framer-motion": "^11.0.0",
@@ -48,10 +85,15 @@
     "@types/react": "^18.2.55",
     "@types/react-dom": "^18.2.19",
     "autoprefixer": "^10.4.17",
+    "concurrently": "^9.2.1",
+    "cross-env": "^10.1.0",
+    "electron": "^40.6.1",
+    "electron-builder": "^26.8.1",
     "eslint": "^8.56.0",
     "eslint-config-next": "14.1.0",
     "postcss": "^8.4.35",
     "tailwindcss": "^3.4.1",
-    "typescript": "^5.3.3"
+    "typescript": "^5.3.3",
+    "wait-on": "^9.0.4"
   }
 }

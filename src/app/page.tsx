@@ -2,13 +2,17 @@
 
 import { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
-import { Menu } from 'lucide-react';
+import { Menu, Monitor } from 'lucide-react';
 import { Sidebar, ToolView as ViewType } from '@/components/Sidebar';
 import { LandingHero } from '@/components/LandingHero';
 import { ActionPanel } from '@/components/ActionPanel';
 import { RevisionNotes } from '@/components/RevisionNotes';
+import { DesktopDashboard } from '@/components/DesktopDashboard';
+import { isElectron } from '@/utils/electron';
 
 // Dynamically import components to improve initial load
+const DesktopToolkit = dynamic(() => import('@/components/DesktopToolkit').then(mod => mod.DesktopToolkit));
+const OTAGuide = dynamic(() => import('@/components/OTAGuide').then(mod => mod.OTAGuide));
 const FileConverter = dynamic(() => import('@/components/FileConverter').then(mod => mod.FileConverter));
 const ZipInspector = dynamic(() => import('@/components/ZipInspector').then(mod => mod.ZipInspector));
 const Base64Viewer = dynamic(() => import('@/components/Base64Viewer').then(mod => mod.Base64Viewer));
@@ -194,7 +198,21 @@ export default function Home() {
                 {/* Main Content */}
                 <main className="flex-1 overflow-y-auto w-full custom-scrollbar">
                     {!file && view === 'home' && (
-                        <LandingHero onFileSelect={handleFileSelect} onToolSelect={handleToolSelect} />
+                        <>
+                            <LandingHero onFileSelect={handleFileSelect} onToolSelect={handleToolSelect} />
+                            {isElectron() && (
+                                <div className="px-8 max-w-[1400px] mx-auto w-full -mt-10 pb-10">
+                                    <div className="flex items-center gap-2 mb-6 opacity-60">
+                                        <div className="h-px bg-slate-800 flex-1"></div>
+                                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 flex items-center gap-2">
+                                            <Monitor size={10} /> Bozdemir Desktop Engine Status
+                                        </span>
+                                        <div className="h-px bg-slate-800 flex-1"></div>
+                                    </div>
+                                    <DesktopDashboard />
+                                </div>
+                            )}
+                        </>
                     )}
 
                     {(file || view !== 'home') && (
@@ -278,12 +296,15 @@ export default function Home() {
                             {view === 'exam-generator' && <ExamGenerator onBack={() => setView('home')} />}
                             {view === 'figma-to-code' && <FigmaToCode onBack={() => setView('home')} />}
                             {view === 'html-to-pdf' && <HtmlToPdf onBack={() => setView('home')} />}
+                            {view === 'desktop-toolkit' && <DesktopToolkit onBack={() => setView('home')} onViewOTA={() => setView('ota-guide')} />}
+                            {view === 'ota-guide' && <OTAGuide onBack={() => setView('home')} />}
                             {view === 'convert' && <FileConverter file={file} onBack={() => setView('home')} />}
                         </div>
                     )}
 
                     <footer className="text-sm p-8 text-center opacity-30 mt-auto">
                         <p>© 2026 Gravity Utils • %100 Yerel Veri İşleme</p>
+                        <p className="text-[10px] font-bold mt-1 uppercase tracking-widest">Geliştirici: Ilyas Bozdemir</p>
                     </footer>
 
                     <RevisionNotes />

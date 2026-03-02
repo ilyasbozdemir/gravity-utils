@@ -3,7 +3,8 @@ import { ArrowLeft, RefreshCw, AlertCircle, Settings2, Download, CheckCircle2 } 
 import { toast } from 'sonner';
 import jsPDF from 'jspdf';
 import { getAvailableFormats, type Format } from '../utils/formats';
-import { saveAs } from 'file-saver';
+import { unifiedSave } from '../utils/helpers/fileSystem';
+import { isElectron } from '../utils/helpers/env';
 import { Document, Packer, Paragraph, TextRun, ImageRun, type ISectionOptions } from 'docx';
 import * as pdfjsLib from 'pdfjs-dist';
 import { PDFDocument } from 'pdf-lib';
@@ -74,31 +75,49 @@ export const FileConverter: React.FC<FileConverterProps> = ({ file: initialFile,
             if (targetExt === 'pdf' && !isRenameOnly) {
                 if (file.type.startsWith('image/')) {
                     setProgress('PDF oluşturuluyor...');
-                    const doc = new jsPDF();
-                    const imgData = await new Promise<string>((resolve, reject) => {
-                        const reader = new FileReader();
-                        reader.onload = () => resolve(reader.result as string);
-                        reader.onerror = reject;
-                        reader.readAsDataURL(file);
-                    });
 
-                    const imgProps = doc.getImageProperties(imgData);
-                    const pageWidth = doc.internal.pageSize.getWidth();
-                    const pageHeight = doc.internal.pageSize.getHeight();
-                    const margin = 10;
-                    const maxWidth = pageWidth - (margin * 2);
-                    const maxHeight = pageHeight - (margin * 2);
-                    const pxToMm = 0.264583;
-                    const imgWidthMM = imgProps.width * pxToMm;
-                    const imgHeightMM = imgProps.height * pxToMm;
-                    const scale = Math.min(1, maxWidth / imgWidthMM, maxHeight / imgHeightMM);
-                    const finalWidth = imgWidthMM * scale;
-                    const finalHeight = imgHeightMM * scale;
-                    const x = (pageWidth - finalWidth) / 2;
-                    const y = (pageHeight - finalHeight) / 2;
+                    if (isElectron()) {
+                        // 🚀 BOZDEMIR ENGINE NATIVE PROCESSING
+                        const arrayBuffer = await file.arrayBuffer();
+                        const ext = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+                        const result = await (window as any).electron.nativeProcess('IMAGE_TO_PDF', {
+                            buffer: arrayBuffer,
+                            ext
+                        });
 
-                    doc.addImage(imgData, 'JPEG', x, y, finalWidth, finalHeight);
-                    doc.save(finalName);
+                        if (result.success) {
+                            await unifiedSave(new Blob([result.buffer]), finalName);
+                        } else {
+                            throw new Error(result.error);
+                        }
+                    } else {
+                        // Standard Web Processing
+                        const doc = new jsPDF();
+                        const imgData = await new Promise<string>((resolve, reject) => {
+                            const reader = new FileReader();
+                            reader.onload = () => resolve(reader.result as string);
+                            reader.onerror = reject;
+                            reader.readAsDataURL(file);
+                        });
+
+                        const imgProps = doc.getImageProperties(imgData);
+                        const pageWidth = doc.internal.pageSize.getWidth();
+                        const pageHeight = doc.internal.pageSize.getHeight();
+                        const margin = 10;
+                        const maxWidth = pageWidth - (margin * 2);
+                        const maxHeight = pageHeight - (margin * 2);
+                        const pxToMm = 0.264583;
+                        const imgWidthMM = imgProps.width * pxToMm;
+                        const imgHeightMM = imgProps.height * pxToMm;
+                        const scale = Math.min(1, maxWidth / imgWidthMM, maxHeight / imgHeightMM);
+                        const finalWidth = imgWidthMM * scale;
+                        const finalHeight = imgHeightMM * scale;
+                        const x = (pageWidth - finalWidth) / 2;
+                        const y = (pageHeight - finalHeight) / 2;
+
+                        doc.addImage(imgData, 'JPEG', x, y, finalWidth, finalHeight);
+                        await unifiedSave(doc.output('blob'), finalName);
+                    }
                 } else if (file.name.toLowerCase().endsWith('.docx')) {
                     setProgress('Word belgesi birer bir görselleştiriliyor (Bu işlem biraz vakit alabilir)...');
 
@@ -171,9 +190,9 @@ export const FileConverter: React.FC<FileConverterProps> = ({ file: initialFile,
 
                     const pdfBytes = await pdfDoc.save();
                     const blob = new Blob([pdfBytes as unknown as BlobPart], { type: "application/pdf" });
-                    saveAs(blob, finalName);
+                    unifiedSave(blob, finalName);
                 } else {
-                    saveAs(file, finalName);
+                    unifiedSave(file, finalName);
                 }
                 setIsProcessing(false);
                 return;
@@ -264,9 +283,9 @@ export const FileConverter: React.FC<FileConverterProps> = ({ file: initialFile,
                         title: file.name
                     });
                     const buffer = await Packer.toBlob(wordDoc);
-                    saveAs(buffer, finalName);
+                    unifiedSave(buffer, finalName);
                 } else {
-                    saveAs(file, finalName);
+                    unifiedSave(file, finalName);
                 }
                 setIsProcessing(false);
                 return;
@@ -293,7 +312,7 @@ export const FileConverter: React.FC<FileConverterProps> = ({ file: initialFile,
                                 viewport: viewport,
                                 canvas: canvas
                             } as unknown as Parameters<typeof page.render>[0]).promise;
-                            saveAs(canvas.toDataURL(targetExt === 'png' ? 'image/png' : 'image/jpeg', 0.9), finalName);
+                            unifiedSave(canvas.toDataURL(targetExt === 'png' ? 'image/png' : 'image/jpeg', 0.9), finalName);
                         }
                     } else {
                         const JSZip = (await import('jszip')).default;
@@ -317,7 +336,7 @@ export const FileConverter: React.FC<FileConverterProps> = ({ file: initialFile,
                             }
                         }
                         const zipBlob = await zip.generateAsync({ type: 'blob' });
-                        saveAs(zipBlob, `${baseName}-sayfalar.zip`);
+                        unifiedSave(zipBlob, `${baseName}-sayfalar.zip`);
                     }
                     setIsProcessing(false);
                     return;
@@ -359,7 +378,7 @@ export const FileConverter: React.FC<FileConverterProps> = ({ file: initialFile,
                     if (ctx) {
                         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
                         canvas.toBlob((b) => {
-                            if (b) saveAs(b, finalName);
+                            if (b) unifiedSave(b, finalName);
                             URL.revokeObjectURL(url);
                         }, targetExt === 'png' ? 'image/png' : 'image/jpeg', 0.9);
                     }
@@ -378,13 +397,13 @@ export const FileConverter: React.FC<FileConverterProps> = ({ file: initialFile,
                 const response = await fetch('/api/convert', { method: 'POST', body: formData });
                 if (!response.ok) throw new Error('Sunucu hatası');
                 const resultBlob = await response.blob();
-                saveAs(resultBlob, finalName);
+                unifiedSave(resultBlob, finalName);
                 setIsProcessing(false);
                 return;
             }
 
             // 4. Fallback / Rename Logic
-            saveAs(file, finalName);
+            unifiedSave(file, finalName);
             toast.success("Dosya başarıyla hazırlandı.");
 
         } catch (error: any) {
