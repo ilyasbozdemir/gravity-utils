@@ -27,7 +27,7 @@ import {
     ArrowLeft, Copy, Check, Download, AlertCircle, Shield, Plus, Monitor
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
-import { isElectron, openDesktopFolder } from '../utils/electron';
+import { useIsElectron, openDesktopFolder } from '../utils/electron';
 
 export type ToolView =
     | 'home' | 'convert' | 'inspect' | 'base64' | 'optimize' | 'hash' | 'json' | 'text' | 'pdf' | 'exif' | 'qr'
@@ -147,6 +147,7 @@ function isNew(dateStr?: string) {
 
 export const Sidebar: React.FC<SidebarProps> = ({ currentView, onViewChange, isOpen, onClose }) => {
     const { theme, toggleTheme } = useTheme();
+    const isApp = useIsElectron();
     const [searchQuery, setSearchQuery] = useState('');
 
     const filteredItems = NAV_ITEMS.filter(item =>
@@ -197,7 +198,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onViewChange, isO
                                 <a href="https://ilyasbozdemir.dev" target="_blank" rel="noopener noreferrer" className="text-[10px] font-bold text-slate-400 dark:text-slate-500 tracking-wider -mt-1 hover:text-blue-500 transition-colors">
                                     ilyasbozdemir.dev
                                 </a>
-                                {isElectron() && (
+                                {isApp && (
                                     <span className="text-[8px] font-black bg-blue-500/10 text-blue-500 px-1.5 py-0.5 rounded-md mt-1 self-start border border-blue-500/20">
                                         BOZDEMIR ENGINE v1.0
                                     </span>
@@ -244,7 +245,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onViewChange, isO
 
                     {CATEGORIES.map(cat => {
                         // Only show desktop category if running in Electron
-                        if (cat.id === 'desktop' && !isElectron()) return null;
+                        if (cat.id === 'desktop' && !isApp) return null;
 
                         const catItems = filteredItems.filter(item => item.category === cat.id);
                         if (catItems.length === 0) return null;

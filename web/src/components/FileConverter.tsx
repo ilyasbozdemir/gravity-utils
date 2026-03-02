@@ -4,7 +4,8 @@ import { toast } from 'sonner';
 import jsPDF from 'jspdf';
 import { getAvailableFormats, type Format } from '../utils/formats';
 import { unifiedSave } from '../utils/helpers/fileSystem';
-import { isElectron } from '../utils/helpers/env';
+import { isElectron } from '@/utils/electron';
+import { SHARED_ENGINE } from '@/utils/shared-core';
 import { Document, Packer, Paragraph, TextRun, ImageRun, type ISectionOptions } from 'docx';
 import * as pdfjsLib from 'pdfjs-dist';
 import { PDFDocument } from 'pdf-lib';
@@ -69,7 +70,7 @@ export const FileConverter: React.FC<FileConverterProps> = ({ file: initialFile,
 
             const originalName = file.name;
             const baseName = originalName.substring(0, originalName.lastIndexOf('.')) || originalName;
-            const finalName = `${baseName}.${targetExt}`;
+            const finalName = SHARED_ENGINE.getOutputName(file.name, 'converted', targetExt);
 
             // 1. PDF Conversion Logic
             if (targetExt === 'pdf' && !isRenameOnly) {

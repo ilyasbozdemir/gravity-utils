@@ -8,47 +8,61 @@ const isDev = process.env.NODE_ENV === 'development';
 // 🚀 INTEGRATE BOZDEMIR ENGINE
 const Engine = require('./engine/index');
 
+// 🛡️ BOZDEMIR CRASH LOGGER - No more hidden errors
+const logFile = path.join(app.getPath('userData'), 'bozdemir-crash.log');
+function logToDisk(msg) {
+    const time = new Date().toISOString();
+    fs.appendFileSync(logFile, `[${time}] ${msg}\n`);
+}
+
+logToDisk("--- BOZDEMIR ENGINE STARTING ---");
+
 /**
- * 🔒 CUSTOM PROTOCOLS - NO MORE WHITE SCREEN
- * Replacing file:// with app:// to handle Next.js static asset resolution properly.
- * This is the professional standard to fix "Path not found" errors in Electron SPA.
+ * PROTOCOL HANDLER - THE BRIDGE
  */
 function registerAppProtocol() {
   protocol.registerFileProtocol('app', (request, callback) => {
-    // 1. Remove the protocol prefix
-    let url = request.url.replace('app://', '');
-    
-    // 2. CRITICAL: On Windows, leading slashes in path.join can resolve to drive root.
-    // We strip any leading/trailing slash/dot to ensure we stay relative to 'out'.
-    url = decodeURIComponent(url).replace(/^\/+/, ''); // Strip leading slashes
-    
     try {
-      // 3. Resolve to the real 'out' folder
-      let filePath = path.join(__dirname, '../out', url);
-      
-      // 4. Default to index.html for root or SPA paths
-      if (!url || url === '.' || url === './') {
-          filePath = path.join(__dirname, '../out/index.html');
-      }
+        let urlPath = request.url.replace('app://', '');
+        urlPath = decodeURIComponent(urlPath).replace(/^\/+/, '');
+        
+        let baseDir = path.join(__dirname, '../out');
+        if (!fs.existsSync(baseDir)) {
+             // Fallback for different build/dev structures
+             baseDir = path.join(__dirname, '../../web/out');
+        }
+        
+        const outDirNormalized = path.normalize(baseDir);
+        let fullPath = path.join(outDirNormalized, urlPath || 'index.html');
 
-      // 5. Handle Directories (especially for trailingSlash: true)
-      if (fs.existsSync(filePath) && fs.statSync(filePath).isDirectory()) {
-         filePath = path.join(filePath, 'index.html');
-      }
+        // Handle Next.js trailingSlash: true
+        if (fs.existsSync(fullPath) && fs.statSync(fullPath).isDirectory()) {
+            fullPath = path.join(fullPath, 'index.html');
+        }
 
-      // 6. Check existence, fallback to index.html for SPA (Client Side Routing)
-      if (!fs.existsSync(filePath)) {
-          // If it's a static file request (._next, png etc) but missing, it might really be missing.
-          // But for general URL paths, we want index.html.
-          if (!url.includes('.')) {
-              filePath = path.join(__dirname, '../out/index.html');
-          }
-      }
-      
-      callback({ path: path.normalize(filePath) });
-    } catch (error) {
-       console.error('Bozdemir Protocol Error:', error);
-       callback({ error: -6 });
+        // 3. SECURE FALLBACK LOGIC
+        // If the file exists, we serve it.
+        // If it DOESN'T exist and it's a ROUTE (no extension), we serve index.html (Next.js SPA)
+        // If it DOESN'T exist and it's an ASSET (.js, .css, etc.), we return 404.
+        
+        const fileExists = fs.existsSync(fullPath);
+        const isAsset = urlPath.includes('.');
+
+        if (!fileExists) {
+            if (!isAsset) {
+                // It's a route like /pdf-merge, serve the main entry
+                fullPath = path.join(outDirNormalized, 'index.html');
+            } else {
+                // It's a missing .js, .css, .png, etc. DON'T return index.html (syntax error!)
+                logToDisk(`❌ Asset Missing: ${urlPath}`);
+                return callback({ error: -6 }); // FILE_NOT_FOUND
+            }
+        }
+
+        callback({ path: path.normalize(fullPath) });
+    } catch (e) {
+        logToDisk(`❌ Protocol Critical Failure: ${e.message}`);
+        callback({ error: -2 }); // FAILED
     }
   });
 }
@@ -80,6 +94,11 @@ function createWindow() {
     },
     icon: path.join(__dirname, '../public/logo.png'),
     titleBarStyle: 'hidden',
+    titleBarOverlay: {
+      color: '#0b101b',
+      symbolColor: '#74b9ff',
+      height: 32
+    },
     backgroundColor: '#0b101b'
   });
 
@@ -129,20 +148,27 @@ ipcMain.handle('engine-get-status', async () => {
 
 // Helper for Native File Manipulation (The Core Motor)
 ipcMain.handle('native-file-process', async (event, { type, data }) => {
-    // This is where we separate Next.js logic from Electron Engine.
-    switch(type) {
-        case 'IMAGE_TO_PDF':
-            const { buffer, ext } = data;
-            const pdfBuffer = await Engine.imageToPdfNative(Buffer.from(buffer), ext);
-            return { success: true, buffer: pdfBuffer };
-            
-        case 'PDF_MERGE':
-            const mergedBuffer = await Engine.nativeMergePdfs(data.buffers.map(b => Buffer.from(b)));
-            return { success: true, buffer: mergedBuffer };
-            
-        default:
-            return { success: false, error: 'Unknown process type' };
+    try {
+        logToDisk(`🚀 Native Process Start: ${type}`);
+        switch(type) {
+            case 'IMAGE_TO_PDF':
+                const pdfBuffer = await Engine.imageToPdfNative(Buffer.from(data.buffer), data.ext);
+                return { success: true, buffer: pdfBuffer };
+            case 'PDF_MERGE':
+                const mergedBuffer = await Engine.nativeMergePdfs(data.buffers.map(b => Buffer.from(b)));
+                return { success: true, buffer: mergedBuffer };
+            default:
+                return { success: false, error: 'Unknown process type' };
+        }
+    } catch (err) {
+        logToDisk(`❌ Native Process Error [${type}]: ${err.message}`);
+        return { success: false, error: err.message };
     }
+});
+
+// UI Error Reporting
+ipcMain.on('report-ui-error', (event, error) => {
+    logToDisk(`❗ UI EXCEPTION: ${JSON.stringify(error)}`);
 });
 
 // Native File System Ops

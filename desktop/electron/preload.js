@@ -24,5 +24,6 @@ contextBridge.exposeInMainWorld('electron', {
   // Developer Metadata
   developer: 'Ilyas Bozdemir',
   appVersion: '1.0.0',
-  engine: 'Bozdemir Desktop Engine v1.0.0'
+  engine: 'Bozdemir Desktop Engine v2.0.0',
+  reportUIError: (error) => ipcRenderer.send('report-ui-error', error)
 });

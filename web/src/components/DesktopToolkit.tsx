@@ -6,7 +6,7 @@ import {
     ShieldCheck, Zap, ArrowLeft, ExternalLink, RefreshCw,
     Download, Info
 } from 'lucide-react';
-import { isElectron } from '../utils/helpers/env';
+import { useIsElectron, isElectron } from '../utils/helpers/env';
 import { openSystemPath } from '../utils/helpers/fileSystem';
 
 interface DesktopToolkitProps {
@@ -19,9 +19,10 @@ export const DesktopToolkit: React.FC<DesktopToolkitProps> = ({ onBack, onViewOT
     const [paths, setPaths] = useState<any>(null);
     const [engineStatus, setEngineStatus] = useState<any>(null);
     const [loading, setLoading] = useState(true);
+    const isApp = useIsElectron();
 
     useEffect(() => {
-        if (isElectron()) {
+        if (isApp) {
             const electron = (window as any).electron;
             Promise.all([
                 electron.getSystemInfo(),
@@ -34,9 +35,9 @@ export const DesktopToolkit: React.FC<DesktopToolkitProps> = ({ onBack, onViewOT
                 setLoading(false);
             });
         }
-    }, []);
+    }, [isApp]);
 
-    if (!isElectron()) {
+    if (!isApp) {
         return (
             <div className="flex flex-col items-center justify-center p-20 text-center">
                 <Monitor size={64} className="text-slate-300 mb-6" />

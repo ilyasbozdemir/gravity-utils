@@ -1,99 +1,12 @@
 {
-  "name": "gravity-utils-next",
-  "version": "1.0.0",
-  "author": "Ilyas Bozdemir",
+  "name": "gravity-utils-workspace",
   "private": true,
-  "main": "electron/main.js",
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint",
-    "electron:dev": "concurrently \"pnpm run dev\" \"wait-on http://localhost:3000 && cross-env NODE_ENV=development electron .\"",
-    "electron:build": "electron-builder",
-    "postinstall": "electron-builder install-app-deps"
-  },
-  "build": {
-    "appId": "com.bozdemir.gravity",
-    "productName": "GravityUtils",
-    "copyright": "Copyright © 2026 Ilyas Bozdemir",
-    "extraMetadata": {
-      "description": "Premium Utility Toolkit by Ilyas Bozdemir"
-    },
-    "publish": [
-      {
-        "provider": "github",
-        "owner": "ilyas-bozdemir",
-        "repo": "gravity-utils"
-      }
-    ],
-    "directories": {
-      "output": "dist-electron"
-    },
-    "files": [
-      "out/**/*",
-      "electron/**/*",
-      "package.json"
-    ],
-    "win": {
-      "target": "nsis",
-      "icon": "public/logo.png"
-    },
-    "nsis": {
-      "oneClick": false,
-      "allowToChangeInstallationDirectory": true
-    }
-  },
-  "dependencies": {
-    "@pdf-lib/fontkit": "^1.1.1",
-    "@pdfsmaller/pdf-encrypt-lite": "^1.0.1",
-    "@types/jszip": "^3.4.0",
-    "@types/qrcode": "^1.5.6",
-    "date-fns": "^4.1.0",
-    "docx": "^9.5.3",
-    "docx-preview": "^0.3.7",
-    "electron-updater": "^6.8.3",
-    "exifr": "^7.1.3",
-    "file-saver": "^2.0.5",
-    "framer-motion": "^11.0.0",
-    "highlight.js": "^11.11.1",
-    "html2canvas": "^1.4.1",
-    "html5-qrcode": "^2.3.8",
-    "js-yaml": "^4.1.1",
-    "jspdf": "^4.0.0",
-    "jszip": "^3.10.1",
-    "lucide-react": "^0.563.0",
-    "mammoth": "^1.11.0",
-    "mermaid": "^11.12.3",
-    "next": "14.1.0",
-    "pdf-lib": "^1.17.1",
-    "pdfjs-dist": "^4.0.0",
-    "qrcode": "^1.5.4",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-easy-crop": "^5.5.6",
-    "sonner": "^2.0.7",
-    "sql-formatter": "^15.7.2",
-    "tesseract.js": "^7.0.0",
-    "xlsx": "^0.18.5",
-    "xml-js": "^1.6.11"
-  },
-  "devDependencies": {
-    "@types/file-saver": "^2.0.7",
-    "@types/js-yaml": "^4.0.9",
-    "@types/node": "^20.11.19",
-    "@types/react": "^18.2.55",
-    "@types/react-dom": "^18.2.19",
-    "autoprefixer": "^10.4.17",
-    "concurrently": "^9.2.1",
-    "cross-env": "^10.1.0",
-    "electron": "^40.6.1",
-    "electron-builder": "^26.8.1",
-    "eslint": "^8.56.0",
-    "eslint-config-next": "14.1.0",
-    "postcss": "^8.4.35",
-    "tailwindcss": "^3.4.1",
-    "typescript": "^5.3.3",
-    "wait-on": "^9.0.4"
+    "web:dev": "pnpm -C web dev",
+    "web:build": "pnpm -C web build",
+    "desktop:prebuild": "powershell -Command \"if(Test-Path desktop/out){ Remove-Item -Recurse -Force desktop/out }; Copy-Item -Path web/out -Destination desktop/out -Recurse -Force\"",
+    "desktop:build": "pnpm web:build && pnpm desktop:prebuild && pnpm -C desktop build",
+    "desktop:clean": "pnpm -C desktop clean",
+    "clean-all": "powershell -Command \"foreach($d in @('web/.next','web/out','desktop/dist','desktop/out')){ if(Test-Path $d){ Remove-Item -Recurse -Force $d } }\""
   }
 }

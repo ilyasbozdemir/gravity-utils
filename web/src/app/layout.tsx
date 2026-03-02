@@ -12,14 +12,21 @@ export const metadata: Metadata = {
     description: "Tarayıcı tabanlı, hızlı ve güvenli hepsi bir arada araç seti. Dosya, ağ, geliştirici ve grafik araçları.",
 };
 
-// ThemeProvider needs to be wrapped or updated to "use client"
-// Let's assume ThemeContext.tsx has "use client" or we add it. I'll handle that next.
-
 export default function RootLayout({
     children,
 }: Readonly<{
     children: React.ReactNode;
 }>) {
+    // 🛡️ Global Crash Reporter for Electron
+    if (typeof window !== 'undefined') {
+        window.onerror = (msg, url, line, col, error) => {
+            const electron = (window as any).electron;
+            if (electron?.reportUIError) {
+                electron.reportUIError({ msg, url, line, col, stack: error?.stack });
+            }
+        };
+    }
+
     return (
         <html lang="tr" suppressHydrationWarning>
             <body className={inter.className}>

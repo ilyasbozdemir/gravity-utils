@@ -3,9 +3,18 @@ const path = require('path');
 const os = require('os');
 const { PDFDocument } = require('pdf-lib');
 
+// 🤝 SHARED CORE LOGIC (Mirrored from src/utils/shared-core.ts)
+const SHARED_ENGINE = {
+    getOutputName: (originalName, suffix, ext) => {
+        const base = originalName.substring(0, originalName.lastIndexOf('.')) || originalName;
+        return `${base}_${suffix}.${ext.replace('.', '')}`;
+    },
+    ENGINE_VERSION: 'Bozdemir Engine v2.0-Standalone'
+};
+
 /**
- * 🚀 BOZDEMIR DESKTOP ENGINE v1.2
- * Standalone Node.js Core providing native OS-level services.
+ * BOZDEMIR DESKTOP ENGINE - Premium Node.js Processing Core
+ * providing native OS-level services.
  * Powered by Ilyas Bozdemir.
  */
 class BozdemirEngine {
@@ -79,6 +88,27 @@ class BozdemirEngine {
             });
 
             return await pdfDoc.save();
+        } finally {
+            this.activeTasks--;
+        }
+    }
+
+    /**
+     * NATIVE PDF MERGE - Multi-file high performance
+     */
+    async nativeMergePdfs(pdfBuffers) {
+        this.activeTasks++;
+        try {
+            const mergedPdf = await PDFDocument.create();
+            for (const buffer of pdfBuffers) {
+                const pdf = await PDFDocument.load(buffer);
+                const copiedPages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
+                copiedPages.forEach((page) => mergedPdf.addPage(page));
+            }
+            const resultBuffer = await mergedPdf.save();
+            return { success: true, buffer: resultBuffer };
+        } catch (err) {
+            return { success: false, error: err.message };
         } finally {
             this.activeTasks--;
         }
