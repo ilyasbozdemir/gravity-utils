@@ -2,18 +2,19 @@
 
 import React, { useEffect, useState } from 'react';
 import { Monitor, Cpu, HardDrive, User, Terminal, Info } from 'lucide-react';
-import { isElectron, getSystemInfo } from '../utils/electron';
+import { useIsElectron, getSystemInfo } from '../utils/electron';
 
 export const DesktopDashboard: React.FC = () => {
+    const isApp = useIsElectron();
     const [info, setInfo] = useState<any>(null);
 
     useEffect(() => {
-        if (isElectron()) {
+        if (isApp) {
             getSystemInfo().then(setInfo);
         }
-    }, []);
+    }, [isApp]);
 
-    if (!isElectron() || !info) return null;
+    if (!isApp || !info) return null;
 
     return (
         <div className="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 animate-in fade-in slide-in-from-bottom-4 duration-500">

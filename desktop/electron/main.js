@@ -1,8 +1,14 @@
-const { app, BrowserWindow, shell, ipcMain, dialog, Menu, Notification, protocol } = require('electron');
+const { app, BrowserWindow, shell, ipcMain, dialog, Menu, Notification, protocol, net } = require('electron');
 const { autoUpdater } = require('electron-updater');
 const path = require('path');
 const os = require('os');
 const fs = require('fs');
+
+// 🛡️ REGISTER PROTOCOL BEFORE APP READY
+protocol.registerSchemesAsPrivileged([
+  { scheme: 'app', privileges: { standard: true, secure: true, supportFetchAPI: true } }
+]);
+
 const isDev = process.env.NODE_ENV === 'development';
 
 // 🚀 INTEGRATE BOZDEMIR ENGINE
@@ -18,13 +24,14 @@ function logToDisk(msg) {
 logToDisk("--- BOZDEMIR ENGINE STARTING ---");
 
 /**
- * PROTOCOL HANDLER - THE BRIDGE
+ * PROTOCOL HANDLER - THE BRIDGE (UPGRADED TO protocol.handle)
  */
-function registerAppProtocol() {
-  protocol.registerFileProtocol('app', (request, callback) => {
+function setupProtocol() {
+  protocol.handle('app', async (request) => {
     try {
         let urlPath = request.url.replace('app://', '');
-        urlPath = decodeURIComponent(urlPath).replace(/^\/+/, '');
+        // Clean hostname/dots (e.g., app://./index.html or app://index.html)
+        urlPath = decodeURIComponent(urlPath).replace(/^(\.|\/)+/, '');
         
         let baseDir = path.join(__dirname, '../out');
         if (!fs.existsSync(baseDir)) {
@@ -40,29 +47,21 @@ function registerAppProtocol() {
             fullPath = path.join(fullPath, 'index.html');
         }
 
-        // 3. SECURE FALLBACK LOGIC
-        // If the file exists, we serve it.
-        // If it DOESN'T exist and it's a ROUTE (no extension), we serve index.html (Next.js SPA)
-        // If it DOESN'T exist and it's an ASSET (.js, .css, etc.), we return 404.
-        
-        const fileExists = fs.existsSync(fullPath);
+        // SECURE FALLBACK LOGIC
         const isAsset = urlPath.includes('.');
-
-        if (!fileExists) {
+        if (!fs.existsSync(fullPath)) {
             if (!isAsset) {
-                // It's a route like /pdf-merge, serve the main entry
                 fullPath = path.join(outDirNormalized, 'index.html');
             } else {
-                // It's a missing .js, .css, .png, etc. DON'T return index.html (syntax error!)
-                logToDisk(`❌ Asset Missing: ${urlPath}`);
-                return callback({ error: -6 }); // FILE_NOT_FOUND
+                logToDisk(`❌ Asset Missing: ${urlPath} -> ${fullPath}`);
+                return new Response('Not Found', { status: 404 });
             }
         }
 
-        callback({ path: path.normalize(fullPath) });
+        return net.fetch('file://' + fullPath);
     } catch (e) {
         logToDisk(`❌ Protocol Critical Failure: ${e.message}`);
-        callback({ error: -2 }); // FAILED
+        return new Response('Internal Error', { status: 500 });
     }
   });
 }
@@ -104,10 +103,9 @@ function createWindow() {
 
   if (isDev) {
     win.loadURL('http://localhost:3000');
-    // win.webContents.openDevTools();
   } else {
-    // 🌐 CUSTOM L-PROTOCOL LOADING (FIXED WHITE SCREEN)
-    win.loadURL('app://./index.html');
+    // 🌐 Modern protocol loading
+    win.loadURL('app://index.html');
   }
 
   // Intercept external links
@@ -215,7 +213,7 @@ ipcMain.handle('save-file-from-buffer', async (event, { filePath, buffer }) => {
  */
 app.whenReady().then(() => {
   // 1. Fix protocol issues first
-  registerAppProtocol();
+  setupProtocol();
   
   // 2. Create window
   createWindow();

@@ -48,7 +48,6 @@
         "@types/jszip": "^3.4.1",
         "@types/qrcode": "^1.5.5",
         "@types/js-yaml": "^4.0.9",
-        "@types/highlight.js": "^12.7.1",
         "tailwindcss": "^3.4.1",
         "autoprefixer": "^10.4.17",
         "postcss": "^8.4.35"
