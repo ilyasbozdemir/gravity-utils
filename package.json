@@ -10,12 +10,12 @@
     "start": "next start",
     "lint": "next lint",
     "electron:dev": "concurrently \"pnpm run dev\" \"wait-on http://localhost:3000 && cross-env NODE_ENV=development electron .\"",
-    "electron:build": "pnpm run build && electron-builder",
+    "electron:build": "electron-builder",
     "postinstall": "electron-builder install-app-deps"
   },
   "build": {
-    "appId": "com.gravity.utils",
-    "productName": "Gravity Utils Desktop",
+    "appId": "com.bozdemir.gravity",
+    "productName": "GravityUtils",
     "copyright": "Copyright © 2026 Ilyas Bozdemir",
     "extraMetadata": {
       "description": "Premium Utility Toolkit by Ilyas Bozdemir"
