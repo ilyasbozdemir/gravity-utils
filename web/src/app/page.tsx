@@ -8,7 +8,7 @@ import { LandingHero } from '@/components/LandingHero';
 import { ActionPanel } from '@/components/ActionPanel';
 import { RevisionNotes } from '@/components/RevisionNotes';
 import { DesktopDashboard } from '@/components/DesktopDashboard';
-import { isElectron } from '@/utils/electron';
+import { isElectron, useIsElectron } from '@/utils/electron';
 
 // Dynamically import components to improve initial load
 const DesktopToolkit = dynamic(() => import('@/components/DesktopToolkit').then(mod => mod.DesktopToolkit));
@@ -82,6 +82,7 @@ export default function Home() {
     const [view, setView] = useState<ViewType>('home');
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [isClient, setIsClient] = useState(false);
+    const isApp = useIsElectron();
 
     useEffect(() => {
         setIsClient(true);
@@ -200,7 +201,7 @@ export default function Home() {
                     {!file && view === 'home' && (
                         <>
                             <LandingHero onFileSelect={handleFileSelect} onToolSelect={handleToolSelect} />
-                            {isElectron() && (
+                            {isApp && (
                                 <div className="px-8 max-w-[1400px] mx-auto w-full -mt-10 pb-10">
                                     <div className="flex items-center gap-2 mb-6 opacity-60">
                                         <div className="h-px bg-slate-800 flex-1"></div>
