@@ -14,6 +14,10 @@ const NetworkToolkitView = lazy(() => import('./views/NetworkToolkitView'));
 const WebToolkitView = lazy(() => import('./views/WebToolkitView'));
 const OfficeToolsView = lazy(() => import('./views/OfficeToolsView'));
 const SecurityView = lazy(() => import('./views/SecurityView'));
+const MediaToolkitView = lazy(() => import('./views/MediaToolkitView'));
+const DataToolkitView = lazy(() => import('./views/DataToolkitView'));
+const TextToolkitView = lazy(() => import('./views/TextToolkitView'));
+const DesignToolkitView = lazy(() => import('./views/DesignToolkitView'));
 
 const App: React.FC = () => {
     const [currentView, setCurrentView] = useState<ToolView>('home');
@@ -56,9 +60,13 @@ const App: React.FC = () => {
                             {currentView === 'network-toolkit' && <NetworkToolkitView />}
                             {currentView === 'web-toolkit' && <WebToolkitView />}
                             {currentView === 'office-tools' && <OfficeToolsView />}
+                            {currentView === 'media-tools' && <MediaToolkitView />}
+                            {currentView === 'data-tools' && <DataToolkitView />}
+                            {currentView === 'text-tools' && <TextToolkitView />}
+                            {currentView === 'design-tools' && <DesignToolkitView />}
 
                             {/* Implement dynamic routing based on ToolView */}
-                            {!['home', 'system', 'security', 'converter', 'pdf-manager', 'dev-tools', 'network-toolkit', 'web-toolkit', 'office-tools'].includes(currentView) && (
+                            {!['home', 'system', 'security', 'converter', 'pdf-manager', 'dev-tools', 'network-toolkit', 'web-toolkit', 'office-tools', 'media-tools', 'data-tools', 'text-tools', 'design-tools'].includes(currentView) && (
                                 <div className="h-full flex flex-col items-center justify-center p-20 text-center">
                                     <LayoutGrid size={64} className="text-slate-800 mb-6" />
                                     <h2 className="text-2xl font-black mb-2">Çok Yakında</h2>

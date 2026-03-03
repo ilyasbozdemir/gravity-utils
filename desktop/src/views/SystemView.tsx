@@ -6,6 +6,7 @@ import {
 
 const SystemView: React.FC = () => {
     const [info, setInfo] = useState<any>(null);
+    const [checkingUpdates, setCheckingUpdates] = useState(false);
 
     useEffect(() => {
         const getInfo = async () => {
@@ -16,6 +17,14 @@ const SystemView: React.FC = () => {
         };
         getInfo();
     }, []);
+
+    const checkUpdates = () => {
+        setCheckingUpdates(true);
+        setTimeout(() => {
+            setCheckingUpdates(false);
+            // In a real app we'd call window.electron.checkForUpdates()
+        }, 2000);
+    };
 
     if (!info) return null;
 
@@ -68,6 +77,23 @@ const SystemView: React.FC = () => {
                 </div>
                 <button className="px-6 py-3 bg-blue-600 text-white font-black text-xs uppercase tracking-widest rounded-xl shadow-lg shadow-blue-500/20 hover:scale-105 transition-all">
                     Yeniden Başlat
+                </button>
+            </div>
+
+            <div className="mt-6 p-8 bg-slate-900 border border-white/5 rounded-[2.5rem] flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                    <RefreshCw className={`text-emerald-500 ${checkingUpdates ? 'animate-spin' : ''}`} />
+                    <div>
+                        <h3 className="text-white text-sm font-black uppercase tracking-tight">Cihaz Yazılımı & OTA</h3>
+                        <p className="text-xs text-slate-500 font-bold uppercase tracking-widest">Version 3.1.0-PRO (Final Stable)</p>
+                    </div>
+                </div>
+                <button
+                    disabled={checkingUpdates}
+                    onClick={checkUpdates}
+                    className="px-6 py-3 bg-white/5 border border-white/10 text-white font-black text-[10px] uppercase tracking-widest rounded-xl hover:bg-white/10 active:scale-95 transition-all disabled:opacity-50"
+                >
+                    {checkingUpdates ? 'Kontrol Ediliyor...' : 'GÜNCELLEMELERİ DENETLE'}
                 </button>
             </div>
         </div>

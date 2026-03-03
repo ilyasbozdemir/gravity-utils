@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Link from 'next/link';
 import {
     Search, FileText, ImageIcon, ShieldCheck, Zap,
     Code, Globe, Hash, Calculator, Layers, Settings,
@@ -33,7 +34,7 @@ export type ToolView =
     | 'home' | 'convert' | 'inspect' | 'base64' | 'optimize' | 'hash' | 'json' | 'text' | 'pdf' | 'exif' | 'qr'
     | 'social' | 'favicon' | 'units' | 'encrypt' | 'uuid' | 'yaml' | 'jwt' | 'url' | 'imagetopdf' | 'case' | 'string'
     | 'json-xml' | 'date-time' | 'sql-formatter' | 'word-pdf' | 'pdf-word' | 'excel-pdf' | 'pdf-excel' | 'ppt-pdf'
-    | 'pdf-ppt' | 'pdf-image' | 'word-html' | 'pdf-text' | 'web-toolkit' | 'network-toolkit' | 'color-toolkit'
+    | 'pdf-ppt' | 'pdf-image' | 'word-html' | 'pdf-text' | 'web-toolkit' | 'network-toolkit' | 'color-toolkit' | 'unit' | 'zip'
     | 'regex-tester' | 'csv-viewer' | 'markdown-editor' | 'password-generator' | 'svg-optimizer' | 'cron-builder'
     | 'timezone-converter' | 'json-ld' | 'network-cable' | 'lorem-ipsum' | 'aspect-ratio' | 'social-guide' | 'http-status'
     | 'json-csv' | 'text-cleaner' | 'case-converter-pro' | 'css-units' | 'date-calculator' | 'internet-speed'
@@ -182,7 +183,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onViewChange, isO
             >
                 {/* Brand */}
                 <div className="p-6 flex items-center justify-between border-b border-slate-100 dark:border-white/5">
-                    <div
+                    <Link
+                        href="/"
                         className="flex items-center gap-3 cursor-pointer group"
                         onClick={() => { onViewChange('home'); onClose(); }}
                     >
@@ -205,7 +207,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onViewChange, isO
                                 )}
                             </div>
                         </div>
-                    </div>
+                    </Link>
                     <button
                         onClick={onClose}
                         className="lg:hidden p-2 text-slate-400 hover:text-slate-800 dark:hover:text-white"
@@ -232,7 +234,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onViewChange, isO
 
                 {/* Navigation */}
                 <nav className="flex-1 overflow-y-auto px-4 py-2 custom-scrollbar">
-                    <button
+                    <Link
+                        href="/"
                         onClick={() => { onViewChange('home'); onClose(); }}
                         className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold transition-all mb-6 ${currentView === 'home'
                             ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20'
@@ -241,7 +244,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onViewChange, isO
                     >
                         <Home size={18} />
                         Ana Sayfa
-                    </button>
+                    </Link>
 
                     {CATEGORIES.map(cat => {
                         // Only show desktop category if running in Electron
@@ -257,9 +260,16 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onViewChange, isO
                                 </div>
                                 <div className="space-y-0.5">
                                     {catItems.map(item => (
-                                        <button
+                                        <Link
                                             key={item.id}
-                                            onClick={() => handleItemClick(item.id)}
+                                            href={`/${item.id}`}
+                                            onClick={(e) => {
+                                                // Handle the state change alongside navigation
+                                                // If we want to keep it as SPA with hash sync in page.tsx
+                                                // we can let page.tsx handle hashchange, but here we update state directly for speed
+                                                onViewChange(item.id);
+                                                onClose();
+                                            }}
                                             className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all group ${currentView === item.id
                                                 ? 'bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400 font-bold'
                                                 : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white'
@@ -274,7 +284,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onViewChange, isO
                                                     NEW
                                                 </span>
                                             )}
-                                        </button>
+                                        </Link>
                                     ))}
                                 </div>
                             </div>

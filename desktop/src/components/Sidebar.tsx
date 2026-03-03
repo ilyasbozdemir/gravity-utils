@@ -16,7 +16,10 @@ export type ToolView =
     | 'system'
     | 'web-toolkit'
     | 'network-toolkit'
-    | 'media-tools';
+    | 'media-tools'
+    | 'data-tools'
+    | 'text-tools'
+    | 'design-tools';
 
 interface SidebarProps {
     currentView: ToolView;
@@ -92,6 +95,19 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onViewChange }) =
                 <MenuItem icon={<Globe size={18} />} label="Web Araçları" view="web-toolkit" />
                 <MenuItem icon={<Zap size={18} />} label="Ağ & Network" view="network-toolkit" />
                 <MenuItem icon={<ShieldCheck size={18} />} label="Güvenlik & Hash" view="security" />
+
+                <div className="px-6 mt-8 mb-4">
+                    <p className="text-[9px] font-black text-slate-400 dark:text-slate-700 uppercase tracking-[0.3em]">Medya & Tasarım</p>
+                </div>
+                <MenuItem icon={<Monitor size={18} />} label="Medya Araçları" view="media-tools" />
+                <MenuItem icon={<Globe size={18} />} label="Tasarım & UI" view="design-tools" />
+
+                <div className="px-6 mt-8 mb-4">
+                    <p className="text-[9px] font-black text-slate-400 dark:text-slate-700 uppercase tracking-[0.3em]">Veri & Metin</p>
+                </div>
+                <MenuItem icon={<Package size={18} />} label="Veri İşleme" view="data-tools" />
+                <MenuItem icon={<FileText size={18} />} label="Metin Araçları" view="text-tools" />
+
                 <MenuItem icon={<Settings2 size={18} />} label="Sistem Paneli" view="system" />
             </nav>
 

@@ -2,7 +2,7 @@ import React, { useState, useCallback } from 'react';
 import {
     ShieldCheck, Lock, Fingerprint, Eye,
     Zap, RefreshCw, Copy, Check, Hash,
-    FileSearch, AlertTriangle, Shield
+    FileSearch, AlertTriangle, Shield, CheckCircle2
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -10,6 +10,7 @@ const SecurityView: React.FC = () => {
     const [file, setFile] = useState<File | null>(null);
     const [calculating, setCalculating] = useState(false);
     const [hashes, setHashes] = useState<{ sha256: string; md5: string } | null>(null);
+    const [compareHash, setCompareHash] = useState('');
     const [isCopied, setIsCopied] = useState<string | null>(null);
 
     const calculateHash = async (file: File) => {
@@ -141,6 +142,31 @@ const SecurityView: React.FC = () => {
                                         <p className="text-[10px] font-black text-emerald-700 dark:text-emerald-400 uppercase leading-none tracking-tight">
                                             Dosya Adı: {file.name} • Boyut: {(file.size / 1024 / 1024).toFixed(2)} MB • Tamamlandı
                                         </p>
+                                    </div>
+
+                                    {/* Hash Comparison Area */}
+                                    <div className="pt-6 border-t border-slate-100 dark:border-white/5 space-y-4">
+                                        <label className="text-[10px] font-black uppercase text-slate-500 tracking-widest px-2">Doğrulama (Karşılaştır)</label>
+                                        <div className="flex gap-4">
+                                            <input
+                                                value={compareHash}
+                                                onChange={e => setCompareHash(e.target.value)}
+                                                placeholder="Beklenen SHA-256 hash değerini buraya yapıştırın..."
+                                                className="flex-1 bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/5 rounded-2xl px-6 py-4 font-mono text-xs focus:outline-none focus:border-emerald-500/50 transition-all shadow-inner text-slate-800 dark:text-white"
+                                            />
+                                        </div>
+                                        {compareHash && (
+                                            <div className={`p-4 rounded-2xl flex items-center gap-3 ${compareHash.toLowerCase() === hashes.sha256.toLowerCase()
+                                                    ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20'
+                                                    : 'bg-rose-500/10 text-rose-500 border border-rose-500/20'
+                                                }`}>
+                                                {compareHash.toLowerCase() === hashes.sha256.toLowerCase() ? (
+                                                    <><CheckCircle2 size={18} /> <span className="text-xs font-black uppercase tracking-widest">Hash Eşleşti! Dosya Güvenli.</span></>
+                                                ) : (
+                                                    <><AlertTriangle size={18} /> <span className="text-xs font-black uppercase tracking-widest">Hash Eşleşmiyor! Dosya Değiştirilmiş Olabilir.</span></>
+                                                )}
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             )}

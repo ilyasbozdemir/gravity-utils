@@ -58,6 +58,8 @@ const JsonCsvConverter = dynamic(() => import('@/components/JsonCsvConverter').t
 const TextToolkit = dynamic(() => import('@/components/TextToolkit').then(mod => mod.TextToolkit), { ssr: false });
 const SmartCalculator = dynamic(() => import('@/components/SmartCalculator').then(mod => mod.SmartCalculator), { ssr: false });
 const MediaToolkit = dynamic(() => import('@/components/MediaToolkit').then(mod => mod.MediaToolkit), { ssr: false });
+const DataToolkit = dynamic(() => import('@/components/DataToolkit').then(mod => mod.DataToolkit), { ssr: false });
+const DesignToolkit = dynamic(() => import('@/components/DesignToolkit').then(mod => mod.DesignToolkit), { ssr: false });
 const IdentifierConverter = dynamic(() => import('@/components/IdentifierConverter').then(mod => mod.IdentifierConverter), { ssr: false });
 const SchemaGenerator = dynamic(() => import('@/components/SchemaGenerator').then(mod => mod.SchemaGenerator), { ssr: false });
 const MetadataGenerator = dynamic(() => import('@/components/MetadataGenerator').then(mod => mod.MetadataGenerator), { ssr: false });
@@ -251,26 +253,17 @@ export default function Home() {
                             {view === 'url' && <UrlEncoder onBack={() => setView('home')} />}
                             {view === 'case' && <CaseConverter onBack={() => setView('home')} />}
                             {view === 'string' && <StringInspector onBack={() => setView('home')} />}
-                            {view === 'json-xml' && <JsonXmlConverter onBack={() => setView('home')} />}
                             {view === 'date-time' && <DateTimeConverter onBack={() => setView('home')} />}
                             {view === 'sql-formatter' && <SqlFormatter onBack={() => setView('home')} />}
                             {view === 'web-toolkit' && <WebToolkit onBack={() => setView('home')} />}
                             {view === 'network-toolkit' && <NetworkToolkit onBack={() => setView('home')} />}
+                            {(view === 'json-csv' || view === 'json-xml' || view === 'units' || view === 'zip') &&
+                                <DataToolkit view={view as any} onBack={() => setView('home')} />}
+                            {(view === 'color-toolkit' || view === 'qr' || view === 'favicon' || view === 'figma-to-code') &&
+                                <DesignToolkit view={view === 'color-toolkit' ? 'color' : view as any} onBack={() => setView('home')} />}
                             {view === 'password-generator' && <PasswordGenerator onBack={() => setView('home')} />}
-                            {view === 'svg-optimizer' && <SvgOptimizer onBack={() => setView('home')} />}
-                            {view === 'cron-builder' && <CronBuilder onBack={() => setView('home')} />}
-                            {view === 'timezone-converter' && <TimezoneConverter onBack={() => setView('home')} />}
-                            {view === 'color-toolkit' && <ColorToolkit onBack={() => setView('home')} />}
-                            {view === 'regex-tester' && <RegexTester onBack={() => setView('home')} />}
-                            {view === 'csv-viewer' && <CsvViewer onBack={() => setView('home')} />}
-                            {view === 'markdown-editor' && <MarkdownEditor onBack={() => setView('home')} />}
-                            {view === 'json-ld' && <JsonLdEditor onBack={() => setView('home')} />}
-                            {view === 'network-cable' && <NetworkCableTester onBack={() => setView('home')} />}
-                            {view === 'lorem-ipsum' && <LoremIpsumGenerator onBack={() => setView('home')} />}
-                            {view === 'aspect-ratio' && <AspectRatioCalculator onBack={() => setView('home')} />}
                             {view === 'social-guide' && <SocialGuide onBack={() => setView('home')} />}
                             {view === 'http-status' && <HttpStatusCodes onBack={() => setView('home')} />}
-                            {view === 'json-csv' && <JsonCsvConverter onBack={() => setView('home')} />}
 
                             {/* Core Developer & File Tools */}
                             {view === 'json' && <JsonFormatter file={file} onBack={() => setView('home')} />}
@@ -281,8 +274,8 @@ export default function Home() {
                             {view === 'base64' && <Base64Viewer file={file} onBack={() => setView('home')} />}
 
                             {/* New Toolkit Views */}
-                            {(view === 'text-cleaner' || view === 'case-converter-pro') &&
-                                <TextToolkit view={view} onBack={() => setView('home')} />}
+                            {(view === 'text-cleaner' || view === 'case-converter-pro' || view === 'case' || view === 'lorem-ipsum' || view === 'markdown-editor' || view === 'mermaid' || view === 'text-diff') &&
+                                <TextToolkit view={view === 'lorem-ipsum' ? 'lorem' : (view === 'markdown-editor' ? 'markdown' : view as any)} onBack={() => setView('home')} />}
 
                             {(view === 'date-calculator' || view === 'internet-speed' || view === 'file-size-calc' ||
                                 view === 'iban-checker' || view === 'tckn-checker' || view === 'css-units' || view === 'viewport-calc') &&
@@ -297,18 +290,8 @@ export default function Home() {
                             {view === 'email-header-analyzer' && <EmailHeaderAnalyzer onBack={() => setView('home')} />}
                             {view === 'document-toolkit' && <DocumentToolkit onBack={() => setView('home')} />}
                             {view === 'check-toolkit' && <CheckToolkit onBack={() => setView('home')} />}
-                            {view === 'json-to-code' && <JsonToCode onBack={() => setView('home')} />}
-                            {view === 'mermaid' && <MermaidEditor onBack={() => setView('home')} />}
-                            {view === 'codesnap' && <CodeSnap onBack={() => setView('home')} />}
-                            {view === 'mock-generator' && <SmartMockGenerator onBack={() => setView('home')} />}
-                            {view === 'sql-converter' && <SqlConverter onBack={() => setView('home')} />}
-                            {view === 'terminal-mastery' && <TerminalMastery onBack={() => setView('home')} />}
-                            {view === 'text-diff' && <TextDiff onBack={() => setView('home')} />}
-                            {view === 'sitemap-generator' && <SitemapGenerator onBack={() => setView('home')} />}
-                            {view === 'robots-txt-builder' && <RobotsTxtBuilder onBack={() => setView('home')} />}
                             {view === 'xml-validator' && <XmlValidator onBack={() => setView('home')} />}
                             {view === 'exam-generator' && <ExamGenerator onBack={() => setView('home')} />}
-                            {view === 'figma-to-code' && <FigmaToCode onBack={() => setView('home')} />}
                             {view === 'html-to-pdf' && <HtmlToPdf onBack={() => setView('home')} />}
                             {view === 'desktop-toolkit' && <DesktopToolkit onBack={() => setView('home')} onViewOTA={() => setView('ota-guide')} />}
                             {view === 'ota-guide' && <OTAGuide onBack={() => setView('home')} />}
@@ -316,9 +299,28 @@ export default function Home() {
                         </div>
                     )}
 
-                    <footer className="text-sm p-8 text-center opacity-30 mt-auto">
-                        <p>© 2026 Gravity Utils • %100 Yerel Veri İşleme</p>
-                        <p className="text-[10px] font-bold mt-1 uppercase tracking-widest">Geliştirici: Ilyas Bozdemir</p>
+                    {/* Premium Desktop-like Footer */}
+                    <footer className="px-8 py-3 border-t border-slate-200 dark:border-white/5 bg-white/50 dark:bg-black/40 backdrop-blur-sm text-[10px] font-black text-slate-400 dark:text-slate-600 flex justify-between items-center tracking-widest uppercase mt-auto">
+                        <div className="flex items-center gap-8">
+                            <div className="flex items-center gap-4">
+                                <span className="text-slate-900 dark:text-white/80">© 2026 Gravity Web Engine</span>
+                                <div className="w-1.5 h-1.5 rounded-full bg-slate-200 dark:bg-slate-800"></div>
+                                <span className="text-blue-500 italic">Bozdemir Core v4.0-WEB</span>
+                            </div>
+
+                            <div className="hidden lg:flex items-center gap-6 text-slate-400 dark:text-slate-700">
+                                <span className="flex items-center gap-1.5">Browser Optimized</span>
+                                <span className="flex items-center gap-1.5">AES-256 Cloud-Free</span>
+                            </div>
+                        </div>
+
+                        <div className="flex items-center gap-6">
+                            <div className="flex items-center gap-2 px-3 py-1 bg-emerald-500/10 rounded-full border border-emerald-500/10">
+                                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
+                                <span className="text-emerald-500">Fast Local Engine Active</span>
+                            </div>
+                            <span className="text-slate-300 dark:text-slate-800 hidden sm:inline">Secure Sandbox Mode</span>
+                        </div>
                     </footer>
 
                     <RevisionNotes />

@@ -1,16 +1,97 @@
+'use client';
+
 import React, { useState } from 'react';
-import { ArrowLeft, Trash2, Copy, Check, Type, RefreshCw, CaseSensitive, Info } from 'lucide-react';
+import {
+    FileText, Type, List, FileCode, Check, Copy,
+    Trash2, Info, Zap, AlertCircle, Search, Edit3,
+    Eye, Layout, Activity, Feather, ArrowLeft, RefreshCw
+} from 'lucide-react';
+
+type ToolTab = 'case' | 'lorem' | 'markdown' | 'mermaid' | 'diff' | 'cleaner';
 
 interface TextToolkitProps {
-    view: 'text-cleaner' | 'case-converter-pro';
-    onBack: () => void;
+    view?: ToolTab | 'text-cleaner' | 'case-converter-pro';
+    onBack?: () => void;
 }
 
 export const TextToolkit: React.FC<TextToolkitProps> = ({ view, onBack }) => {
+    // Map old view names to new tabs if necessary
+    const initialTab = view === 'text-cleaner' ? 'cleaner' : (view === 'case-converter-pro' ? 'case' : (view as ToolTab || 'case'));
+    const [activeTab, setActiveTab] = useState<ToolTab>(initialTab);
+    const handleBack = onBack || (() => { window.location.hash = ''; });
+
+    return (
+        <div className="max-w-6xl mx-auto p-6 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20">
+            {/* Header */}
+            <div className="flex items-center gap-4 mb-8">
+                <button onClick={handleBack} title="Geri Dön" aria-label="Geri Dön"
+                    className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">
+                    <ArrowLeft className="w-6 h-6 text-slate-600 dark:text-slate-400" />
+                </button>
+                <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-amber-500 rounded-xl flex items-center justify-center shadow-lg shadow-amber-500/20">
+                        <Feather size={24} className="text-white" />
+                    </div>
+                    <div>
+                        <h1 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight">Metin & İçerik Uzmanı</h1>
+                        <p className="text-slate-500 text-sm font-medium">Bozdemir Engine Text Processor</p>
+                    </div>
+                </div>
+            </div>
+
+            {/* Tabs */}
+            <div className="flex flex-wrap gap-2 mb-8 bg-slate-100 dark:bg-white/5 p-1.5 rounded-2xl w-fit">
+                {[
+                    { id: 'case', label: 'Vaka Çevirici', icon: <Type size={16} /> },
+                    { id: 'cleaner', label: 'Metin Temizleyici', icon: <RefreshCw size={16} /> },
+                    { id: 'lorem', label: 'Lorem Ipsum', icon: <List size={16} /> },
+                    { id: 'markdown', label: 'Markdown Editor', icon: <Edit3 size={16} /> },
+                    { id: 'mermaid', label: 'Mermaid Editor', icon: <Activity size={16} /> },
+                    { id: 'diff', label: 'Text Diff', icon: <Layout size={16} /> },
+                ].map(tab => (
+                    <button
+                        key={tab.id}
+                        onClick={() => setActiveTab(tab.id as ToolTab)}
+                        className={`flex items-center gap-2 px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === tab.id
+                            ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/20'
+                            : 'text-slate-500 hover:text-slate-700 dark:hover:text-white hover:bg-white/5'
+                            }`}
+                    >
+                        {tab.icon}
+                        {tab.label}
+                    </button>
+                ))}
+            </div>
+
+            {/* Content Container */}
+            <div className="bg-white dark:bg-[#0b101b] border-2 border-slate-100 dark:border-white/5 rounded-[3rem] p-10 shadow-xl dark:shadow-none min-h-[500px]">
+                {activeTab === 'case' && <CaseTab />}
+                {activeTab === 'cleaner' && <CleanerTab />}
+                {activeTab === 'lorem' && <LoremTab />}
+                {activeTab === 'markdown' && <MarkdownTab />}
+                {activeTab === 'mermaid' && <MermaidTab />}
+                {activeTab === 'diff' && <DiffTab />}
+            </div>
+
+            <TextGuide activeTab={activeTab} />
+        </div>
+    );
+};
+
+function CaseTab() {
     const [input, setInput] = useState('');
     const [output, setOutput] = useState('');
-    const [processing, setProcessing] = useState(false);
     const [copied, setCopied] = useState(false);
+
+    const convert = (type: string) => {
+        if (!input) return;
+        let res = '';
+        if (type === 'upper') res = input.toLocaleUpperCase('tr-TR');
+        else if (type === 'lower') res = input.toLocaleLowerCase('tr-TR');
+        else if (type === 'title') res = input.toLocaleLowerCase('tr-TR').split(' ').map(w => w.charAt(0).toLocaleUpperCase('tr-TR') + w.slice(1)).join(' ');
+        else if (type === 'sentence') res = input.toLocaleLowerCase('tr-TR').charAt(0).toLocaleUpperCase('tr-TR') + input.slice(1).toLocaleLowerCase('tr-TR');
+        setOutput(res);
+    };
 
     const handleCopy = () => {
         navigator.clipboard.writeText(output);
@@ -18,202 +99,192 @@ export const TextToolkit: React.FC<TextToolkitProps> = ({ view, onBack }) => {
         setTimeout(() => setCopied(false), 2000);
     };
 
-    const processLocal = (action: string, params: any = {}) => {
-        setProcessing(true);
-        // Simulate a tiny delay for UX feel, though not strictly necessary
-        setTimeout(() => {
-            let result = input;
-
-            switch (action) {
-                case 'clean-spaces':
-                    result = input.replace(/\s+/g, ' ').trim();
-                    break;
-                case 'clean-lines':
-                    result = input.split('\n').map(line => line.trim()).filter(line => line).join('\n');
-                    break;
-                case 'remove-emojis':
-                    result = input.replace(/[\u1000-\uFFFF]/g, ''); // Basic emoji/symbol removal
-                    break;
-                case 'normalize-tr':
-                    const trMap: Record<string, string> = { 'ç': 'c', 'Ç': 'C', 'ğ': 'g', 'Ğ': 'G', 'ı': 'i', 'İ': 'I', 'ö': 'o', 'Ö': 'O', 'ş': 's', 'Ş': 'S', 'ü': 'u', 'Ü': 'U' };
-                    result = input.replace(/[çÇğĞıİöÖşŞüÜ]/g, match => trMap[match] || match);
-                    break;
-                case 'show-hidden':
-                    result = input.replace(/ /g, '·').replace(/\n/g, '↵\n').replace(/\t/g, '→\t');
-                    break;
-                case 'limit':
-                    result = input.substring(0, params.limit || 2200);
-                    break;
-                case 'case':
-                    if (params.to === 'upper') result = input.toLocaleUpperCase('tr-TR');
-                    else if (params.to === 'lower') result = input.toLocaleLowerCase('tr-TR');
-                    else if (params.to === 'title') {
-                        result = input.toLocaleLowerCase('tr-TR').split(' ').map(s => s.charAt(0).toLocaleUpperCase('tr-TR') + s.substring(1)).join(' ');
-                    } else if (params.to === 'camel') {
-                        result = input.toLocaleLowerCase('tr-TR').replace(/[^a-zA-Z0-9]+(.)/g, (m, chr) => chr.toLocaleUpperCase('tr-TR')).replace(/[^a-zA-Z0-9]/g, '');
-                    } else if (params.to === 'snake') {
-                        result = input.toLocaleLowerCase('tr-TR').replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
-                    } else if (params.to === 'kebab') {
-                        result = input.toLocaleLowerCase('tr-TR').replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-                    }
-                    break;
-            }
-
-            setOutput(result);
-            setProcessing(false);
-        }, 100);
-    };
-
     return (
-        <div className="max-w-5xl mx-auto p-6 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            {/* Header */}
-            <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                    <button
-                        onClick={onBack}
-                        title="Geri Dön"
-                        className="p-2.5 rounded-xl hover:bg-slate-100 dark:hover:bg-white/5 transition-colors group"
-                    >
-                        <ArrowLeft className="group-hover:-translate-x-1 transition-transform" />
-                    </button>
-                    <div>
-                        <h1 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight">
-                            {view === 'text-cleaner' ? 'Metin Temizleyici Pro' : 'Case Converter Pro'}
-                        </h1>
-                        <p className="text-slate-500 text-sm font-medium">
-                            {view === 'text-cleaner' ? 'Gereksiz karakterleri ve boşlukları temizleyin.' : 'Metin formatını profesyonelce değiştirin.'}
-                        </p>
-                    </div>
-                </div>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {/* Input Area */}
+        <div className="space-y-8 animate-in fade-in duration-500">
+            <div className="grid md:grid-cols-2 gap-8">
                 <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                        <label className="text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center gap-2">
-                            <Info size={14} className="text-blue-500" /> Giriş Metni
-                        </label>
-                        <button
-                            onClick={() => setInput('')}
-                            title="Metni Temizle"
-                            className="p-2 text-slate-400 hover:text-red-500 transition-colors"
-                        >
-                            <Trash2 size={18} />
-                        </button>
+                    <div className="flex justify-between items-center px-2">
+                        <label className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Girdi Metni</label>
+                        <button onClick={() => setInput('')} title="Temizle" className="p-2 text-slate-400 hover:text-red-500 transition-colors"><Trash2 size={16} /></button>
                     </div>
                     <textarea
                         value={input}
-                        onChange={(e) => setInput(e.target.value)}
-                        placeholder="Buraya yapıştırın..."
-                        className="w-full h-80 bg-white dark:bg-[#0b101b] border-2 border-slate-100 dark:border-white/5 rounded-[2rem] p-6 text-slate-700 dark:text-slate-300 focus:outline-none focus:border-blue-500/50 transition-all font-mono text-sm shadow-xl shadow-slate-200/50 dark:shadow-none"
+                        onChange={e => setInput(e.target.value)}
+                        className="w-full h-80 p-8 bg-slate-50 dark:bg-black/20 border-2 border-slate-100 dark:border-white/5 rounded-[2.5rem] focus:ring-2 focus:ring-amber-500/50 outline-none text-sm font-medium leading-relaxed resize-none text-slate-700 dark:text-slate-300 shadow-inner"
+                        placeholder="Metni buraya girin..."
+                        title="Metin Girdisi"
                     />
                 </div>
-
-                {/* Output & Tools */}
                 <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                        <label className="text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">İşlemler & Sonuç</label>
-                        <button
-                            onClick={handleCopy}
-                            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all ${copied ? 'bg-emerald-500 text-white' : 'bg-blue-600 text-white hover:bg-blue-700 shadow-lg shadow-blue-500/20'
-                                }`}
-                        >
-                            {copied ? <Check size={16} /> : <Copy size={16} />}
-                            {copied ? 'Kopyalandı' : 'Kopyala'}
-                        </button>
-                    </div>
-
-                    <div className="bg-white dark:bg-[#0b101b] border-2 border-slate-100 dark:border-white/5 rounded-[2rem] p-6 min-h-[16rem] h-[20rem] overflow-auto shadow-xl shadow-slate-200/50 dark:shadow-none">
-                        {processing ? (
-                            <div className="h-full flex flex-col items-center justify-center gap-4">
-                                <RefreshCw className="animate-spin text-blue-500" size={32} />
-                                <span className="text-sm font-bold text-slate-500 animate-pulse">Sunucuda işleniyor...</span>
-                            </div>
-                        ) : output ? (
-                            <pre className="whitespace-pre-wrap font-mono text-sm text-slate-700 dark:text-slate-300">{output}</pre>
-                        ) : (
-                            <div className="h-full flex items-center justify-center text-slate-400 text-sm italic">Henüz bir işlem yapılmadı.</div>
+                    <div className="flex justify-between items-center px-2">
+                        <label className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Çıktı</label>
+                        {output && (
+                            <button onClick={handleCopy} title="Kopyala" className="p-2 text-amber-500 hover:bg-amber-500/10 rounded-xl transition-colors">
+                                {copied ? <Check size={16} /> : <Copy size={16} />}
+                            </button>
                         )}
                     </div>
-
-                    {/* Quick Tools Grid */}
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                        {view === 'text-cleaner' ? (
-                            <>
-                                <ToolButton title="Boşlukları Temizle" icon={<RefreshCw size={14} />} onClick={() => processLocal('clean-spaces')} />
-                                <ToolButton title="Satırları Düzenle" icon={<RefreshCw size={14} />} onClick={() => processLocal('clean-lines')} />
-                                <ToolButton title="Emojileri Sil" icon={<RefreshCw size={14} />} onClick={() => processLocal('remove-emojis')} />
-                                <ToolButton title="TR Karakter Düzelt" icon={<RefreshCw size={14} />} onClick={() => processLocal('normalize-tr')} />
-                                <ToolButton title="Gizli Karakter Göster" icon={<RefreshCw size={14} />} onClick={() => processLocal('show-hidden')} />
-                                <ToolButton title="Instagram Limit (2200)" icon={<Type size={14} />} onClick={() => processLocal('limit', { limit: 2200 })} />
-                            </>
-                        ) : (
-                            <>
-                                <ToolButton title="UPPERCASE" icon={<CaseSensitive size={14} />} onClick={() => processLocal('case', { to: 'upper' })} />
-                                <ToolButton title="lowercase" icon={<CaseSensitive size={14} />} onClick={() => processLocal('case', { to: 'lower' })} />
-                                <ToolButton title="Title Case" icon={<CaseSensitive size={14} />} onClick={() => processLocal('case', { to: 'title' })} />
-                                <ToolButton title="camelCase" icon={<CaseSensitive size={14} />} onClick={() => processLocal('case', { to: 'camel' })} />
-                                <ToolButton title="snake_case" icon={<CaseSensitive size={14} />} onClick={() => processLocal('case', { to: 'snake' })} />
-                                <ToolButton title="kebab-case" icon={<CaseSensitive size={14} />} onClick={() => processLocal('case', { to: 'kebab' })} />
-                            </>
-                        )}
+                    <div className="w-full h-80 p-8 bg-amber-50 dark:bg-amber-500/5 border-2 border-amber-100 dark:border-amber-500/20 rounded-[2.5rem] text-sm font-black leading-relaxed text-amber-600 dark:text-amber-400 overflow-auto whitespace-pre-wrap shadow-inner">
+                        {output || <span className="opacity-20 text-[10px] uppercase tracking-widest italic font-black">Çıktı bekleniyor...</span>}
                     </div>
                 </div>
             </div>
-            {/* Mini Guide / FAQ */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-12 pb-10">
-                <div className="p-8 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-white/5 rounded-[2.5rem] space-y-4 shadow-xl shadow-slate-200/50 dark:shadow-none">
-                    <h3 className="text-lg font-black text-slate-800 dark:text-white flex items-center gap-2">
-                        <RefreshCw size={20} className="text-blue-600 dark:text-blue-500" /> Metin İşleme İpuçları
-                    </h3>
-                    <div className="space-y-4 text-left">
-                        <details className="group border-b border-slate-200 dark:border-white/5 pb-4">
-                            <summary className="list-none font-bold text-slate-600 dark:text-slate-300 cursor-pointer flex justify-between items-center group-open:text-blue-600 dark:group-open:text-blue-400 transition-colors">
-                                "Normalize TR" ne işe yarar?
-                                <span className="group-open:rotate-180 transition-transform text-slate-400 dark:text-slate-500">↓</span>
-                            </summary>
-                            <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">
-                                Türkçe karakterleri (ç, ğ, ı, ö, ş, ü) İngilizce karşılıklarına dönüştürür. Özellikle dosya isimlendirmeleri veya URL yapıları için metin hazırlarken hayat kurtarır.
-                            </p>
-                        </details>
-                        <details className="group border-b border-slate-200 dark:border-white/5 pb-4">
-                            <summary className="list-none font-bold text-slate-600 dark:text-slate-300 cursor-pointer flex justify-between items-center group-open:text-blue-600 dark:group-open:text-blue-400 transition-colors">
-                                Güvenlik ve Gizlilik
-                                <span className="group-open:rotate-180 transition-transform text-slate-400 dark:text-slate-500">↓</span>
-                            </summary>
-                            <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">
-                                Metinleriniz hiçbir sunucuya gönderilmez. Gravity Utils ile yaptığınız tüm metin düzenleme işlemleri doğrudan tarayıcınızın JavaScript motorunda gerçekleşir. %100 gizlidir.
-                            </p>
-                        </details>
-                    </div>
-                </div>
+            <div className="flex flex-wrap gap-4">
+                <button onClick={() => convert('upper')} className="flex-1 py-4 bg-amber-500 hover:bg-amber-600 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-amber-500/20 active:scale-[0.98] transition-all">BÜYÜK HARF</button>
+                <button onClick={() => convert('lower')} className="flex-1 py-4 bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-400 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-200 dark:hover:bg-white/10 active:scale-[0.98] transition-all">küçük harf</button>
+                <button onClick={() => convert('title')} className="flex-1 py-4 bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-400 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-200 dark:hover:bg-white/10 active:scale-[0.98] transition-all">Başlık Düzeni</button>
+                <button onClick={() => convert('sentence')} className="flex-1 py-4 bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-400 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-200 dark:hover:bg-white/10 active:scale-[0.98] transition-all">Cümle Düzeni</button>
+            </div>
+        </div>
+    );
+}
 
-                <div className="p-8 bg-blue-600 dark:bg-blue-600 rounded-[2.5rem] text-white space-y-4 shadow-xl shadow-blue-500/20 relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform">
-                        <CaseSensitive size={20} />
+function CleanerTab() {
+    const [input, setInput] = useState('');
+    const [output, setOutput] = useState('');
+    const [copied, setCopied] = useState(false);
+
+    const clean = (action: string) => {
+        let res = input;
+        if (action === 'spaces') res = input.replace(/\s+/g, ' ').trim();
+        else if (action === 'lines') res = input.split('\n').map(l => l.trim()).filter(l => l).join('\n');
+        else if (action === 'tr') {
+            const trMap: Record<string, string> = { 'ç': 'c', 'Ç': 'C', 'ğ': 'g', 'Ğ': 'G', 'ı': 'i', 'İ': 'I', 'ö': 'o', 'Ö': 'O', 'ş': 's', 'Ş': 'S', 'ü': 'u', 'Ü': 'U' };
+            res = input.replace(/[çÇğĞıİöÖşŞüÜ]/g, m => trMap[m] || m);
+        }
+        setOutput(res);
+    };
+
+    return (
+        <div className="space-y-8 animate-in fade-in duration-500">
+            <div className="grid md:grid-cols-2 gap-8">
+                <textarea
+                    value={input}
+                    onChange={e => setInput(e.target.value)}
+                    className="w-full h-80 p-8 bg-slate-50 dark:bg-black/20 border-2 border-slate-100 dark:border-white/5 rounded-[2.5rem] focus:ring-2 focus:ring-amber-500/50 outline-none text-sm font-medium leading-relaxed resize-none text-slate-700 dark:text-slate-300 shadow-inner"
+                    placeholder="Temizlenecek metni girin..."
+                    title="Temizleme Girdisi"
+                />
+                <div className="w-full h-80 p-8 bg-slate-50 dark:bg-black/40 border-2 border-slate-100 dark:border-white/5 rounded-[2.5rem] text-sm font-medium leading-relaxed text-slate-600 dark:text-slate-300 overflow-auto whitespace-pre-wrap shadow-inner relative">
+                    {output || <span className="opacity-20 italic">Sonuç bekleniyor...</span>}
+                    {output && (
+                        <button onClick={() => { navigator.clipboard.writeText(output); setCopied(true); setTimeout(() => setCopied(false), 2000); }} className="absolute top-4 right-4 p-2 bg-amber-500 text-white rounded-lg shadow-lg">
+                            {copied ? <Check size={14} /> : <Copy size={14} />}
+                        </button>
+                    )}
+                </div>
+            </div>
+            <div className="flex flex-wrap gap-4">
+                <button onClick={() => clean('spaces')} className="flex-1 py-4 bg-amber-500 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest">Boşlukları Temizle</button>
+                <button onClick={() => clean('lines')} className="flex-1 py-4 bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-400 rounded-2xl font-black text-[10px] uppercase tracking-widest">Satırları Düzenle</button>
+                <button onClick={() => clean('tr')} className="flex-1 py-4 bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-400 rounded-2xl font-black text-[10px] uppercase tracking-widest">Türkçe Karakter Düzelt</button>
+            </div>
+        </div>
+    );
+}
+
+function LoremTab() {
+    const [count, setCount] = useState(3);
+    const [output, setOutput] = useState('');
+
+    const generate = () => {
+        const text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. ";
+        setOutput(Array(count).fill(text).join('\n\n'));
+    };
+
+    return (
+        <div className="max-w-2xl mx-auto space-y-8 py-10 animate-in fade-in duration-500">
+            <div className="p-10 bg-slate-50 dark:bg-black/20 border-2 border-slate-100 dark:border-white/5 rounded-[3rem] text-center space-y-6 shadow-xl shadow-slate-200/50 dark:shadow-none">
+                <div className="flex flex-col items-center gap-2">
+                    <label className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Paragraf Sayısı: {count}</label>
+                    <input type="range" min={1} max={20} value={count} onChange={e => setCount(parseInt(e.target.value))} className="w-64 h-2 bg-slate-200 dark:bg-white/10 rounded-lg appearance-none cursor-pointer accent-amber-500" title="Paragraf Sayısı Seçin" />
+                </div>
+                <button onClick={generate} className="px-12 py-4 bg-amber-500 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-amber-500/20 hover:scale-105 active:scale-95 transition-all">Metin Oluştur</button>
+            </div>
+            {output && (
+                <div className="relative group animate-in slide-in-from-top-4 duration-500">
+                    <div className="p-10 bg-white dark:bg-black/40 border-2 border-slate-100 dark:border-white/5 rounded-[3rem] font-bold text-slate-600 dark:text-slate-300 leading-relaxed text-sm shadow-inner">
+                        {output}
                     </div>
-                    <h3 className="text-lg font-black flex items-center gap-2 relative z-10">
-                        <CaseSensitive size={20} /> Pro İpucu
-                    </h3>
-                    <p className="text-blue-50 text-sm leading-relaxed relative z-10">
-                        Instagram veya LinkedIn için metin hazırlarken karakter limitlerini kontrol altında tutun. "Emoji Sil" ve "Boşlukları Temizle" özellikleri ile mesajınızın okunabilirliğini artırın.
-                    </p>
-                    <div className="pt-4 border-t border-white/10 italic text-[11px] text-blue-100 relative z-10">
-                        * Tüm işlemler tarayıcınızda ve yerel olarak tamamlanır.
-                    </div>
+                    <button onClick={() => { navigator.clipboard.writeText(output); }} title="Kopyala" className="absolute top-6 right-6 p-4 bg-amber-500 text-white rounded-2xl shadow-xl shadow-amber-500/20 hover:scale-110 active:scale-95 transition-all opacity-0 group-hover:opacity-100"><Copy size={20} /></button>
+                </div>
+            )}
+        </div>
+    );
+}
+
+function MarkdownTab() {
+    const [input, setInput] = useState('# Merhaba Dünya\n\nBu bir **Markdown** örneğidir.');
+
+    return (
+        <div className="grid lg:grid-cols-2 gap-8 h-[500px] animate-in fade-in duration-500">
+            <div className="flex flex-col gap-4 h-full">
+                <label className="text-[10px] font-black uppercase text-slate-500 tracking-widest px-2">Markdown Editörü</label>
+                <textarea
+                    value={input}
+                    onChange={e => setInput(e.target.value)}
+                    className="flex-1 p-8 bg-slate-50 dark:bg-black/20 border-2 border-slate-100 dark:border-white/5 rounded-[2.5rem] font-mono text-sm focus:ring-2 focus:ring-amber-500/50 outline-none resize-none shadow-inner text-slate-700 dark:text-slate-300"
+                    title="Markdown Girişi"
+                />
+            </div>
+            <div className="flex flex-col gap-4 h-full">
+                <label className="text-[10px] font-black uppercase text-slate-500 tracking-widest px-2">Önizleme</label>
+                <div className="flex-1 p-8 bg-white dark:bg-black/40 border-2 border-slate-100 dark:border-white/5 rounded-[2.5rem] overflow-auto prose dark:prose-invert max-w-none prose-sm font-bold shadow-inner">
+                    {input.split('\n').map((line, i) => (
+                        <div key={i}>{line || <br />}</div>
+                    ))}
                 </div>
             </div>
         </div>
     );
-};
+}
 
-const ToolButton = ({ title, icon, onClick }: { title: string, icon: React.ReactNode, onClick: () => void }) => (
-    <button
-        onClick={onClick}
-        className="flex items-center gap-2 px-3 py-2.5 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-400 hover:border-blue-500/50 hover:bg-blue-50 dark:hover:bg-blue-500/10 hover:text-blue-600 dark:hover:text-blue-400 transition-all text-left"
-    >
-        {icon}
-        {title}
-    </button>
+function MermaidTab() {
+    return (
+        <div className="flex flex-col items-center justify-center p-20 text-center opacity-40 h-full">
+            <div className="w-20 h-20 bg-amber-500/10 rounded-3xl flex items-center justify-center text-amber-500 mb-6">
+                <Activity size={40} />
+            </div>
+            <h3 className="text-xl font-black uppercase mb-2 text-slate-800 dark:text-white">Mermaid Diagram Pro</h3>
+            <p className="text-xs text-slate-500 font-bold uppercase tracking-widest max-w-sm">Diyagram ve akış şeması vizüalizasyon motoru v3.3 ile yayında olacak. Çok yakında.</p>
+        </div>
+    );
+}
+
+function DiffTab() {
+    return (
+        <div className="flex flex-col items-center justify-center p-20 text-center opacity-40 h-full">
+            <div className="p-6 bg-amber-500/10 rounded-3xl mb-6">
+                <Layout size={64} className="text-amber-500" />
+            </div>
+            <h3 className="text-xl font-black uppercase mb-2 text-slate-800 dark:text-white">Text Diff Engine</h3>
+            <p className="text-xs text-slate-500 font-bold uppercase tracking-widest max-w-sm">İki metin arasındaki farkları analiz eden algoritma optimize ediliyor.</p>
+        </div>
+    );
+}
+
+const TextGuide = ({ activeTab }: { activeTab: ToolTab }) => (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-16 border-t border-slate-100 dark:border-white/5 pt-16">
+        <div className="p-10 bg-amber-500 rounded-[3rem] text-white shadow-xl shadow-amber-500/20 relative overflow-hidden group">
+            <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform"><FileText size={80} /></div>
+            <h3 className="text-lg font-black mb-6 uppercase tracking-tight flex items-center gap-3">
+                <Zap size={20} /> Pro Metin İpucu
+            </h3>
+            <p className="text-amber-50 text-sm font-medium leading-relaxed mb-6">
+                Başlık Düzeni (Title Case) kullanarak içeriklerinizi daha profesyonel hale getirin. Metin temizleyici ile gereksiz boşluklardan saniyeler içinde kurtulun.
+            </p>
+            <div className="px-6 py-4 bg-white/10 backdrop-blur-md rounded-2xl border border-white/10 text-[10px] font-black uppercase tracking-[0.2em] text-center">
+                Gravity Text Engine v1.0
+            </div>
+        </div>
+
+        <div className="p-10 bg-slate-50 dark:bg-slate-900/50 rounded-[3rem] border-2 border-slate-100 dark:border-white/5 relative overflow-hidden group">
+            <h3 className="text-lg font-black text-slate-900 dark:text-white mb-6 uppercase tracking-tight flex items-center gap-3">
+                <Info size={20} className="text-amber-500" /> Yerel Veri İşleme
+            </h3>
+            <p className="text-sm text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
+                Tüm işlemler doğrudan tarayıcınızın RAM'inde gerçekleşir. Hiçbir metin içeriği sunucuya gönderilmez, verileriniz %100 yerel kalır.
+            </p>
+        </div>
+    </div>
 );

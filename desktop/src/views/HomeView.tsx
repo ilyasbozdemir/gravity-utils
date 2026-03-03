@@ -3,7 +3,8 @@ import {
     Search, Zap, FileText, Smartphone, Globe, Terminal,
     FileCode, Code, Star, Layout, Database, ShieldCheck,
     Type, Smartphone as Mobile, Clock, Calculator, Lock, Hash, RefreshCw, Layers,
-    Image as ImageIcon, Monitor
+    Image as ImageIcon, Monitor, Palette, Package, Feather, Share2, Activity,
+    Box, FileArchive, MousePointer2, Camera, QrCode
 } from 'lucide-react';
 
 interface HomeViewProps {
@@ -15,7 +16,7 @@ const HomeView: React.FC<HomeViewProps> = ({ onAction }) => {
 
     return (
         <div className="max-w-7xl mx-auto space-y-16 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-20 px-4 md:px-8">
-            {/* Hero Section - Mirroring Web Pro Look */}
+            {/* Hero Section */}
             <div className="flex flex-col items-center justify-center text-center relative pt-12">
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-[radial-gradient(circle,rgba(59,130,246,0.1)_0%,rgba(30,58,138,0.05)_40%,transparent_70%)] -z-10 pointer-events-none"></div>
 
@@ -34,15 +35,15 @@ const HomeView: React.FC<HomeViewProps> = ({ onAction }) => {
                     <span className="text-blue-500"> Bozdemir Engine</span> gücüyle işleyin.
                 </p>
 
-                {/* Main Tool Grid (Mirroring Web) */}
+                {/* Main Tool Grid */}
                 <div className="w-full grid grid-cols-2 lg:grid-cols-4 gap-6 mb-16 relative z-10">
                     <HeroLink title="Hızlı Dosya Dönüştür" desc="Format sınırı olmadan yerel disk gücü." icon={<Zap />} color="blue" onClick={() => onAction('converter')} />
                     <HeroLink title="PDF Master Merkezi" desc="Tüm PDF araçları tek bir panelde." icon={<FileText />} color="emerald" onClick={() => onAction('pdf-manager')} />
                     <HeroLink title="Geliştirici Terminali" desc="Kod ve JSON araçları masada." icon={<Terminal />} color="amber" onClick={() => onAction('dev-tools')} />
-                    <HeroLink title="Sistem Diagnostiği" desc="PC donanım ve CPU durum paneli." icon={<Layout />} color="violet" onClick={() => onAction('system')} />
+                    <HeroLink title="Medya & Görsel" desc="EXIF, Rename ve Sosyal Medya." icon={<ImageIcon />} color="rose" onClick={() => onAction('media-tools')} />
                 </div>
 
-                {/* Quick Search (Exactly like web) */}
+                {/* Quick Search */}
                 <div className="relative w-full max-w-2xl mx-auto mb-10 group">
                     <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-blue-500 transition-colors" size={24} />
                     <input
@@ -55,41 +56,53 @@ const HomeView: React.FC<HomeViewProps> = ({ onAction }) => {
                 </div>
             </div>
 
-            {/* Categorized Tools Menu (Native Mirroring Web Categories) */}
+            {/* Categorized Tools Menu */}
             <div className="w-full space-y-24">
-                {/* Hızlı Dönüşümler */}
-                <ToolCategory title="Hızlı Dönüşümler" icon={<Zap className="text-amber-500" />}>
-                    <QuickAction title="Word → PDF" onClick={() => onAction('pdf-manager')} icon={<FileText size={16} />} color="blue" />
-                    <QuickAction title="Resim → PDF" onClick={() => onAction('pdf-manager')} icon={<ImageIcon size={16} />} color="emerald" />
-                    <QuickAction title="Dosya Boyutu" onClick={() => onAction('system')} icon={<Layers size={16} />} color="indigo" />
-                    <QuickAction title="Format Değiştir" onClick={() => onAction('converter')} icon={<RefreshCw size={16} />} color="orange" />
+                {/* Döküman & Dosya */}
+                <ToolCategory title="Döküman & Dosya" icon={<FileArchive className="text-emerald-500" />}>
+                    <QuickAction title="PDF Birleştir" onClick={() => onAction('pdf-manager')} icon={<Layers size={16} />} color="emerald" />
+                    <QuickAction title="PDF'den Word'e" onClick={() => onAction('pdf-manager')} icon={<FileText size={16} />} color="blue" />
+                    <QuickAction title="Excel → JSON" onClick={() => onAction('data-tools')} icon={<Database size={16} />} color="indigo" />
+                    <QuickAction title="Zip Müfettişi" onClick={() => onAction('data-tools')} icon={<FileArchive size={16} />} color="amber" />
                 </ToolCategory>
 
-                {/* Tasarım & Kod */}
-                <ToolCategory title="Tasarım & Kod Pro" icon={<Code className="text-pink-500" />}>
-                    <QuickAction title="JSON Format" onClick={() => onAction('dev-tools')} icon={<FileCode size={16} />} color="amber" />
-                    <QuickAction title="JSON ↔ XML" onClick={() => onAction('dev-tools')} icon={<Database size={16} />} color="emerald" />
-                    <QuickAction title="Base64 Code" onClick={() => onAction('dev-tools')} icon={<FileCode size={16} />} color="blue" />
-                    <QuickAction title="Regex Tester" onClick={() => onAction('dev-tools')} icon={<Search size={16} />} color="rose" />
+                {/* Medya & Tasarım */}
+                <ToolCategory title="Medya & Tasarım" icon={<Palette className="text-rose-500" />}>
+                    <QuickAction title="EXIF Viewer" onClick={() => onAction('media-tools')} icon={<Camera size={16} />} color="rose" />
+                    <QuickAction title="Renk Paleti" onClick={() => onAction('design-tools')} icon={<Palette size={16} />} color="violet" />
+                    <QuickAction title="QR Oluşturucu" onClick={() => onAction('design-tools')} icon={<QrCode size={16} />} color="indigo" />
+                    <QuickAction title="Favicon Gen" onClick={() => onAction('design-tools')} icon={<Globe size={16} />} color="blue" />
                 </ToolCategory>
 
-                {/* SEO & Web */}
-                <ToolCategory title="Sistem & Donanım" icon={<Monitor className="text-blue-500" />}>
-                    <QuickAction title="CPU Durumu" onClick={() => onAction('system')} icon={<Layout size={16} />} color="blue" />
-                    <QuickAction title="Bellek Kullanımı" onClick={() => onAction('system')} icon={<Database size={16} />} color="indigo" />
-                    <QuickAction title="Disk Sağlığı" onClick={() => onAction('system')} icon={<Layers size={16} />} color="emerald" />
-                    <QuickAction title="Process Kontrol" onClick={() => onAction('system')} icon={<Terminal size={16} />} color="amber" />
+                {/* Veri & Metin */}
+                <ToolCategory title="Veri & Metin" icon={<Package className="text-amber-500" />}>
+                    <QuickAction title="JSON Formatter" onClick={() => onAction('dev-tools')} icon={<FileCode size={16} />} color="amber" />
+                    <QuickAction title="Markdown" onClick={() => onAction('text-tools')} icon={<Edit size={16} />} color="blue" />
+                    <QuickAction title="Lorum Ipsum" onClick={() => onAction('text-tools')} icon={<List size={16} />} color="slate" />
+                    <QuickAction title="Vaka Çevirici" onClick={() => onAction('text-tools')} icon={<Type size={16} />} color="orange" />
+                </ToolCategory>
+
+                {/* Ağ & Güvenlik */}
+                <ToolCategory title="Ağ & Güvenlik" icon={<ShieldCheck className="text-indigo-500" />}>
+                    <QuickAction title="Port Tara (Mock)" onClick={() => onAction('network-toolkit')} icon={<Search size={16} />} color="blue" />
+                    <QuickAction title="IP Analizi" onClick={() => onAction('network-toolkit')} icon={<Activity size={16} />} color="emerald" />
+                    <QuickAction title="Hash Hesapla" onClick={() => onAction('security')} icon={<Hash size={16} />} color="rose" />
+                    <QuickAction title="SSL Bilgisi" onClick={() => onAction('web-toolkit')} icon={<Lock size={16} />} color="violet" />
                 </ToolCategory>
             </div>
         </div>
     );
 };
 
+const Edit = ({ size, className }: any) => <Feather size={size} className={className} />;
+const List = ({ size, className }: any) => <Activity size={size} className={className} />;
+
 const HeroLink = ({ title, desc, icon, color, onClick }: any) => {
     const colors: any = {
         blue: "text-blue-400 bg-blue-500/10 border-blue-500/20",
         emerald: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20",
         amber: "text-amber-400 bg-amber-500/10 border-amber-500/20",
+        rose: "text-rose-400 bg-rose-500/10 border-rose-500/20",
         violet: "text-violet-400 bg-violet-500/10 border-violet-500/20",
     };
 
@@ -129,6 +142,8 @@ const QuickAction = ({ title, onClick, icon, color }: any) => {
         orange: "bg-orange-500/10 text-orange-400 border-orange-500/20",
         amber: "bg-amber-500/10 text-amber-400 border-amber-500/20",
         rose: "bg-rose-500/10 text-rose-400 border-rose-500/20",
+        violet: "bg-violet-500/10 text-violet-400 border-violet-500/20",
+        slate: "bg-slate-500/10 text-slate-400 border-slate-500/20",
     };
 
     return (
