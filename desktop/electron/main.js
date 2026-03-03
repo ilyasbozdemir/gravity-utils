@@ -11,6 +11,15 @@ protocol.registerSchemesAsPrivileged([
 
 const isDev = process.env.NODE_ENV === 'development';
 
+if (isDev) {
+  try {
+    require('electron-reloader')(module, {
+        debug: true,
+        watchRenderer: false // Next.js handles renderer reload at localhost:3000
+    });
+  } catch (_) {}
+}
+
 // 🚀 INTEGRATE BOZDEMIR ENGINE
 const Engine = require('./engine/index');
 
@@ -34,11 +43,6 @@ function setupProtocol() {
         urlPath = decodeURIComponent(urlPath).replace(/^(\.|\/)+/, '');
         
         let baseDir = path.join(__dirname, '../out');
-        if (!fs.existsSync(baseDir)) {
-             // Fallback for different build/dev structures
-             baseDir = path.join(__dirname, '../../web/out');
-        }
-        
         const outDirNormalized = path.normalize(baseDir);
         let fullPath = path.join(outDirNormalized, urlPath || 'index.html');
 
@@ -102,7 +106,7 @@ function createWindow() {
   });
 
   if (isDev) {
-    win.loadURL('http://localhost:3000');
+    win.loadURL('http://localhost:5173');
   } else {
     // 🌐 Modern protocol loading
     win.loadURL('app://index.html');

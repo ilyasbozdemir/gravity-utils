@@ -8,6 +8,7 @@ import { LandingHero } from '@/components/LandingHero';
 import { ActionPanel } from '@/components/ActionPanel';
 import { RevisionNotes } from '@/components/RevisionNotes';
 import { DesktopDashboard } from '@/components/DesktopDashboard';
+import { DesktopPromotion } from '@/components/DesktopPromotion';
 import { isElectron, useIsElectron } from '@/utils/electron';
 
 // Dynamically import components to improve initial load
@@ -202,7 +203,7 @@ export default function Home() {
                         <>
                             <LandingHero onFileSelect={handleFileSelect} onToolSelect={handleToolSelect} />
                             {isApp && (
-                                <div className="px-8 max-w-[1400px] mx-auto w-full -mt-10 pb-10">
+                                <div className="px-8 max-w-[1400px] mx-auto w-full -mt-10 pb-20">
                                     <div className="flex items-center gap-2 mb-6 opacity-60">
                                         <div className="h-px bg-slate-800 flex-1"></div>
                                         <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 flex items-center gap-2">
@@ -211,6 +212,18 @@ export default function Home() {
                                         <div className="h-px bg-slate-800 flex-1"></div>
                                     </div>
                                     <DesktopDashboard />
+                                </div>
+                            )}
+                            {!isApp && (
+                                <div className="px-8 max-w-[1400px] mx-auto w-full pb-20">
+                                    <div className="flex items-center gap-2 mb-12 opacity-40">
+                                        <div className="h-px bg-slate-300 dark:bg-slate-800 flex-1"></div>
+                                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 flex items-center gap-2">
+                                            <Monitor size={10} /> Gravity Desktop Experience
+                                        </span>
+                                        <div className="h-px bg-slate-300 dark:bg-slate-800 flex-1"></div>
+                                    </div>
+                                    <DesktopPromotion />
                                 </div>
                             )}
                         </>
