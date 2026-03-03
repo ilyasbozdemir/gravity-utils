@@ -11,6 +11,20 @@ const ConverterView: React.FC = () => {
     const [isProcessing, setIsProcessing] = useState(false);
     const [result, setResult] = useState<any>(null);
 
+    const handleNativeSelect = async () => {
+        if (window.electron && window.electron.selectOpenPath) {
+            const result = await window.electron.selectOpenPath({
+                title: 'Dosya Seçin',
+                properties: ['openFile']
+            });
+            if (result && result.length > 0) {
+                const f = result[0];
+                const nativeFile = new File([f.data], f.name, { type: SHARED_ENGINE.getMimeType(f.name) });
+                setFile(nativeFile);
+            }
+        }
+    };
+
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const f = e.target.files?.[0];
         if (f) setFile(f);
@@ -66,10 +80,11 @@ const ConverterView: React.FC = () => {
                         </div>
                         <h2 className="text-xl font-black mb-2">Dosyayı Buraya Sürükleyin</h2>
                         <p className="text-slate-500 font-bold text-sm mb-8">veya diskten seçmek için tıklayın</p>
-                        <input
-                            type="file"
-                            onChange={handleFileChange}
-                            className="absolute inset-0 opacity-0 cursor-pointer"
+                        <div
+                            onClick={handleNativeSelect}
+                            className="absolute inset-0 cursor-pointer"
+                            aria-label="Dosya Seçin"
+                            role="button"
                         />
                         <button className="px-8 py-3 bg-white text-black font-black text-xs uppercase tracking-widest rounded-xl hover:scale-105 transition-all">
                             Dosya Seç

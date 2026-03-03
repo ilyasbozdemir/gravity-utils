@@ -3,6 +3,7 @@
 interface Window {
   electron: {
     getSystemInfo: () => Promise<any>;
+    selectOpenPath: (options: { title?: string; filters?: any[]; properties?: string[] }) => Promise<any[] | null>;
     selectSavePath: (defaultPath: string) => Promise<string | null>;
     saveFileFromBuffer: (params: { filePath: string; buffer: ArrayBuffer }) => Promise<{ success: boolean; error?: string }>;
     showItemInFolder: (path: string) => void;

@@ -11,6 +11,7 @@ contextBridge.exposeInMainWorld('electron', {
   
   // File System (Native Desktop Engine)
   openPath: (path) => ipcRenderer.invoke('open-path', path),
+  selectOpenPath: (options) => ipcRenderer.invoke('select-open-path', options),
   selectSavePath: (defaultName) => ipcRenderer.invoke('select-save-path', defaultName),
   
   // 🔥 BOZDEMIR ENGINE NATIVE CALLS

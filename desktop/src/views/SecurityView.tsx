@@ -35,6 +35,21 @@ const SecurityView: React.FC = () => {
         }
     };
 
+    const handleNativeSelect = async () => {
+        if (window.electron && window.electron.selectOpenPath) {
+            const result = await window.electron.selectOpenPath({
+                title: 'Hash Kontrolü İçin Dosya Seçin',
+                properties: ['openFile']
+            });
+            if (result && result.length > 0) {
+                const f = result[0];
+                const nativeFile = new File([f.data], f.name, { type: 'application/octet-stream' });
+                setFile(nativeFile);
+                calculateHash(nativeFile);
+            }
+        }
+    };
+
     const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         const selectedFile = e.target.files?.[0];
         if (selectedFile) {
@@ -79,7 +94,7 @@ const SecurityView: React.FC = () => {
                             </p>
 
                             <div
-                                onClick={() => document.getElementById('hash-upload')?.click()}
+                                onClick={handleNativeSelect}
                                 className="border-2 border-dashed border-slate-200 dark:border-white/10 rounded-2xl p-12 text-center hover:bg-slate-50 dark:hover:bg-white/5 transition-all cursor-pointer group mb-8"
                             >
                                 <div className="w-16 h-16 bg-emerald-500/10 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">

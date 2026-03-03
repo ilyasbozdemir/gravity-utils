@@ -193,6 +193,20 @@ ipcMain.handle('get-app-paths', () => ({
   downloads: app.getPath('downloads'), userData: app.getPath('userData')
 }));
 
+ipcMain.handle('select-open-path', async (event, { title, filters, properties }) => {
+  const { filePaths, canceled } = await dialog.showOpenDialog({
+    title: title || 'Dosya Seçin',
+    filters: filters || [],
+    properties: properties || ['openFile', 'multiSelections']
+  });
+  if (canceled) return null;
+  return filePaths.map(p => ({
+    name: path.basename(p),
+    path: p,
+    data: fs.readFileSync(p)
+  }));
+});
+
 ipcMain.handle('select-save-path', async (event, defaultName) => {
   const { filePath, canceled } = await dialog.showSaveDialog({
     defaultPath: path.join(app.getPath('downloads'), defaultName),

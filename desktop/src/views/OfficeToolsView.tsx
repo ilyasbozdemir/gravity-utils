@@ -127,6 +127,35 @@ const OfficeToolComponent: React.FC<{ mode: OfficeToolMode; onBack: () => void }
     const inputRef = useRef<HTMLInputElement>(null);
     const renderContainerRef = useRef<HTMLDivElement>(null);
 
+    const handleNativeSave = async (blob: Blob, name: string) => {
+        if (window.electron && window.electron.selectSavePath) {
+            const filePath = await window.electron.selectSavePath(name);
+            if (filePath) {
+                const buffer = await blob.arrayBuffer();
+                await window.electron.saveFileFromBuffer({ filePath, buffer });
+            }
+        } else {
+            saveAs(blob, name);
+        }
+    };
+
+    const handleNativeSelect = async () => {
+        if (window.electron && window.electron.selectOpenPath) {
+            const result = await window.electron.selectOpenPath({
+                title: 'Dosya Seçin',
+                filters: [{ name: 'Belgeler', extensions: config.accept.replace(/\./g, "").split(",") }],
+                properties: ['openFile', 'multiSelections']
+            });
+            if (result) {
+                const nativeFiles = result.map((f: any) => new File([f.data], f.name, { type: SHARED_ENGINE.getMimeType(f.name) }));
+                const fakeEvent = { target: { files: nativeFiles } } as any;
+                handleFileSelect(fakeEvent);
+            }
+        } else {
+            inputRef.current?.click();
+        }
+    };
+
     const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files) {
             const newFiles = await Promise.all(Array.from(e.target.files).map(async f => {
@@ -338,9 +367,8 @@ const OfficeToolComponent: React.FC<{ mode: OfficeToolMode; onBack: () => void }
                 </div>
             </div>
 
-            {/* Smart Upload Area */}
             <div
-                onClick={() => inputRef.current?.click()}
+                onClick={handleNativeSelect}
                 className="border-4 border-dashed border-slate-200 dark:border-white/5 rounded-[3.5rem] p-16 text-center hover:bg-slate-50 dark:hover:bg-white/5 transition-all cursor-pointer mb-12 group relative overflow-hidden"
                 onDragOver={(e) => { e.preventDefault(); (e.currentTarget as any).classList.add('bg-blue-600/5'); }}
                 onDragLeave={(e) => { e.preventDefault(); (e.currentTarget as any).classList.remove('bg-blue-600/5'); }}
@@ -394,8 +422,8 @@ const OfficeToolComponent: React.FC<{ mode: OfficeToolMode; onBack: () => void }
                                 )}
                                 {item.status === 'success' && (
                                     <button
-                                        onClick={() => saveAs(item.result as Blob, item.resultName)}
-                                        title="Dosyayı İndir"
+                                        onClick={() => handleNativeSave(item.result as Blob, item.resultName!)}
+                                        title="Dosyayı Kaydet"
                                         className="px-8 py-3 bg-emerald-600 text-white text-[10px] font-black uppercase tracking-[0.3em] rounded-xl shadow-2xl shadow-emerald-500/30 hover:scale-105 active:scale-95 transition-all flex items-center gap-2"
                                     >
                                         <Download size={14} /> İndir
@@ -416,7 +444,10 @@ const OfficeToolComponent: React.FC<{ mode: OfficeToolMode; onBack: () => void }
                         {item.status === 'converting' && (
                             <div className="mt-4 animate-in fade-in slide-in-from-top-2 duration-300">
                                 <div className="h-1.5 w-full bg-slate-100 dark:bg-white/5 rounded-full overflow-hidden">
-                                    <div className="h-full bg-blue-500 transition-all duration-300 shadow-[0_0_10px_rgba(59,130,246,0.5)]" style={{ width: `${item.progress}%` }}></div>
+                                    <div
+                                        className="h-full bg-blue-500 transition-all duration-300 shadow-[0_0_10px_rgba(59,130,246,0.5)]"
+                                        ref={(el) => { if (el) el.style.width = `${item.progress}%` }}
+                                    ></div>
                                 </div>
                             </div>
                         )}
@@ -460,14 +491,32 @@ function ImageToPdfTool({ onBack }: { onBack: () => void }) {
     const [isBuilding, setIsBuilding] = useState(false);
     const [progress, setProgress] = useState(0);
 
-    const handleFiles = async (fileList: FileList) => {
-        const loaded = await Promise.all(Array.from(fileList).map(f => new Promise<ImageItem>(res => {
+    const handleFiles = async (fileList: FileList | File[]) => {
+        const accepted = Array.from(fileList).filter(f => f.type.startsWith('image/'));
+        if (!accepted.length) return;
+        const loaded = await Promise.all(accepted.map(f => new Promise<ImageItem>(res => {
             const r = new FileReader(); r.onload = (e) => {
                 const img = new Image(); img.onload = () => res({ id: Math.random().toString(), file: f, preview: e.target?.result as string, width: img.naturalWidth, height: img.naturalHeight });
                 img.src = e.target?.result as string;
             }; r.readAsDataURL(f);
         })));
         setImages(prev => [...prev, ...loaded as ImageItem[]]);
+    };
+
+    const handleNativeSelect = async () => {
+        if (window.electron && window.electron.selectOpenPath) {
+            const result = await window.electron.selectOpenPath({
+                title: 'Görsel Seçin',
+                filters: [{ name: 'Görseller', extensions: ['jpg', 'png', 'webp', 'jpeg'] }],
+                properties: ['openFile', 'multiSelections']
+            });
+            if (result) {
+                const nativeFiles = result.map((f: any) => new File([f.data], f.name, { type: SHARED_ENGINE.getMimeType(f.name) }));
+                handleFiles(nativeFiles);
+            }
+        } else {
+            inputRef.current?.click();
+        }
     };
 
     const buildPdf = async () => {
@@ -509,7 +558,17 @@ function ImageToPdfTool({ onBack }: { onBack: () => void }) {
                 setProgress(Math.round(((i + 1) / images.length) * 100));
             }
             const pdfBytes = await pdfDoc.save();
-            saveAs(new Blob([pdfBytes.buffer as ArrayBuffer], { type: 'application/pdf' }), `combined-${Date.now()}.pdf`);
+            const blob = new Blob([pdfBytes.buffer as ArrayBuffer], { type: 'application/pdf' });
+            const name = `combined-${Date.now()}.pdf`;
+
+            if (window.electron && window.electron.selectSavePath) {
+                const filePath = await window.electron.selectSavePath(name);
+                if (filePath) {
+                    await window.electron.saveFileFromBuffer({ filePath, buffer: pdfBytes.buffer as ArrayBuffer });
+                }
+            } else {
+                saveAs(blob, name);
+            }
             toast.success("PDF başarıyla oluşturuldu.");
         } catch (e) { toast.error("PDF oluşturma hatası."); } finally { setIsBuilding(false); }
     };
@@ -536,6 +595,7 @@ function ImageToPdfTool({ onBack }: { onBack: () => void }) {
                                 <label className="text-[10px] font-black text-slate-500 uppercase block mb-2">Sayfa Boyutu</label>
                                 <select
                                     value={pageSize}
+                                    title="Sayfa Boyutu Seçin"
                                     onChange={e => setPageSize(e.target.value as PageSize)}
                                     className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                                 >
@@ -553,7 +613,16 @@ function ImageToPdfTool({ onBack }: { onBack: () => void }) {
 
                             <div>
                                 <label className="text-[10px] font-black text-slate-500 uppercase block mb-2">Kenar Boşluğu: {margin}pt</label>
-                                <input type="range" min="0" max="100" value={margin} onChange={e => setMargin(Number(e.target.value))} className="w-full accent-blue-600" />
+                                <input
+                                    type="range"
+                                    min="0"
+                                    max="100"
+                                    value={margin}
+                                    title="Kenar Boşluğu"
+                                    placeholder="Kenar boşluğu ayarla"
+                                    onChange={e => setMargin(Number(e.target.value))}
+                                    className="w-full accent-blue-600"
+                                />
                             </div>
                         </div>
 
@@ -569,7 +638,7 @@ function ImageToPdfTool({ onBack }: { onBack: () => void }) {
                 </div>
 
                 <div className="lg:col-span-3 space-y-6">
-                    <div onClick={() => inputRef.current?.click()} className="border-4 border-dashed border-slate-200 dark:border-white/5 rounded-[3rem] p-10 text-center hover:bg-slate-50 dark:hover:bg-white/5 cursor-pointer group transition-all">
+                    <div onClick={handleNativeSelect} className="border-4 border-dashed border-slate-200 dark:border-white/5 rounded-[3rem] p-10 text-center hover:bg-slate-50 dark:hover:bg-white/5 cursor-pointer group transition-all">
                         <div className="w-16 h-16 bg-blue-600 text-white rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 shadow-xl transition-transform">
                             <ImageIcon size={32} />
                         </div>
