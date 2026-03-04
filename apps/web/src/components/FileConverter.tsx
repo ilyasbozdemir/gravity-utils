@@ -5,7 +5,7 @@ import jsPDF from 'jspdf';
 import { getAvailableFormats, type Format } from '../utils/formats';
 import { unifiedSave } from '../utils/helpers/fileSystem';
 import { isElectron } from '@/utils/electron';
-import { SHARED_ENGINE } from '@/utils/shared-core';
+import { SHARED_ENGINE, platform } from '@shared/index';
 import { Document, Packer, Paragraph, TextRun, ImageRun, type ISectionOptions } from 'docx';
 import * as pdfjsLib from 'pdfjs-dist';
 import { PDFDocument } from 'pdf-lib';
@@ -454,7 +454,12 @@ export const FileConverter: React.FC<FileConverterProps> = ({ file: initialFile,
                 {!file ? (
                     <div className="relative group">
                         <div
-                            onClick={() => fileInputRef.current?.click()}
+                            onClick={async () => {
+                                const selected = await platform.openFile();
+                                if (selected && !Array.isArray(selected)) {
+                                    setFile(selected);
+                                }
+                            }}
                             className="w-full py-24 border-2 border-dashed border-slate-300 dark:border-white/10 rounded-2xl flex flex-col items-center justify-center gap-4 hover:border-blue-500/50 hover:bg-slate-50 dark:hover:bg-white/5 transition-all cursor-pointer group shadow-inner"
                         >
                             <div className="p-5 bg-blue-100 dark:bg-blue-500/10 rounded-full text-blue-600 dark:text-blue-400 group-hover:scale-110 transition-transform shadow-[0_0_20px_rgba(59,130,246,0.1)]">

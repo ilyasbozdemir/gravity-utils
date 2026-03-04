@@ -17,6 +17,7 @@ import { renderAsync } from 'docx-preview';
 import html2canvas from 'html2canvas';
 import { loadTurkishFont } from '../utils/fontLoader';
 import jsPDF from 'jspdf';
+import { SHARED_ENGINE, platform } from '@shared/index';
 
 // Configure PDF.js worker
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
@@ -1080,7 +1081,19 @@ export const OfficeTools: React.FC<OfficeToolsProps> = ({ mode, onBack }) => {
             </div>
 
             {/* Dropper */}
-            <div onClick={() => inputRef.current?.click()}
+            <div onClick={async () => {
+                const selected = await platform.openFile({
+                    multi: true,
+                    filters: [{ name: 'Office & Belge', extensions: config.accept.split(',').map(e => e.trim().replace('.', '')) }]
+                });
+                if (selected) {
+                    if (Array.isArray(selected)) {
+                        selected.forEach(f => handleFileAdd(f));
+                    } else {
+                        handleFileAdd(selected);
+                    }
+                }
+            }}
                 className="border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-2xl p-12 text-center hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer mb-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
                 <div className="w-16 h-16 bg-blue-50 dark:bg-blue-900/20 text-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
                     <Upload size={32} />
@@ -1091,8 +1104,6 @@ export const OfficeTools: React.FC<OfficeToolsProps> = ({ mode, onBack }) => {
                     <FileType size={12} />
                     {config.accept.replace(/,/g, ' ')}
                 </div>
-                <input type="file" ref={inputRef} className="hidden" accept={config.accept} multiple
-                    onChange={handleFileSelect} title="Dosya Seç" aria-label="Dosya yükle" />
             </div>
 
             {/* File List / Actions */}

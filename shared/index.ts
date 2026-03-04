@@ -55,3 +55,5 @@ export const SHARED_ENGINE = {
     },
     ENGINE_VERSION: 'Bozdemir Engine v3.1.0-Shared-Core-Secure'
 };
+
+export * from './platform';

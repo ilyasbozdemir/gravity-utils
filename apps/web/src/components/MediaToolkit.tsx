@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { ArrowLeft, ImageIcon, Search, Type, Download, Trash2, Info, Share2, Camera } from 'lucide-react';
 
 interface MediaToolkitProps {
-    view: 'exif-viewer' | 'bulk-rename' | 'social';
-    onBack: () => void;
+    view?: 'exif-viewer' | 'bulk-rename' | 'social';
+    onBack?: () => void;
 }
 
 export const MediaToolkit: React.FC<MediaToolkitProps> = ({ view, onBack }) => {

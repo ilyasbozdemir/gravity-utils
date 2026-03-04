@@ -1,7 +1,11 @@
 import { useState, useEffect } from 'react';
+import { isDesktop as checkIsDesktop } from '@shared/index';
 
+/**
+ * Universal Environment Helper
+ */
 export const isElectron = (): boolean => {
-    return typeof window !== 'undefined' && (window as any).electron !== undefined;
+    return checkIsDesktop();
 };
 
 /**
@@ -26,4 +30,4 @@ export const getSystemInfo = async () => {
 };
 
 export const getDeveloperName = () => "Ilyas Bozdemir";
-export const getEngineName = () => "Bozdemir Desktop Engine v2.0";
+export const getEngineName = () => isElectron() ? "Bozdemir Desktop Engine v4.0" : "Bozdemir Web Studio v4.0";

@@ -8,8 +8,9 @@ import { saveAs } from 'file-saver';
 import { Document, Packer, Paragraph, TextRun, ImageRun, type ISectionOptions } from 'docx';
 import { renderAsync } from 'docx-preview';
 import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
 import { loadTurkishFont } from '../utils/fontLoader';
+import jsPDF from 'jspdf';
+import { SHARED_ENGINE, platform } from '@shared/index';
 
 // Configure PDF.js worker
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
@@ -862,7 +863,19 @@ export const PdfManager: React.FC<PdfManagerProps> = ({ file, onBack, initialTab
 
                         <div className="w-full max-w-2xl px-8">
                             <div
-                                onClick={() => mergeInputRef.current?.click()}
+                                onClick={async () => {
+                                    const selected = await platform.openFile({
+                                        multi: activeTab === 'merge',
+                                        filters: [{ name: 'PDF & Resim', extensions: ['pdf', 'jpg', 'jpeg', 'png'] }]
+                                    });
+                                    if (selected) {
+                                        if (Array.isArray(selected)) {
+                                            selected.forEach(f => handleFileAdd(f));
+                                        } else {
+                                            handleFileAdd(selected);
+                                        }
+                                    }
+                                }}
                                 className="group relative p-12 bg-slate-50 dark:bg-slate-800/30 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-[2.5rem] hover:border-red-500 dark:hover:border-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 transition-all cursor-pointer text-center"
                             >
                                 <div className="p-5 bg-red-100 dark:bg-red-900/30 rounded-3xl text-red-500 w-fit mb-6 mx-auto group-hover:scale-110 transition-transform shadow-lg">
