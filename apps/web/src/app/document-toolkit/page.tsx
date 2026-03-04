@@ -1,4 +1,4 @@
-import { DocumentToolkit } from '@/components/DocumentToolkit';
+import { DocumentToolkit } from '@shared/index';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {

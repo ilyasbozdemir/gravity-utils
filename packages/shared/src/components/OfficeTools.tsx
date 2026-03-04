@@ -17,7 +17,8 @@ import { renderAsync } from 'docx-preview';
 import html2canvas from 'html2canvas';
 import { loadTurkishFont } from '../utils/fontLoader';
 import jsPDF from 'jspdf';
-import { SHARED_ENGINE, platform } from '@shared/index';
+import { platform } from '../platform';
+import { SHARED_ENGINE } from '../utils/shared-core';
 
 // Configure PDF.js worker
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;

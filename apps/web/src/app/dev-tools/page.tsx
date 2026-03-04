@@ -1,4 +1,4 @@
-import { DevTools } from '@/components/DevTools';
+import { DevTools } from '@shared/index';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {

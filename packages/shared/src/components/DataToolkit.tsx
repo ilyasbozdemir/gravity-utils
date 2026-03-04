@@ -7,6 +7,7 @@ import {
     Info, Zap, Calculator, Scale, FileArchive, Search,
     ArrowLeft, Check
 } from 'lucide-react';
+import { usePlatform } from '../platform-adapter';
 
 type ToolTab = 'json-csv' | 'json-xml' | 'unit' | 'calc' | 'zip';
 
@@ -17,7 +18,10 @@ interface DataToolkitProps {
 
 export const DataToolkit: React.FC<DataToolkitProps> = ({ view, onBack }) => {
     const [activeTab, setActiveTab] = useState<ToolTab>(view || 'json-csv');
-    const handleBack = onBack || (() => { window.location.hash = ''; });
+    const { useNavigate } = usePlatform();
+    const navigate = useNavigate();
+
+    const handleBack = onBack || (() => { navigate('/'); });
 
     return (
         <div className="max-w-6xl mx-auto p-6 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20">

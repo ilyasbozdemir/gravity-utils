@@ -1,4 +1,4 @@
-import { MediaToolkit } from '@/components/MediaToolkit';
+import { MediaToolkit } from '@shared/index';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {

@@ -9,7 +9,11 @@
     "desktop:build": "pnpm -C apps/desktop build",
     "desktop:clean": "pnpm -C apps/desktop clean",
     "dev:all": "concurrently \"pnpm web:dev\" \"pnpm desktop:dev\"",
-    "clean-all": "powershell -Command \"foreach($d in @('apps/web/.next','apps/web/out','apps/desktop/dist','apps/desktop/out')){ if(Test-Path $d){ Remove-Item -Recurse -Force $d } }\""
+    "clean:web": "powershell -Command \"if(Test-Path apps/web/.next){ Remove-Item -Recurse -Force apps/web/.next }; if(Test-Path apps/web/out){ Remove-Item -Recurse -Force apps/web/out }\"",
+    "clean:desktop": "powershell -Command \"if(Test-Path apps/desktop/dist){ Remove-Item -Recurse -Force apps/desktop/dist }; if(Test-Path apps/desktop/out){ Remove-Item -Recurse -Force apps/desktop/out }; if(Test-Path apps/desktop/dist-electron){ Remove-Item -Recurse -Force apps/desktop/dist-electron }\"",
+    "clean:builds": "pnpm run clean:web && pnpm run clean:desktop",
+    "clean:modules": "powershell -Command \"foreach($d in @('node_modules','apps/web/node_modules','apps/desktop/node_modules','shared/node_modules')){ if(Test-Path $d){ Remove-Item -Recurse -Force $d } }\"",
+    "clean:all": "pnpm run clean:builds && pnpm run clean:modules"
   },
   "devDependencies": {
     "concurrently": "^8.2.2"

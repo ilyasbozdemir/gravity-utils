@@ -4,6 +4,7 @@ import "./globals.css";
 import { Toaster } from 'sonner';
 import { ThemeProvider } from "@/context/ThemeContext";
 import { ElectronErrorReporting } from "@/components/ElectronErrorReporting";
+import { WebPlatformProvider } from "@/components/WebPlatformProvider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -25,10 +26,12 @@ export default function RootLayout({
                     {/* We need to ensure ThemeProvider wraps correctly. If it's not a client component, we error. */}
                     {/* I will add 'use client' to ThemeContext.tsx next. */}
                     <ThemeProvider>
-                        <div className="min-h-screen">
-                            {children}
-                        </div>
-                        <Toaster richColors position="top-right" closeButton />
+                        <WebPlatformProvider>
+                            <div className="min-h-screen">
+                                {children}
+                            </div>
+                            <Toaster richColors position="top-right" closeButton />
+                        </WebPlatformProvider>
                     </ThemeProvider>
                 </div>
             </body>

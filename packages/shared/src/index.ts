@@ -57,3 +57,18 @@ export const SHARED_ENGINE = {
 };
 
 export * from './platform';
+export * from './platform-adapter';
+export * from './components/DataToolkit';
+export * from './components/OfficeTools';
+export * from './components/DesignToolkit';
+export * from './components/DevTools';
+export * from './components/DocumentToolkit';
+export * from './components/ExamGenerator';
+export * from './components/FileConverter';
+export * from './components/MediaToolkit';
+export * from './components/NetworkToolkit';
+export * from './components/PdfManager';
+export * from './components/TextToolkit';
+export * from './components/WebToolkit';
+export * from './utils/shared-core';
+export * from './utils/fontLoader';

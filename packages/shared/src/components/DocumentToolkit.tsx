@@ -17,12 +17,12 @@ import { getAvailableFormats, type Format } from '../utils/formats';
 type DocToolSubView = 'dashboard' | 'pdf-manager' | 'office-tools' | 'general-converter' | 'exam-generator';
 
 interface DocumentToolkitProps {
-    onBack: () => void;
+    onBack?: () => void;
     initialView?: DocToolSubView;
     view?: string;
 }
 
-export const DocumentToolkit: React.FC<DocumentToolkitProps> = ({ onBack, initialView = 'dashboard', view: externalView }) => {
+export const DocumentToolkit: React.FC<DocumentToolkitProps> = ({ onBack = () => { }, initialView = 'dashboard', view: externalView }) => {
     // Initialize states from prop if available to avoid "flash" of dashboard
     const [view, setView] = useState<DocToolSubView>(() => {
         if (externalView) {

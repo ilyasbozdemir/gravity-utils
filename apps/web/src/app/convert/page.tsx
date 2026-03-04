@@ -1,4 +1,4 @@
-import { FileConverter } from '@/components/FileConverter';
+import { FileConverter } from '@shared/index';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {

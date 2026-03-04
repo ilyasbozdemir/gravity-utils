@@ -1,4 +1,4 @@
-import { NetworkToolkit } from '@/components/NetworkToolkit';
+import { NetworkToolkit } from '@shared/index';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
