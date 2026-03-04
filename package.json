@@ -2,14 +2,14 @@
   "name": "gravity-utils-workspace",
   "private": true,
   "scripts": {
-    "web:dev": "pnpm -C web dev",
-    "web:build": "pnpm -C web build",
-    "desktop:dev": "pnpm -C desktop dev",
-    "desktop:sync": "powershell -Command \"if(Test-Path desktop/out){ Remove-Item -Recurse -Force desktop/out }; if(Test-Path web/out){ Copy-Item -Path web/out -Destination desktop/out -Recurse -Force } else { Write-Host 'Warning: web/out not found. Build web first to sync UI.' }\"",
-    "desktop:build": "pnpm -C desktop build",
-    "desktop:clean": "pnpm -C desktop clean",
+    "web:dev": "pnpm -C apps/web dev",
+    "web:build": "pnpm -C apps/web build",
+    "desktop:dev": "pnpm -C apps/desktop dev",
+    "desktop:sync": "powershell -Command \"if(Test-Path apps/desktop/out){ Remove-Item -Recurse -Force apps/desktop/out }; if(Test-Path apps/web/out){ Copy-Item -Path apps/web/out -Destination apps/desktop/out -Recurse -Force } else { Write-Host 'Warning: apps/web/out not found. Build web first to sync UI.' }\"",
+    "desktop:build": "pnpm -C apps/desktop build",
+    "desktop:clean": "pnpm -C apps/desktop clean",
     "dev:all": "concurrently \"pnpm web:dev\" \"pnpm desktop:dev\"",
-    "clean-all": "powershell -Command \"foreach($d in @('web/.next','web/out','desktop/dist','desktop/out')){ if(Test-Path $d){ Remove-Item -Recurse -Force $d } }\""
+    "clean-all": "powershell -Command \"foreach($d in @('apps/web/.next','apps/web/out','apps/desktop/dist','apps/desktop/out')){ if(Test-Path $d){ Remove-Item -Recurse -Force $d } }\""
   },
   "devDependencies": {
     "concurrently": "^8.2.2"
