@@ -11,11 +11,12 @@ import { EmailHeaderAnalyzer } from './EmailHeaderAnalyzer';
 type CheckSubView = 'dashboard' | 'iban' | 'tckn' | 'email';
 
 interface CheckToolkitProps {
-    onBack: () => void;
+    onBack?: () => void;
     initialView?: CheckSubView;
 }
 
 export const CheckToolkit: React.FC<CheckToolkitProps> = ({ onBack, initialView = 'dashboard' }) => {
+    const handleBack = onBack || (() => { window.history.back(); });
     const [view, setView] = useState<CheckSubView>(initialView);
 
     if (view === 'iban') {
@@ -32,7 +33,7 @@ export const CheckToolkit: React.FC<CheckToolkitProps> = ({ onBack, initialView 
         <div className="max-w-6xl mx-auto p-6 space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20">
             {/* Header */}
             <div className="flex items-center gap-4">
-                <button onClick={onBack} title="Geri Dön" className="p-2.5 rounded-xl hover:bg-slate-100 dark:hover:bg-white/5 transition-colors group">
+                <button onClick={handleBack} title="Geri Dön" className="p-2.5 rounded-xl hover:bg-slate-100 dark:hover:bg-white/5 transition-colors group">
                     <ArrowLeft className="group-hover:-translate-x-1 transition-transform" />
                 </button>
                 <div>

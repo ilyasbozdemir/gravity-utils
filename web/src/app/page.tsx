@@ -13,6 +13,7 @@ import { isElectron, useIsElectron } from '@/utils/electron';
 
 // Dynamically import components to improve initial load
 const DesktopToolkit = dynamic(() => import('@/components/DesktopToolkit').then(mod => mod.DesktopToolkit));
+const DevTools = dynamic(() => import('@/components/DevTools').then(mod => mod.DevTools), { ssr: false });
 const OTAGuide = dynamic(() => import('@/components/OTAGuide').then(mod => mod.OTAGuide));
 const FileConverter = dynamic(() => import('@/components/FileConverter').then(mod => mod.FileConverter));
 const ZipInspector = dynamic(() => import('@/components/ZipInspector').then(mod => mod.ZipInspector));
@@ -238,8 +239,8 @@ export default function Home() {
                             )}
 
                             {/* Dynamic Components Rendering */}
-                            {(view === 'pdf' || view === 'pdf-word' || view === 'word-pdf' || view === 'pdf-image' || view === 'pdf-split' || view === 'pdf-text' || view === 'imagetopdf' || view === 'exam-generator' || view === 'pdf-merge' || view === 'pdf-compress' || view === 'pdf-watermark' || view === 'excel-pdf' || view === 'pdf-excel' || view === 'ppt-pdf' || view === 'pdf-ppt' || view === 'excel-word') &&
-                                <DocumentToolkit view={view} onBack={() => setView('home')} />}
+                            {(view === 'pdf' || view === 'pdf-word' || view === 'word-pdf' || view === 'pdf-image' || view === 'pdf-split' || view === 'pdf-text' || view === 'imagetopdf' || view === 'exam-generator' || view === 'pdf-merge' || view === 'pdf-compress' || view === 'pdf-watermark' || view === 'excel-pdf' || view === 'pdf-excel' || view === 'ppt-pdf' || view === 'pdf-ppt' || view === 'excel-word' || view === 'document-toolkit') &&
+                                <DocumentToolkit view={view as any} onBack={() => setView('home')} />}
 
                             {view === 'encrypt' && <FileEncryptor file={file} onBack={() => setView('home')} />}
                             {view === 'exif' && <ExifCleaner file={file} onBack={() => setView('home')} />}
@@ -257,10 +258,10 @@ export default function Home() {
                             {view === 'sql-formatter' && <SqlFormatter onBack={() => setView('home')} />}
                             {view === 'web-toolkit' && <WebToolkit onBack={() => setView('home')} />}
                             {view === 'network-toolkit' && <NetworkToolkit onBack={() => setView('home')} />}
-                            {(view === 'json-csv' || view === 'json-xml' || view === 'units' || view === 'zip') &&
-                                <DataToolkit view={view as any} onBack={() => setView('home')} />}
-                            {(view === 'color-toolkit' || view === 'qr' || view === 'favicon' || view === 'figma-to-code') &&
-                                <DesignToolkit view={view === 'color-toolkit' ? 'color' : view as any} onBack={() => setView('home')} />}
+                            {(view === 'json-csv' || view === 'json-xml' || view === 'units' || view === 'zip' || view === 'data-toolkit') &&
+                                <DataToolkit view={view === 'data-toolkit' ? 'json-csv' : view as any} onBack={() => setView('home')} />}
+                            {(view === 'color-toolkit' || view === 'qr' || view === 'favicon' || view === 'figma-to-code' || view === 'design-toolkit') &&
+                                <DesignToolkit view={view === 'color-toolkit' ? 'color' : (view === 'design-toolkit' ? 'color' : view as any)} onBack={() => setView('home')} />}
                             {view === 'password-generator' && <PasswordGenerator onBack={() => setView('home')} />}
                             {view === 'social-guide' && <SocialGuide onBack={() => setView('home')} />}
                             {view === 'http-status' && <HttpStatusCodes onBack={() => setView('home')} />}
@@ -274,21 +275,20 @@ export default function Home() {
                             {view === 'base64' && <Base64Viewer file={file} onBack={() => setView('home')} />}
 
                             {/* New Toolkit Views */}
-                            {(view === 'text-cleaner' || view === 'case-converter-pro' || view === 'case' || view === 'lorem-ipsum' || view === 'markdown-editor' || view === 'mermaid' || view === 'text-diff') &&
-                                <TextToolkit view={view === 'lorem-ipsum' ? 'lorem' : (view === 'markdown-editor' ? 'markdown' : view as any)} onBack={() => setView('home')} />}
+                            {(view === 'text-cleaner' || view === 'case-converter-pro' || view === 'case' || view === 'lorem-ipsum' || view === 'markdown-editor' || view === 'mermaid' || view === 'text-diff' || view === 'text-toolkit') &&
+                                <TextToolkit view={view === 'lorem-ipsum' ? 'lorem' : (view === 'markdown-editor' ? 'markdown' : (view === 'text-toolkit' ? 'case-converter-pro' : view as any))} onBack={() => setView('home')} />}
 
                             {(view === 'date-calculator' || view === 'internet-speed' || view === 'file-size-calc' ||
                                 view === 'iban-checker' || view === 'tckn-checker' || view === 'css-units' || view === 'viewport-calc') &&
                                 <SmartCalculator view={view} onBack={() => setView('home')} />}
 
-                            {(view === 'exif-viewer' || view === 'bulk-rename') &&
-                                <MediaToolkit view={view} onBack={() => setView('home')} />}
+                            {(view === 'exif-viewer' || view === 'bulk-rename' || view === 'media-toolkit') &&
+                                <MediaToolkit view={view === 'media-toolkit' ? 'exif-viewer' : view as any} onBack={() => setView('home')} />}
 
                             {view === 'identifier-converter' && <IdentifierConverter onBack={() => setView('home')} />}
                             {view === 'schema-generator' && <SchemaGenerator onBack={() => setView('home')} />}
                             {view === 'metadata-generator' && <MetadataGenerator onBack={() => setView('home')} />}
                             {view === 'email-header-analyzer' && <EmailHeaderAnalyzer onBack={() => setView('home')} />}
-                            {view === 'document-toolkit' && <DocumentToolkit onBack={() => setView('home')} />}
                             {view === 'check-toolkit' && <CheckToolkit onBack={() => setView('home')} />}
                             {view === 'xml-validator' && <XmlValidator onBack={() => setView('home')} />}
                             {view === 'exam-generator' && <ExamGenerator onBack={() => setView('home')} />}
@@ -296,6 +296,9 @@ export default function Home() {
                             {view === 'desktop-toolkit' && <DesktopToolkit onBack={() => setView('home')} onViewOTA={() => setView('ota-guide')} />}
                             {view === 'ota-guide' && <OTAGuide onBack={() => setView('home')} />}
                             {view === 'convert' && <FileConverter file={file} onBack={() => setView('home')} />}
+
+                            {/* Dev Tools consolidated dashboard or individual */}
+                            {view === 'dev-tools' && <DevTools onBack={() => setView('home')} />}
                         </div>
                     )}
 

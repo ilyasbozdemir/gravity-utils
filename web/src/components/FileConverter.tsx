@@ -19,11 +19,12 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs
 
 interface FileConverterProps {
     file: File | null;
-    onBack: () => void;
+    onBack?: () => void;
     initialFormat?: Format | null;
 }
 
 export const FileConverter: React.FC<FileConverterProps> = ({ file: initialFile, onBack, initialFormat = null }) => {
+    const handleBack = onBack || (() => { window.history.back(); });
     const [file, setFile] = useState<File | null>(initialFile);
     const [formats, setFormats] = useState<Format[]>([]);
     const [selectedFormat, setSelectedFormat] = useState<Format | null>(initialFormat);
@@ -427,7 +428,7 @@ export const FileConverter: React.FC<FileConverterProps> = ({ file: initialFile,
         <div className="max-w-[800px] mx-auto p-8 animate-[fadeIn_0.5s_ease] bg-white dark:bg-white/5 backdrop-blur-xl border border-slate-200 dark:border-white/10 rounded-3xl shadow-xl dark:shadow-2xl transition-colors duration-300">
             <div className="flex items-center justify-start gap-4 mb-8">
                 <button
-                    onClick={onBack}
+                    onClick={handleBack}
                     className="p-2 bg-blue-50 border border-blue-200 text-blue-600 hover:bg-blue-100 dark:bg-blue-500/20 dark:border-blue-500/40 dark:text-white dark:hover:bg-blue-500/40 rounded-lg transition-all shadow-sm dark:shadow-[0_0_15px_rgba(59,130,246,0.2)]"
                     title="Geri Dön"
                 >

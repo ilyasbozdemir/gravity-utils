@@ -5,12 +5,12 @@ import { ArrowLeft, Copy, Check, RefreshCw, Download } from 'lucide-react';
 import { saveAs } from 'file-saver';
 
 interface JsonFormatterProps {
-    file: File | null;
+    file?: File | null;
     onBack: () => void;
 }
 
 export const JsonFormatter: React.FC<JsonFormatterProps> = ({ file: initialFile, onBack }) => {
-    const [file, setFile] = useState<File | null>(initialFile);
+    const [file, setFile] = useState<File | null>(initialFile ?? null);
     const [jsonContent, setJsonContent] = useState<string>('');
     const [error, setError] = useState<string | null>(null);
     const [copied, setCopied] = useState(false);

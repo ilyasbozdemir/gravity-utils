@@ -808,7 +808,8 @@ function CidrTab() {
 }
 
 // ─── Main Component ───────────────────────────────────────────────────────────
-export function NetworkToolkit({ onBack }: { onBack: () => void }) {
+export function NetworkToolkit({ onBack }: { onBack?: () => void }) {
+    const handleBack = onBack || (() => { window.history.back(); });
     const [tab, setTab] = useState<ToolTab>('subnet');
 
     const TABS = [
@@ -832,7 +833,7 @@ export function NetworkToolkit({ onBack }: { onBack: () => void }) {
             {/* Header */}
             <div className="flex items-center gap-4 mb-8">
                 <button
-                    onClick={onBack}
+                    onClick={handleBack}
                     title="Geri Dön"
                     aria-label="Geri Dön"
                     className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"

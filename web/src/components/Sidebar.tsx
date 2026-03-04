@@ -41,7 +41,8 @@ export type ToolView =
     | 'iban-checker' | 'tckn-checker' | 'file-size-calc' | 'viewport-calc' | 'exif-viewer' | 'bulk-rename'
     | 'email-header-analyzer' | 'identifier-converter' | 'schema-generator' | 'metadata-generator' | 'document-toolkit' | 'check-toolkit'
     | 'json-to-code' | 'text-diff' | 'exam-generator' | 'pdf-merge' | 'pdf-split' | 'pdf-compress' | 'pdf-watermark' | 'mermaid'
-    | 'codesnap' | 'mock-generator' | 'sql-converter' | 'terminal-mastery' | 'excel-word' | 'sitemap-generator' | 'robots-txt-builder' | 'xml-validator' | 'figma-to-code' | 'html-to-pdf' | 'desktop-toolkit' | 'ota-guide';
+    | 'codesnap' | 'mock-generator' | 'sql-converter' | 'terminal-mastery' | 'excel-word' | 'sitemap-generator' | 'robots-txt-builder' | 'xml-validator' | 'figma-to-code' | 'html-to-pdf' | 'desktop-toolkit' | 'ota-guide'
+    | 'dev-tools' | 'media-toolkit' | 'data-toolkit' | 'design-toolkit' | 'text-toolkit';
 
 interface SidebarProps {
     currentView: ToolView;
@@ -71,71 +72,29 @@ const CATEGORIES = [
 ];
 
 const NAV_ITEMS: NavItem[] = [
-    // Office & Documents
-    { id: 'document-toolkit', title: 'Belge & Ofis Atölyesi', icon: <FileText size={18} />, category: 'office', addedAt: '2026-02-20' },
+    // Ana Panel
+    { id: 'home', title: 'Hızlı Erişim', icon: <Home size={18} />, category: 'desktop' },
+
+    // Döküman Motoru
+    { id: 'document-toolkit', title: 'PDF & Ofis Merkezi', icon: <FileText size={18} />, category: 'office' },
     { id: 'convert', title: 'Dosya Dönüştürücü', icon: <Layers size={18} />, category: 'office' },
 
-    // Text & Content
-    { id: 'text-cleaner', title: 'Metin Temizleyici Pro', icon: <RefreshCw size={18} />, category: 'text-content', addedAt: '2026-02-20' },
-    { id: 'case-converter-pro', title: 'Case Converter Pro', icon: <CaseSensitive size={18} />, category: 'text-content', addedAt: '2026-02-20' },
-    { id: 'lorem-ipsum', title: 'Lorem Ipsum Üretici', icon: <Type size={18} />, category: 'text-content' },
-    { id: 'text', title: 'Metin Analizi', icon: <Search size={18} />, category: 'text-content' },
-    { id: 'markdown-editor', title: 'Markdown Editör', icon: <FileCode size={18} />, category: 'text-content' },
+    // Geliştirici & Sistem
+    { id: 'dev-tools', title: 'Kod & JSON Araçları', icon: <Code2 size={18} />, category: 'dev' },
+    { id: 'web-toolkit', title: 'Web Geliştirici Kutusu', icon: <Globe size={18} />, category: 'seo' },
+    { id: 'network-toolkit', title: 'Ağ & Network', icon: <Zap size={18} />, category: 'seo' },
+    { id: 'check-toolkit', title: 'Güvenlik & Doğrulama', icon: <ShieldCheck size={18} />, category: 'security' },
 
-    // Media
-    { id: 'optimize', title: 'Resim Sıkıştırıcı', icon: <ImageIcon size={18} />, category: 'media' },
-    { id: 'color-toolkit', title: 'Renk Araç Seti (Pro)', icon: <Palette size={18} />, category: 'media', addedAt: '2026-02-23' },
-    { id: 'social', title: 'Sosyal Medya Boyut', icon: <Smartphone size={18} />, category: 'media' },
-    { id: 'exif-viewer', title: 'EXIF Görüntüleyici', icon: <Search size={18} />, category: 'media', addedAt: '2026-02-20' },
-    { id: 'bulk-rename', title: 'Toplu İsimlendir', icon: <Type size={18} />, category: 'media', addedAt: '2026-02-20' },
-    { id: 'qr', title: 'QR Kod İşlemleri', icon: <QrCode size={18} />, category: 'media' },
+    // Medya & Tasarım
+    { id: 'media-toolkit', title: 'Medya Kitaplığı', icon: <ImageIcon size={18} />, category: 'media' },
+    { id: 'design-toolkit', title: 'Tasarım & UI Lab', icon: <Palette size={18} />, category: 'media' },
 
-    // Dev
-    { id: 'json', title: 'JSON Formatlayıcı', icon: <FileJson size={18} />, category: 'dev' },
-    { id: 'jwt', title: 'JWT Debugger', icon: <ShieldCheck size={18} />, category: 'dev' },
-    { id: 'http-status', title: 'HTTP Durum Kodları', icon: <Globe size={18} />, category: 'dev' },
-    { id: 'css-units', title: 'CSS Birim Çevirici', icon: <Code2 size={18} />, category: 'dev', addedAt: '2026-02-20' },
-    { id: 'viewport-calc', title: 'Viewport Calculator', icon: <Smartphone size={18} />, category: 'dev', addedAt: '2026-02-20' },
-    { id: 'network-cable', title: 'Network Kablo Testi', icon: <Cable size={18} />, category: 'dev' },
-    { id: 'sql-formatter', title: 'SQL Formatlayıcı', icon: <Database size={18} />, category: 'dev' },
-    { id: 'json-to-code', title: 'JSON ↔ Code Generator', icon: <FileCode size={18} />, category: 'dev', addedAt: '2026-02-23' },
-    { id: 'mermaid', title: 'Mermaid Diyagram Pro', icon: <Sparkles size={18} />, category: 'dev', addedAt: '2026-02-23' },
-    { id: 'codesnap', title: 'CodeSnap Pro', icon: <Camera size={18} />, category: 'dev', addedAt: '2026-02-23' },
-    { id: 'terminal-mastery', title: 'Terminal Mastery Pro', icon: <Terminal size={18} />, category: 'dev', addedAt: '2026-02-23' },
-    { id: 'mock-generator', title: 'Smart Mock Generator', icon: <Database size={18} />, category: 'dev', addedAt: '2026-02-23' },
-    { id: 'sql-converter', title: 'SQL Schema Converter', icon: <Repeat size={18} />, category: 'dev', addedAt: '2026-02-23' },
-    { id: 'text-diff', title: 'Metin Karşılaştırıcı', icon: <Split size={18} />, category: 'dev', addedAt: '2026-02-23' },
-    { id: 'identifier-converter', title: 'Akıllı İsim Çevirici', icon: <Type size={18} />, category: 'dev', addedAt: '2026-02-20' },
-    { id: 'figma-to-code', title: 'Design → Code Pro', icon: <Code size={18} />, category: 'dev', addedAt: '2026-02-24' },
+    // Veri & Metin
+    { id: 'data-toolkit', title: 'Veri İşleme Merkezi', icon: <Database size={18} />, category: 'dev' },
+    { id: 'text-toolkit', title: 'Metin Araçları Pro', icon: <Type size={18} />, category: 'text-content' },
 
-    // Web & SEO
-    { id: 'web-toolkit', title: 'Web Geliştirici Kutusu', icon: <Globe size={18} />, category: 'seo', addedAt: '2026-02-24' },
-    { id: 'sitemap-generator', title: 'Sitemap Oluşturucu', icon: <Network size={18} />, category: 'seo', addedAt: '2026-02-24' },
-    { id: 'robots-txt-builder', title: 'Robots.txt Hazırlayıcı', icon: <FileCode size={18} />, category: 'seo', addedAt: '2026-02-24' },
-    { id: 'xml-validator', title: 'XML / XSD / JSON Pro', icon: <FileCode size={18} />, category: 'seo', addedAt: '2026-02-24' },
-    { id: 'html-to-pdf', title: 'Web → PDF Pro', icon: <FileText size={18} />, category: 'seo', addedAt: '2026-02-24' },
-    { id: 'schema-generator', title: 'Şema & Form Üretici', icon: <Layers size={18} />, category: 'seo', addedAt: '2026-02-20' },
-    { id: 'metadata-generator', title: 'Meta Etiketi Üretici', icon: <Globe size={18} />, category: 'seo', addedAt: '2026-02-20' },
-    { id: 'json-ld', title: 'JSON-LD Editörü', icon: <FileJson size={18} />, category: 'seo', addedAt: '2026-02-23' },
-
-    // Calculators
-    { id: 'date-calculator', title: 'Tarih & Gün Hesapla', icon: <Clock size={18} />, category: 'calculators', addedAt: '2026-02-20' },
-    { id: 'internet-speed', title: 'Download Süresi', icon: <Zap size={18} />, category: 'calculators', addedAt: '2026-02-20' },
-    { id: 'file-size-calc', title: 'Dosya Boyutu Tahmin', icon: <Layers size={18} />, category: 'calculators', addedAt: '2026-02-20' },
-    { id: 'units', title: 'Birim Dönüştürücü', icon: <Calculator size={18} />, category: 'calculators' },
-    { id: 'aspect-ratio', title: 'Aspect Ratio', icon: <Layers size={18} />, category: 'calculators' },
-
-    // Checks
-    { id: 'check-toolkit', title: 'Güvenlik & Doğrulama', icon: <ShieldCheck size={18} />, category: 'checks', addedAt: '2026-02-20' },
-
-    // Security
-    { id: 'encrypt', title: 'Dosya Şifreleyici', icon: <Lock size={18} />, category: 'security' },
-    { id: 'hash', title: 'Hash Oluşturucu', icon: <Hash size={18} />, category: 'security' },
-    { id: 'password-generator', title: 'Şifre Üretici', icon: <Lock size={18} />, category: 'security' },
-
-    // Desktop
+    // System (Web optimized)
     { id: 'desktop-toolkit', title: 'Desktop Engine Paneli', icon: <Monitor size={18} />, category: 'desktop' },
-    { id: 'ota-guide', title: 'Akıllı Güncelleme (OTA)', icon: <Zap size={18} />, category: 'desktop' },
 ];
 
 function isNew(dateStr?: string) {
