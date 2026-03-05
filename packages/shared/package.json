@@ -5,24 +5,28 @@
     "main": "src/index.ts",
     "types": "src/index.ts",
     "dependencies": {
-        "react": "^18.2.0",
-        "react-dom": "^18.2.0",
+        "@pdf-lib/fontkit": "^1.1.1",
+        "docx": "^9.5.3",
+        "docx-preview": "^0.3.7",
+        "file-saver": "^2.0.5",
+        "html2canvas": "^1.4.1",
+        "jspdf": "^4.0.0",
+        "jszip": "^3.10.1",
         "lucide-react": "^0.563.0",
-        "sonner": "^2.0.7",
         "pdf-lib": "^1.17.1",
         "pdfjs-dist": "^4.0.0",
-        "file-saver": "^2.0.5",
-        "docx": "^9.5.3",
-        "@pdf-lib/fontkit": "^1.1.1",
-        "docx-preview": "^0.3.7",
-        "jspdf": "^4.0.0",
-        "xlsx": "^0.18.5",
-        "jszip": "^3.10.1"
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0",
+        "sonner": "^2.0.7",
+        "tesseract.js": "^7.0.0",
+        "xlsx": "^0.18.5"
     },
     "devDependencies": {
-        "typescript": "^5.0.0",
+        "@types/file-saver": "^2.0.7",
+        "@types/html2canvas": "^1.0.0",
         "@types/react": "^18.2.0",
         "@types/react-dom": "^18.2.0",
-        "@types/file-saver": "^2.0.7"
+        "@types/tesseract.js": "^2.0.0",
+        "typescript": "^5.0.0"
     }
 }

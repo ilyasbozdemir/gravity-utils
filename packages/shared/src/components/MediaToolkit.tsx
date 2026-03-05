@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState } from 'react';
 import { ArrowLeft, ImageIcon, Search, Type, Download, Trash2, Info, Share2, Camera } from 'lucide-react';
 

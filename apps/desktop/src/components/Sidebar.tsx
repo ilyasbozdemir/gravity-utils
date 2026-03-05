@@ -19,7 +19,10 @@ export type ToolView =
     | 'media-tools'
     | 'data-tools'
     | 'text-tools'
-    | 'design-tools';
+    | 'design-tools'
+    | 'document-toolkit'
+    | 'check-toolkit'
+    | 'desktop-toolkit';
 
 interface SidebarProps {
     currentView: ToolView;

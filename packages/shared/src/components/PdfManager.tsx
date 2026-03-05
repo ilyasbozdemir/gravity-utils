@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { ArrowLeft, FileText, Scissors, Download, Layers, Minimize2, Stamp, RefreshCw, Plus, Trash2, ArrowUp, ArrowDown, LayoutGrid, GripVertical, Image as ImageIcon, Database, Info, Lock, Unlock, Search, PenTool, Hash, RotateCw, Edit3, Settings2, CheckCircle2, ShieldCheck } from 'lucide-react';
 import { toast } from 'sonner';

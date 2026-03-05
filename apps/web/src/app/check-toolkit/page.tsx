@@ -1,4 +1,4 @@
-import { CheckToolkit } from '@/components/CheckToolkit';
+import { CheckToolkit } from '@shared/index';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {

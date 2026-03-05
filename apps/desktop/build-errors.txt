@@ -1,0 +1,9 @@
+﻿src/views/PdfManagerView.tsx(5,13): error TS2739: Type '{}' is missing the following properties from type 'PdfManagerProps': file, onBack
+../../packages/shared/src/components/DevTools.tsx(8,31): error TS2307: Cannot find module './JsonFormatter' or its corresponding type declarations.
+../../packages/shared/src/components/DevTools.tsx(9,30): error TS2307: Cannot find module './SqlFormatter' or its corresponding type declarations.
+../../packages/shared/src/components/DevTools.tsx(10,29): error TS2307: Cannot find module './RegexTester' or its corresponding type declarations.
+../../packages/shared/src/components/DevTools.tsx(11,29): error TS2307: Cannot find module './JwtDebugger' or its corresponding type declarations.
+../../packages/shared/src/components/FileConverter.tsx(6,29): error TS2307: Cannot find module '../utils/helpers/fileSystem' or its corresponding type declarations.
+../../packages/shared/src/components/FileConverter.tsx(7,28): error TS2307: Cannot find module '@/utils/electron' or its corresponding type declarations.
+../../packages/shared/src/components/OfficeTools.tsx(1092,47): error TS2304: Cannot find name 'handleFileAdd'.
+../../packages/shared/src/components/OfficeTools.tsx(1094,25): error TS2304: Cannot find name 'handleFileAdd'.

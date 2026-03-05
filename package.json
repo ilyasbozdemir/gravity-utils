@@ -17,5 +17,9 @@
   },
   "devDependencies": {
     "concurrently": "^8.2.2"
+  },
+  "dependencies": {
+    "sql-formatter": "^15.7.2",
+    "tesseract.js": "^7.0.0"
   }
 }

@@ -1,11 +1,11 @@
+"use client";
+
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, RefreshCw, AlertCircle, Settings2, Download, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
 import jsPDF from 'jspdf';
 import { getAvailableFormats, type Format } from '../utils/formats';
-import { unifiedSave } from '../utils/helpers/fileSystem';
-import { isElectron } from '@/utils/electron';
-import { SHARED_ENGINE, platform } from '@shared/index';
+import { SHARED_ENGINE, platform, isDesktop } from '../index';
 import { Document, Packer, Paragraph, TextRun, ImageRun, type ISectionOptions } from 'docx';
 import * as pdfjsLib from 'pdfjs-dist';
 import { PDFDocument } from 'pdf-lib';
@@ -18,12 +18,12 @@ import { loadTurkishFont } from '../utils/fontLoader';
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
 
 interface FileConverterProps {
-    file: File | null;
+    file?: File | null;
     onBack?: () => void;
     initialFormat?: Format | null;
 }
 
-export const FileConverter: React.FC<FileConverterProps> = ({ file: initialFile, onBack, initialFormat = null }) => {
+export const FileConverter: React.FC<FileConverterProps> = ({ file: initialFile = null, onBack, initialFormat = null }) => {
     const handleBack = onBack || (() => { window.history.back(); });
     const [file, setFile] = useState<File | null>(initialFile);
     const [formats, setFormats] = useState<Format[]>([]);
@@ -78,7 +78,7 @@ export const FileConverter: React.FC<FileConverterProps> = ({ file: initialFile,
                 if (file.type.startsWith('image/')) {
                     setProgress('PDF oluşturuluyor...');
 
-                    if (isElectron()) {
+                    if (isDesktop()) {
                         // 🚀 BOZDEMIR ENGINE NATIVE PROCESSING
                         const arrayBuffer = await file.arrayBuffer();
                         const ext = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
@@ -88,7 +88,7 @@ export const FileConverter: React.FC<FileConverterProps> = ({ file: initialFile,
                         });
 
                         if (result.success) {
-                            await unifiedSave(new Blob([result.buffer]), finalName);
+                            await platform.saveFile(new Blob([result.buffer]), finalName);
                         } else {
                             throw new Error(result.error);
                         }
@@ -118,7 +118,7 @@ export const FileConverter: React.FC<FileConverterProps> = ({ file: initialFile,
                         const y = (pageHeight - finalHeight) / 2;
 
                         doc.addImage(imgData, 'JPEG', x, y, finalWidth, finalHeight);
-                        await unifiedSave(doc.output('blob'), finalName);
+                        await platform.saveFile(doc.output('blob'), finalName);
                     }
                 } else if (file.name.toLowerCase().endsWith('.docx')) {
                     setProgress('Word belgesi birer bir görselleştiriliyor (Bu işlem biraz vakit alabilir)...');
@@ -192,9 +192,9 @@ export const FileConverter: React.FC<FileConverterProps> = ({ file: initialFile,
 
                     const pdfBytes = await pdfDoc.save();
                     const blob = new Blob([pdfBytes as unknown as BlobPart], { type: "application/pdf" });
-                    unifiedSave(blob, finalName);
+                    platform.saveFile(blob, finalName);
                 } else {
-                    unifiedSave(file, finalName);
+                    platform.saveFile(file, finalName);
                 }
                 setIsProcessing(false);
                 return;
@@ -285,9 +285,9 @@ export const FileConverter: React.FC<FileConverterProps> = ({ file: initialFile,
                         title: file.name
                     });
                     const buffer = await Packer.toBlob(wordDoc);
-                    unifiedSave(buffer, finalName);
+                    platform.saveFile(buffer, finalName);
                 } else {
-                    unifiedSave(file, finalName);
+                    platform.saveFile(file, finalName);
                 }
                 setIsProcessing(false);
                 return;
@@ -314,7 +314,7 @@ export const FileConverter: React.FC<FileConverterProps> = ({ file: initialFile,
                                 viewport: viewport,
                                 canvas: canvas
                             } as unknown as Parameters<typeof page.render>[0]).promise;
-                            unifiedSave(canvas.toDataURL(targetExt === 'png' ? 'image/png' : 'image/jpeg', 0.9), finalName);
+                            platform.saveFile(canvas.toDataURL(targetExt === 'png' ? 'image/png' : 'image/jpeg', 0.9), finalName);
                         }
                     } else {
                         const JSZip = (await import('jszip')).default;
@@ -338,7 +338,7 @@ export const FileConverter: React.FC<FileConverterProps> = ({ file: initialFile,
                             }
                         }
                         const zipBlob = await zip.generateAsync({ type: 'blob' });
-                        unifiedSave(zipBlob, `${baseName}-sayfalar.zip`);
+                        platform.saveFile(zipBlob, `${baseName}-sayfalar.zip`);
                     }
                     setIsProcessing(false);
                     return;
@@ -380,7 +380,7 @@ export const FileConverter: React.FC<FileConverterProps> = ({ file: initialFile,
                     if (ctx) {
                         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
                         canvas.toBlob((b) => {
-                            if (b) unifiedSave(b, finalName);
+                            if (b) platform.saveFile(b, finalName);
                             URL.revokeObjectURL(url);
                         }, targetExt === 'png' ? 'image/png' : 'image/jpeg', 0.9);
                     }
@@ -399,13 +399,13 @@ export const FileConverter: React.FC<FileConverterProps> = ({ file: initialFile,
                 const response = await fetch('/api/convert', { method: 'POST', body: formData });
                 if (!response.ok) throw new Error('Sunucu hatası');
                 const resultBlob = await response.blob();
-                unifiedSave(resultBlob, finalName);
+                platform.saveFile(resultBlob, finalName);
                 setIsProcessing(false);
                 return;
             }
 
             // 4. Fallback / Rename Logic
-            unifiedSave(file, finalName);
+            platform.saveFile(file, finalName);
             toast.success("Dosya başarıyla hazırlandı.");
 
         } catch (error: any) {

@@ -1,4 +1,4 @@
-import { TextToolkit } from '@/components/TextToolkit';
+import { TextToolkit } from '@shared/index';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {

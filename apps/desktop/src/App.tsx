@@ -21,6 +21,9 @@ const MediaToolkitView = lazy(() => import('./views/MediaToolkitView'));
 const DataToolkitView = lazy(() => import('./views/DataToolkitView'));
 const TextToolkitView = lazy(() => import('./views/TextToolkitView'));
 const DesignToolkitView = lazy(() => import('./views/DesignToolkitView'));
+const DocumentToolkitView = lazy(() => import('./views/DocumentToolkitView'));
+const CheckToolkitView = lazy(() => import('./views/CheckToolkitView'));
+const DesktopToolkitView = lazy(() => import('./views/DesktopToolkitView'));
 
 const MainLayout: React.FC = () => {
     const location = useLocation();
@@ -70,6 +73,9 @@ const MainLayout: React.FC = () => {
                                 <Route path="/data-tools" element={<DataToolkitView />} />
                                 <Route path="/text-tools" element={<TextToolkitView />} />
                                 <Route path="/design-tools" element={<DesignToolkitView />} />
+                                <Route path="/document-toolkit" element={<DocumentToolkitView />} />
+                                <Route path="/check-toolkit" element={<CheckToolkitView />} />
+                                <Route path="/desktop-toolkit" element={<DesktopToolkitView />} />
                                 <Route path="*" element={
                                     <div className="h-full flex flex-col items-center justify-center p-20 text-center">
                                         <LayoutGrid size={64} className="text-slate-800 mb-6" />

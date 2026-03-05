@@ -70,5 +70,7 @@ export * from './components/NetworkToolkit';
 export * from './components/PdfManager';
 export * from './components/TextToolkit';
 export * from './components/WebToolkit';
+export * from './components/CheckToolkit';
+export * from './components/DesktopToolkit';
 export * from './utils/shared-core';
 export * from './utils/fontLoader';

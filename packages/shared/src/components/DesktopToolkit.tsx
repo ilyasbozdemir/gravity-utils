@@ -6,8 +6,7 @@ import {
     ShieldCheck, Zap, ArrowLeft, ExternalLink, RefreshCw,
     Download, Info
 } from 'lucide-react';
-import { useIsElectron, isElectron } from '../utils/helpers/env';
-import { openSystemPath } from '../utils/helpers/fileSystem';
+import { isDesktop } from '../index';
 
 interface DesktopToolkitProps {
     onBack: () => void;
@@ -19,7 +18,8 @@ export const DesktopToolkit: React.FC<DesktopToolkitProps> = ({ onBack, onViewOT
     const [paths, setPaths] = useState<any>(null);
     const [engineStatus, setEngineStatus] = useState<any>(null);
     const [loading, setLoading] = useState(true);
-    const isApp = useIsElectron();
+    const [isApp, setIsApp] = useState(false);
+    useEffect(() => setIsApp(isDesktop()), []);
 
     useEffect(() => {
         if (isApp) {
@@ -123,7 +123,7 @@ export const DesktopToolkit: React.FC<DesktopToolkitProps> = ({ onBack, onViewOT
                             {Object.entries(paths).map(([key, path]: any) => (
                                 <button
                                     key={key}
-                                    onClick={() => openSystemPath(path)}
+                                    onClick={() => (window as any).electron.openPath(path)}
                                     className="flex items-center justify-between p-4 bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/5 rounded-2xl hover:border-blue-500/30 group transition-all"
                                 >
                                     <div className="flex items-center gap-4 text-left overflow-hidden">
@@ -169,7 +169,7 @@ export const DesktopToolkit: React.FC<DesktopToolkitProps> = ({ onBack, onViewOT
                             <ActionButton
                                 icon={<Download size={16} />}
                                 label="İndirme Klasörünü Aç"
-                                onClick={() => openSystemPath(paths.downloads)}
+                                onClick={() => (window as any).electron.openPath(paths.downloads)}
                             />
                             <ActionButton
                                 icon={<Zap size={16} />}

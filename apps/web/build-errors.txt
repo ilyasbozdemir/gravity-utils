@@ -1,0 +1,51 @@
+﻿src/app/case-converter-pro/page.tsx(1,29): error TS2307: Cannot find module '@/components/TextToolkit' or its corresponding type declarations.
+src/app/desktop-toolkit/page.tsx(10,13): error TS2741: Property 'onBack' is missing in type '{}' but required in type 'DesktopToolkitProps'.
+src/app/page.tsx(16,39): error TS2307: Cannot find module '@/components/DevTools' or its corresponding type declarations.
+src/app/page.tsx(18,44): error TS2307: Cannot find module '@/components/FileConverter' or its corresponding type declarations.
+src/app/page.tsx(25,41): error TS2307: Cannot find module '@/components/PdfManager' or its corresponding type declarations.
+src/app/page.tsx(41,42): error TS2307: Cannot find module '@/components/OfficeTools' or its corresponding type declarations.
+src/app/page.tsx(42,41): error TS2307: Cannot find module '@/components/WebToolkit' or its corresponding type declarations.
+src/app/page.tsx(43,45): error TS2307: Cannot find module '@/components/NetworkToolkit' or its corresponding type declarations.
+src/app/page.tsx(59,42): error TS2307: Cannot find module '@/components/TextToolkit' or its corresponding type declarations.
+src/app/page.tsx(61,43): error TS2307: Cannot find module '@/components/MediaToolkit' or its corresponding type declarations.
+src/app/page.tsx(62,42): error TS2307: Cannot find module '@/components/DataToolkit' or its corresponding type declarations.
+src/app/page.tsx(63,44): error TS2307: Cannot find module '@/components/DesignToolkit' or its corresponding type declarations.
+src/app/page.tsx(68,46): error TS2307: Cannot find module '@/components/DocumentToolkit' or its corresponding type declarations.
+src/app/page.tsx(80,44): error TS2307: Cannot find module '@/components/ExamGenerator' or its corresponding type declarations.
+src/app/page.tsx(243,50): error TS2322: Type '{ view: any; onBack: () => void; }' is not assignable to type 'IntrinsicAttributes'.
+  Property 'view' does not exist on type 'IntrinsicAttributes'.
+src/app/page.tsx(259,68): error TS2322: Type '{ onBack: () => void; }' is not assignable to type 'IntrinsicAttributes'.
+  Property 'onBack' does not exist on type 'IntrinsicAttributes'.
+src/app/page.tsx(260,76): error TS2322: Type '{ onBack: () => void; }' is not assignable to type 'IntrinsicAttributes'.
+  Property 'onBack' does not exist on type 'IntrinsicAttributes'.
+src/app/page.tsx(262,46): error TS2322: Type '{ view: any; onBack: () => void; }' is not assignable to type 'IntrinsicAttributes'.
+  Property 'view' does not exist on type 'IntrinsicAttributes'.
+src/app/page.tsx(264,48): error TS2322: Type '{ view: any; onBack: () => void; }' is not assignable to type 'IntrinsicAttributes'.
+  Property 'view' does not exist on type 'IntrinsicAttributes'.
+src/app/page.tsx(279,46): error TS2322: Type '{ view: any; onBack: () => void; }' is not assignable to type 'IntrinsicAttributes'.
+  Property 'view' does not exist on type 'IntrinsicAttributes'.
+src/app/page.tsx(286,47): error TS2322: Type '{ view: any; onBack: () => void; }' is not assignable to type 'IntrinsicAttributes'.
+  Property 'view' does not exist on type 'IntrinsicAttributes'.
+src/app/page.tsx(294,74): error TS2322: Type '{ onBack: () => void; }' is not assignable to type 'IntrinsicAttributes'.
+  Property 'onBack' does not exist on type 'IntrinsicAttributes'.
+src/app/page.tsx(298,67): error TS2322: Type '{ file: File | null; onBack: () => void; }' is not assignable to type 'IntrinsicAttributes'.
+  Property 'file' does not exist on type 'IntrinsicAttributes'.
+src/app/page.tsx(301,64): error TS2322: Type '{ onBack: () => void; }' is not assignable to type 'IntrinsicAttributes'.
+  Property 'onBack' does not exist on type 'IntrinsicAttributes'.
+src/app/text-cleaner/page.tsx(1,29): error TS2307: Cannot find module '@/components/TextToolkit' or its corresponding type declarations.
+src/components/ActionPanel.tsx(7,37): error TS2307: Cannot find module '../utils/formats' or its corresponding type declarations.
+src/components/ActionPanel.tsx(57,56): error TS7006: Parameter 'f' implicitly has an 'any' type.
+src/components/ActionPanel.tsx(58,54): error TS7006: Parameter 'f' implicitly has an 'any' type.
+src/components/ActionPanel.tsx(149,54): error TS7006: Parameter 'fmt' implicitly has an 'any' type.
+src/components/ActionPanel.tsx(178,52): error TS7006: Parameter 'fmt' implicitly has an 'any' type.
+../../packages/shared/src/components/DevTools.tsx(8,31): error TS2307: Cannot find module './JsonFormatter' or its corresponding type declarations.
+../../packages/shared/src/components/DevTools.tsx(9,30): error TS2307: Cannot find module './SqlFormatter' or its corresponding type declarations.
+../../packages/shared/src/components/DevTools.tsx(10,29): error TS2307: Cannot find module './RegexTester' or its corresponding type declarations.
+../../packages/shared/src/components/DevTools.tsx(11,29): error TS2307: Cannot find module './JwtDebugger' or its corresponding type declarations.
+../../packages/shared/src/components/FileConverter.tsx(6,29): error TS2307: Cannot find module '../utils/helpers/fileSystem' or its corresponding type declarations.
+../../packages/shared/src/components/FileConverter.tsx(14,25): error TS2307: Cannot find module 'html2canvas' or its corresponding type declarations.
+../../packages/shared/src/components/OfficeTools.tsx(17,25): error TS2307: Cannot find module 'html2canvas' or its corresponding type declarations.
+../../packages/shared/src/components/OfficeTools.tsx(1092,47): error TS2304: Cannot find name 'handleFileAdd'.
+../../packages/shared/src/components/OfficeTools.tsx(1094,25): error TS2304: Cannot find name 'handleFileAdd'.
+../../packages/shared/src/components/PdfManager.tsx(10,25): error TS2307: Cannot find module 'html2canvas' or its corresponding type declarations.
+../../packages/shared/src/components/PdfManager.tsx(683,51): error TS2307: Cannot find module 'tesseract.js' or its corresponding type declarations.

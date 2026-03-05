@@ -1,4 +1,4 @@
-import { DesktopToolkit } from '@/components/DesktopToolkit';
+import { DesktopToolkit } from '@shared/index';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
