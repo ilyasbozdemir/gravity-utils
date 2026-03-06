@@ -73,11 +73,52 @@ function setupProtocol() {
 /**
  * Auto-Updater (OTA) - Ilyas Bozdemir Desktop Engine Standard
  */
+const log = require('electron-log');
+autoUpdater.logger = log;
+autoUpdater.logger.transports.file.level = 'info';
+
 autoUpdater.autoDownload = true;
 autoUpdater.autoInstallOnAppQuit = true;
 
+autoUpdater.on('checking-for-update', () => {
+    logToDisk('GitHub üzerinden güncelleme kontrol ediliyor...');
+});
+
 autoUpdater.on('update-available', (info) => {
-  new Notification({ title: 'Bozdemir Engine Güncellemesi', body: `Yeni sürüm (${info.version}) indiriliyor...` }).show();
+    logToDisk(`Güncelleme bulundu: v${info.version}`);
+    new Notification({ title: 'Gravity Update Motoru', body: `Yeni v${info.version} sürümü bulundu, arkaplanda indiriliyor...` }).show();
+});
+
+autoUpdater.on('update-not-available', () => {
+    logToDisk('Şu an en güncel sürümdesiniz.');
+});
+
+autoUpdater.on('error', (err) => {
+    logToDisk('OTA Hatası: ' + err.message);
+});
+
+autoUpdater.on('download-progress', (progressObj) => {
+    // Sadece konsola yazalım veya loglayalım, UI mesajlaşması istenirse eklenecek
+    log.info(`İndirme Hızı: ${progressObj.bytesPerSecond} - İndirildi: ${Math.round(progressObj.percent)}%`);
+});
+
+autoUpdater.on('update-downloaded', (info) => {
+    logToDisk(`Güncelleme başarıyla indirildi: v${info.version}`);
+    
+    // Kullanıcıya yüklemek isteyip istemediğini sor
+    const dialogOpts = {
+        type: 'info',
+        buttons: ['Yeniden Başlat & Kur', 'Daha Sonra Kur'],
+        title: 'Gravity Desktop Güncellemesi',
+        message: `Bozdemir Engine Yeni Sürüm: ${info.version}`,
+        detail: 'Yeni versiyon arkaplanda başarıyla indirildi. Mevcut uygulamayı kapatıp yeni sürüme geçmek ister misiniz?'
+    };
+
+    dialog.showMessageBox(dialogOpts).then((returnValue) => {
+        if (returnValue.response === 0) {
+            autoUpdater.quitAndInstall();
+        }
+    });
 });
 
 /**
