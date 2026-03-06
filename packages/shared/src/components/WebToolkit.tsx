@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useCallback } from 'react';
+import { motion } from 'framer-motion';
 import {
     ArrowLeft, Copy, Check, Globe, Code2, Hash,
     Link2, RefreshCw, Trash2, ChevronRight, AlertCircle, Monitor, Zap, Info,

@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import {
     Monitor, Cpu, HardDrive, User, Terminal, FolderOpen,
     ShieldCheck, Zap, ArrowLeft, ExternalLink, RefreshCw,
-    Download, Info
+    Download, Info, Trash2
 } from 'lucide-react';
 import { isDesktop } from '../index';
 
@@ -179,6 +179,38 @@ export const DesktopToolkit: React.FC<DesktopToolkitProps> = ({ onBack, onViewOT
                         </div>
                     </div>
 
+                    <div className="bg-red-500/5 border border-red-500/20 rounded-[2.5rem] p-8 space-y-6">
+                        <h4 className="text-[10px] font-black uppercase text-red-400 tracking-[0.2em] text-center flex items-center justify-center gap-2">
+                            <ShieldCheck size={14} /> Sistem İyileştirme (Admin)
+                        </h4>
+                        <div className="grid grid-cols-1 gap-3">
+                            <ActionButton
+                                icon={<Terminal size={16} className="text-red-400" />}
+                                label="DNS Önbelleğini Temizle"
+                                danger
+                                onClick={async () => {
+                                    if (confirm("DNS Önbelleği (Flush DNS) temizlenecek. Windows UAC onayı gereklidir. Devam etmek istiyor musunuz?")) {
+                                        const res = await (window as any).electron.runAdminCommand('dns-flush');
+                                        if (res.success) alert("DNS Önbelleği başarıyla temizlendi.");
+                                        else alert(res.error || "İşlem başarısız veya reddedildi.");
+                                    }
+                                }}
+                            />
+                            <ActionButton
+                                icon={<Trash2 size={16} className="text-red-400" />}
+                                label="Geçici Dosyaları (TEMP) Sil"
+                                danger
+                                onClick={async () => {
+                                    if (confirm("Windows Temp klasörlerindeki gereksiz dosyalar güvenli bir şekilde silinecektir. Sistem veya önemli dosyalarınıza zarar gelmez. Onaylıyor musunuz?")) {
+                                        const res = await (window as any).electron.runAdminCommand('temp-clean');
+                                        if (res.success) alert("Gereksiz TEMP dosyaları başarıyla temizlendi.");
+                                        else alert(res.error || "İşlem başarısız veya reddedildi.");
+                                    }
+                                }}
+                            />
+                        </div>
+                    </div>
+
                     <div className="text-center p-4">
                         <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest leading-relaxed">
                             Designed & Developed by<br />
@@ -213,12 +245,12 @@ const StatusCard = ({ icon, label, value, sub, color }: any) => {
     );
 };
 
-const ActionButton = ({ icon, label, onClick }: any) => (
+const ActionButton = ({ icon, label, danger, onClick }: any) => (
     <button
         onClick={onClick}
         className="flex items-center gap-3 w-full p-4 bg-white/5 hover:bg-white/10 border border-white/5 rounded-2xl transition-all group"
     >
-        <span className="text-slate-500 group-hover:text-blue-400 transition-colors uppercase tracking-widest">{icon}</span>
-        <span className="text-xs font-bold text-slate-400 group-hover:text-white transition-colors uppercase tracking-widest">{label}</span>
+        <span className={`transition-colors uppercase tracking-widest ${danger ? 'text-red-500/80 group-hover:text-red-400' : 'text-slate-500 group-hover:text-blue-400'}`}>{icon}</span>
+        <span className={`text-xs font-bold transition-colors uppercase tracking-widest ${danger ? 'text-red-500/80 group-hover:text-red-400' : 'text-slate-400 group-hover:text-white'}`}>{label}</span>
     </button>
 );

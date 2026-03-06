@@ -22,9 +22,15 @@ contextBridge.exposeInMainWorld('electron', {
   saveFileFromDataURL: (filePath, dataUrl) => ipcRenderer.invoke('save-file-from-dataurl', { filePath, dataUrl }),
   saveFileFromBuffer: (filePath, buffer) => ipcRenderer.invoke('save-file-from-buffer', { filePath, buffer }),
   
+  // OS System Ops (Admin Tools)
+  runAdminCommand: (commandName) => ipcRenderer.invoke('run-admin-command', commandName),
+  
   // Developer Metadata
   developer: 'Ilyas Bozdemir',
   appVersion: '1.0.0',
   engine: 'Bozdemir Desktop Engine v2.0.0',
-  reportUIError: (error) => ipcRenderer.send('report-ui-error', error)
+  reportUIError: (error) => ipcRenderer.send('report-ui-error', error),
+  
+  // Theming
+  sendThemeChange: (theme) => ipcRenderer.send('theme-changed', theme)
 });

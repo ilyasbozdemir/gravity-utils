@@ -189,6 +189,26 @@ ipcMain.handle('engine-get-status', async () => {
     return await Engine.getStatus();
 });
 
+// Dynamic Titlebar & Theme Synchronization
+ipcMain.on('theme-changed', (event, theme) => {
+    const win = BrowserWindow.getAllWindows()[0];
+    if (win) {
+        if (theme === 'dark') {
+            win.setBackgroundColor('#06070a');
+            win.setTitleBarOverlay({
+                color: '#06070a',
+                symbolColor: '#74b9ff'
+            });
+        } else {
+            win.setBackgroundColor('#ffffff');
+            win.setTitleBarOverlay({
+                color: '#ffffff',
+                symbolColor: '#3b82f6'
+            });
+        }
+    }
+});
+
 // Helper for Native File Manipulation (The Core Motor)
 ipcMain.handle('native-file-process', async (event, { type, data }) => {
     try {
@@ -220,6 +240,43 @@ ipcMain.handle('get-system-info', () => ({
     memory: Math.round(os.totalmem() / (1024 * 1024 * 1024)),
     user: os.userInfo().username
 }));
+
+// Yüksek Yetkili (Admin) İşlemler
+ipcMain.handle('run-admin-command', async (event, commandName) => {
+    try {
+        if (process.platform !== 'win32') return { success: false, error: 'Bu özellik sadece Windows üzerinde çalışır.' };
+        
+        let psCommand = '';
+        switch (commandName) {
+            case 'dns-flush':
+                psCommand = 'ipconfig /flushdns';
+                break;
+            case 'temp-clean':
+                // Temporarily silme ama önemli OS verilerine dokunma
+                psCommand = 'Remove-Item -Path $env:TEMP\\* -Recurse -Force -ErrorAction SilentlyContinue; Remove-Item -Path $env:windir\\Temp\\* -Recurse -Force -ErrorAction SilentlyContinue';
+                break;
+            default:
+                return { success: false, error: 'Bilinmeyen yetkili motor komutu' };
+        }
+
+        const { exec } = require('child_process');
+        return new Promise((resolve) => {
+            // -WindowStyle Hidden ensures it doesn't pop up a black terminal loudly for long
+            const runCmd = `powershell.exe -Command "Start-Process powershell -ArgumentList '-NoProfile -WindowStyle Hidden -Command ${psCommand}' -Verb RunAs"`;
+            exec(runCmd, (error) => {
+                if (error) {
+                    logToDisk(`Admin Process Canceled/Failed [${commandName}]: ${error.message}`);
+                    resolve({ success: false, error: 'Yetki reddedildi veya işlemde hata oluştu.' });
+                } else {
+                    logToDisk(`Admin Process Success [${commandName}]`);
+                    resolve({ success: true });
+                }
+            });
+        });
+    } catch (err) {
+        return { success: false, error: err.message };
+    }
+});
 
 ipcMain.handle('open-path', async (event, pathStr) => {
   if (!pathStr) return { success: false, error: 'Path required' };

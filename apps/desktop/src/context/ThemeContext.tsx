@@ -22,6 +22,10 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         } else {
             document.documentElement.classList.remove('dark');
         }
+        // Send theme to Electron main process to update the titlebar dynamically
+        if (window.electron && typeof window.electron.sendThemeChange === 'function') {
+            window.electron.sendThemeChange(theme);
+        }
     }, [theme]);
 
     const toggleTheme = () => setTheme(prev => (prev === 'dark' ? 'light' : 'dark'));

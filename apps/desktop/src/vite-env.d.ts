@@ -12,5 +12,7 @@ interface Window {
     reportUIError: (error: any) => void;
     engineGetStatus: () => Promise<any>;
     nativeFileProcess: (params: { type: string; data: any }) => Promise<{ success: boolean; buffer?: ArrayBuffer; error?: string }>;
+    runAdminCommand?: (commandName: string) => Promise<{ success: boolean; error?: string }>;
+    sendThemeChange?: (theme: string) => void;
   };
 }

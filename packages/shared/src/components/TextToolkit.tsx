@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { motion } from 'framer-motion';
 import {
     FileText, Type, List, FileCode, Check, Copy,
     Trash2, Info, Zap, AlertCircle, Search, Edit3,
@@ -40,7 +41,7 @@ export const TextToolkit: React.FC<TextToolkitProps> = ({ view, onBack }) => {
             </div>
 
             {/* Tabs */}
-            <div className="flex flex-wrap gap-2 mb-8 bg-slate-100 dark:bg-white/5 p-1.5 rounded-2xl w-fit">
+            <div className="flex flex-wrap gap-2 mb-8 bg-slate-200 dark:bg-white/5 p-2 rounded-2xl w-fit relative isolate shadow-inner">
                 {[
                     { id: 'case', label: 'Vaka Çevirici', icon: <Type size={16} /> },
                     { id: 'cleaner', label: 'Metin Temizleyici', icon: <RefreshCw size={16} /> },
@@ -48,19 +49,29 @@ export const TextToolkit: React.FC<TextToolkitProps> = ({ view, onBack }) => {
                     { id: 'markdown', label: 'Markdown Editor', icon: <Edit3 size={16} /> },
                     { id: 'mermaid', label: 'Mermaid Editor', icon: <Activity size={16} /> },
                     { id: 'diff', label: 'Text Diff', icon: <Layout size={16} /> },
-                ].map(tab => (
-                    <button
-                        key={tab.id}
-                        onClick={() => setActiveTab(tab.id as ToolTab)}
-                        className={`flex items-center gap-2 px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === tab.id
-                            ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/20'
-                            : 'text-slate-500 hover:text-slate-700 dark:hover:text-white hover:bg-white/5'
-                            }`}
-                    >
-                        {tab.icon}
-                        {tab.label}
-                    </button>
-                ))}
+                ].map(tab => {
+                    const isActive = activeTab === tab.id;
+                    return (
+                        <button
+                            key={tab.id}
+                            onClick={() => setActiveTab(tab.id as ToolTab)}
+                            className={`relative flex items-center gap-2 px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-colors z-10 ${isActive ? 'text-white' : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
+                                }`}
+                        >
+                            {isActive && (
+                                <motion.div
+                                    layoutId="text-toolkit-tab"
+                                    className="absolute inset-0 bg-amber-500 rounded-xl shadow-lg shadow-amber-500/20 -z-10"
+                                    transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                                />
+                            )}
+                            <span className="relative z-10 flex items-center gap-2">
+                                {tab.icon}
+                                {tab.label}
+                            </span>
+                        </button>
+                    );
+                })}
             </div>
 
             {/* Content Container */}
