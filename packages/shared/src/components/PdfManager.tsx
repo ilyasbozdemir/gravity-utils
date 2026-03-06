@@ -235,7 +235,7 @@ export const PdfManager: React.FC<PdfManagerProps> = ({ file, onBack, initialTab
                 : [splitPage];
 
             const copiedPages = await newDoc.copyPages(sourceDoc, pagesToSplit.map(p => p - 1));
-            copiedPages.forEach(page => newDoc.addPage(page));
+            copiedPages.forEach((page: any) => newDoc.addPage(page));
 
             const pdfBytes = await newDoc.save();
             downloadPdf(pdfBytes, `split-${mainFile.name}`);

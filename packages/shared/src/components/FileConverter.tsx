@@ -142,7 +142,7 @@ export const FileConverter: React.FC<FileConverterProps> = ({ file: initialFile 
                         const width = pdf.internal.pageSize.getWidth();
 
                         await pdf.html(container, {
-                            callback: (doc) => {
+                            callback: (doc: any) => {
                                 doc.save(finalName);
                                 setIsProcessing(false);
                             },

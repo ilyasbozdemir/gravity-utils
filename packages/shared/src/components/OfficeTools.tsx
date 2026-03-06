@@ -504,100 +504,98 @@ export const OfficeTools: React.FC<OfficeToolsProps> = ({ mode, onBack }) => {
     const inputRef = useRef<HTMLInputElement>(null);
     const renderContainerRef = useRef<HTMLDivElement>(null);
 
-    const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files) {
-            const newFiles = await Promise.all(Array.from(e.target.files).map(async f => {
-                let gridData: any[][] | undefined;
-                if ((mode === 'excel-word' || mode === 'excel-pdf') && (f.name.endsWith('.xlsx') || f.name.endsWith('.xls'))) {
-                    const { read, utils } = await import('xlsx');
-                    const arrayBuffer = await f.arrayBuffer();
-                    const wb = read(new Uint8Array(arrayBuffer), { type: 'array' });
-                    const sheet = wb.Sheets[wb.SheetNames[0]];
-                    gridData = utils.sheet_to_json(sheet, { header: 1 }) as any[][];
-                }
+    const processFiles = async (filesToAdd: File[]) => {
+        const newFiles = await Promise.all(filesToAdd.map(async f => {
+            let gridData: any[][] | undefined;
+            if ((mode === 'excel-word' || mode === 'excel-pdf') && (f.name.endsWith('.xlsx') || f.name.endsWith('.xls'))) {
+                const { read, utils } = await import('xlsx');
+                const arrayBuffer = await f.arrayBuffer();
+                const wb = read(new Uint8Array(arrayBuffer), { type: 'array' });
+                const sheet = wb.Sheets[wb.SheetNames[0]];
+                gridData = utils.sheet_to_json(sheet, { header: 1 }) as any[][];
+            }
 
-                const insights: FileInsight[] = [];
-                if (gridData && gridData.length > 0) {
-                    const headers = gridData[0] || [];
-                    const rowCount = gridData.length;
-                    const colCount = headers.length;
+            const insights: FileInsight[] = [];
+            if (gridData && gridData.length > 0) {
+                const headers = gridData[0] || [];
+                const rowCount = gridData.length;
+                const colCount = headers.length;
 
-                    // 1. Geniş Tablo Kontrolü
-                    if (colCount > 7 && orientation === 'portrait') {
-                        insights.push({
-                            id: 'orientation',
-                            type: 'suggestion',
-                            message: 'Yatay Sayfa Düzeni Önerilir',
-                            description: 'Bu tabloda çok fazla sütun var. PDF çıktısının kesilmemesi için yatay düzen daha iyi görünecektir.',
-                            actionLabel: 'YATAY YAP',
-                            onAction: () => {
-                                setOrientation('landscape');
-                                setFiles(prev => prev.map(file => {
-                                    if (file.file === f) {
-                                        return { ...file, insights: file.insights?.filter(ins => ins.id !== 'orientation') };
-                                    }
-                                    return file;
-                                }));
-                            }
-                        });
-                    }
-
-                    // 2. Boş Sütun Kontrolü
-                    const emptyCols: number[] = [];
-                    for (let c = 0; c < colCount; c++) {
-                        let isEmpty = true;
-                        for (let r = 1; r < rowCount; r++) {
-                            if (gridData[r][c] !== undefined && gridData[r][c] !== null && gridData[r][c] !== '') {
-                                isEmpty = false;
-                                break;
-                            }
+                // 1. Geniş Tablo Kontrolü
+                if (colCount > 7 && orientation === 'portrait') {
+                    insights.push({
+                        id: 'orientation',
+                        type: 'suggestion',
+                        message: 'Yatay Sayfa Düzeni Önerilir',
+                        description: 'Bu tabloda çok fazla sütun var. PDF çıktısının kesilmemesi için yatay düzen daha iyi görünecektir.',
+                        actionLabel: 'YATAY YAP',
+                        onAction: () => {
+                            setOrientation('landscape');
+                            setFiles(prev => prev.map(file => {
+                                if (file.file === f) {
+                                    return { ...file, insights: file.insights?.filter(ins => ins.id !== 'orientation') };
+                                }
+                                return file;
+                            }));
                         }
-                        if (isEmpty) emptyCols.push(c);
-                    }
-
-                    if (emptyCols.length > 0) {
-                        insights.push({
-                            id: 'empty-cols',
-                            type: 'warning',
-                            message: `${emptyCols.length} Boş Sütun Tespit Edildi`,
-                            description: 'Tablonuzda hiç veri içermeyen sütunlar var. Bunları kaldırmak dökümanın daha temiz görünmesini sağlar.',
-                            actionLabel: 'SÜTUNLARI TEMİZLE'
-                            // onAction will be handled in the component via index lookup
-                        });
-                    }
-
-                    // 3. Uzun Başlık Kontrolü
-                    const longHeaders = headers.filter(h => String(h).length > 25);
-                    if (longHeaders.length > 0) {
-                        insights.push({
-                            id: 'long-headers',
-                            type: 'info',
-                            message: 'Uzun Başlık Metinleri',
-                            description: 'Bazı sütun başlıkları çok uzun. Hücre içinde taşma yapabilir veya sütunları çok genişletebilir.',
-                        });
-                    }
-
-                    // 4. Veri Tipi Kontrolü (Sadece basit bir örnek)
-                    if (rowCount > 10) {
-                        insights.push({
-                            id: 'smart-report',
-                            type: 'success',
-                            message: 'Rapor Formatı Uygun',
-                            description: 'Bu veriler yapısal bir rapor gibi duruyor. Excel -> Word dönüşümünde otomatik tablo başlıkları eklenebilir.',
-                        });
-                    }
+                    });
                 }
 
-                return {
-                    file: f,
-                    status: gridData ? 'editing' as const : 'idle' as const,
-                    progress: 0,
-                    gridData,
-                    insights
-                };
-            }));
-            setFiles(prev => [...prev, ...newFiles]);
-        }
+                // 2. Boş Sütun Kontrolü
+                const emptyCols: number[] = [];
+                for (let c = 0; c < colCount; c++) {
+                    let isEmpty = true;
+                    for (let r = 1; r < rowCount; r++) {
+                        if (gridData[r][c] !== undefined && gridData[r][c] !== null && gridData[r][c] !== '') {
+                            isEmpty = false;
+                            break;
+                        }
+                    }
+                    if (isEmpty) emptyCols.push(c);
+                }
+
+                if (emptyCols.length > 0) {
+                    insights.push({
+                        id: 'empty-cols',
+                        type: 'warning',
+                        message: `${emptyCols.length} Boş Sütun Tespit Edildi`,
+                        description: 'Tablonuzda hiç veri içermeyen sütunlar var. Bunları kaldırmak dökümanın daha temiz görünmesini sağlar.',
+                        actionLabel: 'SÜTUNLARI TEMİZLE'
+                        // onAction will be handled in the component via index lookup
+                    });
+                }
+
+                // 3. Uzun Başlık Kontrolü
+                const longHeaders = headers.filter(h => String(h).length > 25);
+                if (longHeaders.length > 0) {
+                    insights.push({
+                        id: 'long-headers',
+                        type: 'info',
+                        message: 'Uzun Başlık Metinleri',
+                        description: 'Bazı sütun başlıkları çok uzun. Hücre içinde taşma yapabilir veya sütunları çok genişletebilir.',
+                    });
+                }
+
+                // 4. Veri Tipi Kontrolü (Sadece basit bir örnek)
+                if (rowCount > 10) {
+                    insights.push({
+                        id: 'smart-report',
+                        type: 'success',
+                        message: 'Rapor Formatı Uygun',
+                        description: 'Bu veriler yapısal bir rapor gibi duruyor. Excel -> Word dönüşümünde otomatik tablo başlıkları eklenebilir.',
+                    });
+                }
+            }
+
+            return {
+                file: f,
+                status: gridData ? 'editing' as const : 'idle' as const,
+                progress: 0,
+                gridData,
+                insights
+            };
+        }));
+        setFiles(prev => [...prev, ...newFiles]);
     };
 
     const processFile = async (item: FileState, index: number) => {
@@ -674,7 +672,7 @@ export const OfficeTools: React.FC<OfficeToolsProps> = ({ mode, onBack }) => {
 
                     // Use jsPDF's html method which handles text better than manual addImage
                     await pdf.html(container, {
-                        callback: function (doc) {
+                        callback: function (doc: any) {
                             result = doc.output('blob');
                             resultName = item.file.name.replace(/\.[^/.]+$/, '') + '.pdf';
                             setFiles(prev => prev.map((f, i) => i === index ? { ...f, status: 'success', progress: 100, result, resultName } : f));
@@ -1088,11 +1086,7 @@ export const OfficeTools: React.FC<OfficeToolsProps> = ({ mode, onBack }) => {
                     filters: [{ name: 'Office & Belge', extensions: config.accept.split(',').map(e => e.trim().replace('.', '')) }]
                 });
                 if (selected) {
-                    if (Array.isArray(selected)) {
-                        selected.forEach(f => handleFileAdd(f));
-                    } else {
-                        handleFileAdd(selected);
-                    }
+                    processFiles(Array.isArray(selected) ? selected : [selected]);
                 }
             }}
                 className="border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-2xl p-12 text-center hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer mb-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
