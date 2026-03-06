@@ -314,7 +314,9 @@ export const FileConverter: React.FC<FileConverterProps> = ({ file: initialFile 
                                 viewport: viewport,
                                 canvas: canvas
                             } as unknown as Parameters<typeof page.render>[0]).promise;
-                            platform.saveFile(canvas.toDataURL(targetExt === 'png' ? 'image/png' : 'image/jpeg', 0.9), finalName);
+                            canvas.toBlob((b) => {
+                                if (b) platform.saveFile(b, finalName);
+                            }, targetExt === 'png' ? 'image/png' : 'image/jpeg', 0.9);
                         }
                     } else {
                         const JSZip = (await import('jszip')).default;
