@@ -1,0 +1,10 @@
+{
+    "name": "@gravity/utils",
+    "version": "0.0.1",
+    "main": "./src/index.ts",
+    "types": "./src/index.ts",
+    "dependencies": {
+        "sql-formatter": "^15.7.2",
+        "tesseract.js": "^7.0.0"
+    }
+}
