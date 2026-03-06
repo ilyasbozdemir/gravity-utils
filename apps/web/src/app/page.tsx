@@ -77,7 +77,7 @@ const TerminalMastery = dynamic(() => import('@/components/TerminalMastery').the
 const SitemapGenerator = dynamic(() => import('@/components/SitemapGenerator').then(mod => mod.SitemapGenerator), { ssr: false });
 const RobotsTxtBuilder = dynamic(() => import('@/components/RobotsTxtBuilder').then(mod => mod.RobotsTxtBuilder), { ssr: false });
 const XmlValidator = dynamic(() => import('@/components/XmlValidator').then(mod => mod.XmlValidator), { ssr: false });
-const ExamGenerator = dynamic(() => import('@/components/ExamGenerator').then(mod => mod.ExamGenerator), { ssr: false });
+const ExamGenerator = dynamic(() => import('@shared/index').then(mod => mod.ExamGenerator), { ssr: false });
 const FigmaToCode = dynamic(() => import('@/components/FigmaToCode').then(mod => mod.FigmaToCode), { ssr: false });
 const HtmlToPdf = dynamic(() => import('@/components/HtmlToPdf').then(mod => mod.HtmlToPdf), { ssr: false });
 

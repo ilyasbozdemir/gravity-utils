@@ -74,3 +74,4 @@ export * from './components/CheckToolkit';
 export * from './components/DesktopToolkit';
 export * from './utils/shared-core';
 export * from './utils/fontLoader';
+export * from './utils/formats';

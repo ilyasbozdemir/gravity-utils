@@ -4,7 +4,7 @@ import {
     Hash, FileJson, FileText, Smartphone, Shield, QrCode, Crop, FileDiff, Calculator,
     ArrowRight, Star
 } from 'lucide-react';
-import { getAvailableFormats } from '../utils/formats';
+import { getAvailableFormats } from '@shared/index';
 
 interface ActionPanelProps {
     file: File;
