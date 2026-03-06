@@ -7,8 +7,10 @@ export default defineConfig({
   base: './',
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src'),
+      '@': path.resolve(__dirname, '../../apps/web/src'),
       '@shared': path.resolve(__dirname, '../../packages/shared/src'),
+      'next/link': path.resolve(__dirname, './src/adapters/next-link.tsx'),
+      'next/image': path.resolve(__dirname, './src/adapters/next-image.tsx'),
     },
   },
   build: {

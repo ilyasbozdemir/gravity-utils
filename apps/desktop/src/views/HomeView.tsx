@@ -1,151 +1,337 @@
-import React, { useState } from 'react';
-import {
-    Lock, Share2, MousePointer2, Settings, Smartphone, RefreshCw, Layers, Globe,
-    Type, Clock, Camera, Zap, Star, Calculator, FileText, Minimize2, Hash, Code, Search, QrCode, Archive, Database,
-    Split, FileCode, CheckCircle2, ShieldCheck, Layout, Terminal,
-    Image as ImageIcon, Palette
-} from 'lucide-react';
+"use client";
 
-interface HomeViewProps {
-    onAction: (view: any) => void;
-}
+import { useState, useEffect } from 'react';
+import React, { lazy, Suspense } from 'react';
+import { Menu, Monitor } from 'lucide-react';
+import { Sidebar, ToolView as ViewType } from '../components/Sidebar';
+import { LandingHero } from '@/components/LandingHero';
+import { ActionPanel } from '@/components/ActionPanel';
+import { RevisionNotes } from '@/components/RevisionNotes';
+import { DesktopDashboard } from '@/components/DesktopDashboard';
+import { DesktopPromotion } from '@/components/DesktopPromotion';
+import { isElectron, useIsElectron } from '@/utils/electron';
 
-const HomeView: React.FC<HomeViewProps> = ({ onAction }) => {
-    const [searchQuery, setSearchQuery] = useState('');
+// Dynamically import components to improve initial load
+const DesktopToolkit = lazy(() => import('@shared/index').then(mod => ({ default: mod.DesktopToolkit })));
+const DevTools = lazy(() => import('@shared/index').then(mod => ({ default: mod.DevTools })));
+const OTAGuide = lazy(() => import('@/components/OTAGuide').then(mod => ({ default: mod.OTAGuide })));
+const FileConverter = lazy(() => import('@shared/index').then(mod => ({ default: mod.FileConverter })));
+const ZipInspector = lazy(() => import('@/components/ZipInspector').then(mod => ({ default: mod.ZipInspector })));
+const Base64Viewer = lazy(() => import('@/components/Base64Viewer').then(mod => ({ default: mod.Base64Viewer })));
+const ImageOptimizer = lazy(() => import('@/components/ImageOptimizer').then(mod => ({ default: mod.ImageOptimizer })));
+const HashGenerator = lazy(() => import('@/components/HashGenerator').then(mod => ({ default: mod.HashGenerator })));
+const JsonFormatter = lazy(() => import('@shared/index').then(mod => ({ default: mod.JsonFormatter })));
+const TextAnalyzer = lazy(() => import('@/components/TextAnalyzer').then(mod => ({ default: mod.TextAnalyzer })));
+const PdfManager = lazy(() => import('@shared/index').then(mod => ({ default: mod.PdfManager })));
+const ExifCleaner = lazy(() => import('@/components/ExifCleaner').then(mod => ({ default: mod.ExifCleaner })));
+const QrManager = lazy(() => import('@/components/QrManager').then(mod => ({ default: mod.QrManager })));
+const FileEncryptor = lazy(() => import('@/components/FileEncryptor').then(mod => ({ default: mod.FileEncryptor })));
+const SocialResizer = lazy(() => import('@/components/SocialResizer').then(mod => ({ default: mod.SocialResizer })));
+const FaviconGenerator = lazy(() => import('@/components/FaviconGenerator').then(mod => ({ default: mod.FaviconGenerator })));
+const UnitConverter = lazy(() => import('@/components/UnitConverter').then(mod => ({ default: mod.UnitConverter })));
+const UuidGenerator = lazy(() => import('@/components/UuidGenerator').then(mod => ({ default: mod.UuidGenerator })));
+const YamlConverter = lazy(() => import('@/components/YamlConverter').then(mod => ({ default: mod.YamlConverter })));
+const JwtDebugger = lazy(() => import('@shared/index').then(mod => ({ default: mod.JwtDebugger })));
+const UrlEncoder = lazy(() => import('@/components/UrlEncoder').then(mod => ({ default: mod.UrlEncoder })));
+const CaseConverter = lazy(() => import('@/components/CaseConverter').then(mod => ({ default: mod.CaseConverter })));
+const JsonXmlConverter = lazy(() => import('@/components/JsonXmlConverter').then(mod => ({ default: mod.JsonXmlConverter })));
+const DateTimeConverter = lazy(() => import('@/components/DateTimeConverter').then(mod => ({ default: mod.DateTimeConverter })));
+const SqlFormatter = lazy(() => import('@shared/index').then(mod => ({ default: mod.SqlFormatter })));
+const StringInspector = lazy(() => import('@/components/StringInspector').then(mod => ({ default: mod.StringInspector })));
+const OfficeTools = lazy(() => import('@shared/index').then(mod => ({ default: mod.OfficeTools })));
+const WebToolkit = lazy(() => import('@shared/index').then(mod => ({ default: mod.WebToolkit })));
+const NetworkToolkit = lazy(() => import('@shared/index').then(mod => ({ default: mod.NetworkToolkit })));
+const PasswordGenerator = lazy(() => import('@/components/PasswordGenerator').then(mod => ({ default: mod.PasswordGenerator })));
+const SvgOptimizer = lazy(() => import('@/components/SvgOptimizer').then(mod => ({ default: mod.SvgOptimizer })));
+const CronBuilder = lazy(() => import('@/components/CronBuilder').then(mod => ({ default: mod.CronBuilder })));
+const TimezoneConverter = lazy(() => import('@/components/TimezoneConverter').then(mod => ({ default: mod.TimezoneConverter })));
+const ColorToolkit = lazy(() => import('@/components/ColorToolkit').then(mod => ({ default: mod.ColorToolkit })));
+const RegexTester = lazy(() => import('@shared/index').then(mod => ({ default: mod.RegexTester })));
+const CsvViewer = lazy(() => import('@/components/CsvViewer').then(mod => ({ default: mod.CsvViewer })));
+const MarkdownEditor = lazy(() => import('@/components/MarkdownEditor').then(mod => ({ default: mod.MarkdownEditor })));
+const JsonLdEditor = lazy(() => import('@/components/JsonLdEditor').then(mod => ({ default: mod.JsonLdEditor })));
+const NetworkCableTester = lazy(() => import('@/components/NetworkCableTester').then(mod => ({ default: mod.NetworkCableTester })));
+const LoremIpsumGenerator = lazy(() => import('@/components/LoremIpsumGenerator').then(mod => ({ default: mod.LoremIpsumGenerator })));
+const AspectRatioCalculator = lazy(() => import('@/components/AspectRatioCalculator').then(mod => ({ default: mod.AspectRatioCalculator })));
+const SocialGuide = lazy(() => import('@/components/SocialGuide').then(mod => ({ default: mod.SocialGuide })));
+const HttpStatusCodes = lazy(() => import('@/components/HttpStatusCodes').then(mod => ({ default: mod.HttpStatusCodes })));
+const JsonCsvConverter = lazy(() => import('@/components/JsonCsvConverter').then(mod => ({ default: mod.JsonCsvConverter })));
+const TextToolkit = lazy(() => import('@shared/index').then(mod => ({ default: mod.TextToolkit })));
+const SmartCalculator = lazy(() => import('@shared/index').then(mod => ({ default: mod.SmartCalculator })));
+const MediaToolkit = lazy(() => import('@shared/index').then(mod => ({ default: mod.MediaToolkit })));
+const DataToolkit = lazy(() => import('@shared/index').then(mod => ({ default: mod.DataToolkit })));
+const DesignToolkit = lazy(() => import('@shared/index').then(mod => ({ default: mod.DesignToolkit })));
+const IdentifierConverter = lazy(() => import('@/components/IdentifierConverter').then(mod => ({ default: mod.IdentifierConverter })));
+const SchemaGenerator = lazy(() => import('@/components/SchemaGenerator').then(mod => ({ default: mod.SchemaGenerator })));
+const MetadataGenerator = lazy(() => import('@/components/MetadataGenerator').then(mod => ({ default: mod.MetadataGenerator })));
+const EmailHeaderAnalyzer = lazy(() => import('@shared/index').then(mod => ({ default: mod.EmailHeaderAnalyzer })));
+const DocumentToolkit = lazy(() => import('@shared/index').then(mod => ({ default: mod.DocumentToolkit })));
+const CheckToolkit = lazy(() => import('@shared/index').then(mod => ({ default: mod.CheckToolkit })));
+const JsonToCode = lazy(() => import('@/components/JsonToCode').then(mod => ({ default: mod.JsonToCode })));
+const TextDiff = lazy(() => import('@/components/TextDiff').then(mod => ({ default: mod.TextDiff })));
+const MermaidEditor = lazy(() => import('@/components/MermaidEditor').then(mod => ({ default: mod.MermaidEditor })));
+const CodeSnap = lazy(() => import('@/components/CodeSnap').then(mod => ({ default: mod.CodeSnap })));
+const SmartMockGenerator = lazy(() => import('@/components/SmartMockGenerator').then(mod => ({ default: mod.SmartMockGenerator })));
+const SqlConverter = lazy(() => import('@/components/SqlConverter').then(mod => ({ default: mod.SqlConverter })));
+const TerminalMastery = lazy(() => import('@/components/TerminalMastery').then(mod => ({ default: mod.TerminalMastery })));
+const SitemapGenerator = lazy(() => import('@/components/SitemapGenerator').then(mod => ({ default: mod.SitemapGenerator })));
+const RobotsTxtBuilder = lazy(() => import('@/components/RobotsTxtBuilder').then(mod => ({ default: mod.RobotsTxtBuilder })));
+const XmlValidator = lazy(() => import('@/components/XmlValidator').then(mod => ({ default: mod.XmlValidator })));
+const ExamGenerator = lazy(() => import('@shared/index').then(mod => ({ default: mod.ExamGenerator })));
+const FigmaToCode = lazy(() => import('@/components/FigmaToCode').then(mod => ({ default: mod.FigmaToCode })));
+const HtmlToPdf = lazy(() => import('@/components/HtmlToPdf').then(mod => ({ default: mod.HtmlToPdf })));
+
+export default function HomeView() {
+    // Extracted from web page.tsx
+    const [file, setFile] = useState<File | null>(null);
+    const [view, setView] = useState<ViewType>('home');
+    const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [isClient, setIsClient] = useState(false);
+    const isApp = useIsElectron();
+
+    useEffect(() => {
+        setIsClient(true);
+        // Initial routing check
+        const hash = window.location.hash.replace('#/', '');
+        if (hash) {
+            setView(hash as ViewType);
+        }
+
+        // Listen for hash changes (browser back/forward)
+        const handleHashChange = () => {
+            const currentHash = window.location.hash.replace('#/', '');
+            if (currentHash) {
+                setView(currentHash as ViewType);
+            } else {
+                setView('home');
+            }
+        };
+
+        window.addEventListener('hashchange', handleHashChange);
+        return () => window.removeEventListener('hashchange', handleHashChange);
+    }, []);
+
+    // Sync state to hash
+    useEffect(() => {
+        if (!isClient) return;
+        if (view === 'home' && window.location.hash === '') return;
+
+        const currentHash = window.location.hash.replace('#/', '');
+        if (currentHash !== view) {
+            window.location.hash = view === 'home' ? '' : `/${view}`;
+        }
+    }, [view, isClient]);
+
+    const handleFileSelect = (f: File) => {
+        setFile(f);
+        setView('home');
+    };
+
+    const handleAction = (action: ViewType) => {
+        setView(action);
+        setSidebarOpen(false);
+    };
+
+    const clearFile = () => {
+        setFile(null);
+        setView('home');
+    };
+
+    const handleToolSelect = (tool: ViewType) => {
+        setFile(null);
+        setView(tool);
+        setSidebarOpen(false);
+    };
+
+    if (!isClient) return null; // Avoid hydration mismatch
 
     return (
-        <div className="px-4 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            {/* Hero Section */}
-            <div className="min-h-[60vh] flex flex-col items-center justify-center text-center relative pt-12">
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[radial-gradient(circle,rgba(59,130,246,0.15)_0%,rgba(96,165,250,0.05)_40%,transparent_70%)] -z-10 pointer-events-none"></div>
+        <div className="flex h-screen overflow-hidden bg-slate-50 dark:bg-[#06070a] text-slate-900 dark:text-slate-100 transition-colors duration-300">
+            <Sidebar
+                currentView={view}
+                onViewChange={handleAction}
+                isOpen={sidebarOpen}
+                onClose={() => setSidebarOpen(false)}
+            />
 
-                <div className="mb-4 px-4 py-2 rounded-full bg-blue-50 dark:bg-white/5 border border-blue-100 dark:border-white/10 inline-flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400 font-medium">
-                    <Star size={14} className="fill-amber-400 text-amber-400" />
-                    <span>80+ Masaüstü Aracı | %100 Güvenli ve Çevrimdışı</span>
+            <div className="flex-1 flex flex-col h-full overflow-hidden relative">
+                {/* Mobile Header (Only on phones now) */}
+                <div className="md:hidden px-4 py-3 bg-white dark:bg-[#0b101b] border-b border-slate-200 dark:border-white/5 flex items-center justify-between z-20">
+                    <button
+                        onClick={() => setSidebarOpen(true)}
+                        title="Menü"
+                        aria-label="Menü"
+                        className="p-2 -ml-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/5 rounded-lg transition-colors"
+                    >
+                        <Menu size={24} />
+                    </button>
+                    <span className="text-sm font-bold uppercase tracking-wider text-slate-700 dark:text-slate-200 truncate max-w-[200px]">
+                        Gravity Utils
+                    </span>
+                    {file ? (
+                        <button
+                            onClick={clearFile}
+                            className="text-[10px] font-bold text-red-500 hover:text-red-600 bg-red-50 dark:bg-red-500/10 px-3 py-1.5 rounded-lg transition-all"
+                        >
+                            Kaldır
+                        </button>
+                    ) : (
+                        <div className="w-8" />
+                    )}
                 </div>
 
-                <h1 className="text-[clamp(2.5rem,6vw,4rem)] font-extrabold leading-[1.1] tracking-tighter mb-6 max-w-[900px] text-slate-900 dark:text-white">
-                    Profesyonel <span className="text-blue-600 dark:text-blue-400">Dijital Araçlar</span> <br />
-                    Masaüstünde.
-                </h1>
-
-                <p className="text-slate-500 dark:text-slate-400 max-w-[600px] mb-12 text-lg font-medium">
-                    Dosyalarınızı tarayıcıya ihtiyaç duymadan, %100 gizli ve yüksek performanslı Bozdemir Engine gücüyle işleyin.
-                </p>
-
-                {/* Main Tool Grid */}
-                <div className="w-full max-w-[1100px] grid grid-cols-2 lg:grid-cols-4 gap-6 mb-20 relative z-20">
-                    <HeroLink title="Dosya Dönüştür" desc="Format sınırı olmadan" icon={<Zap />} color="blue" onClick={() => onAction('converter')} />
-                    <HeroLink title="PDF Merkezi" desc="Tüm PDF araçları tek yerde" icon={<FileText />} color="emerald" onClick={() => onAction('pdf-manager')} />
-                    <HeroLink title="Geliştirici" desc="Kod ve Terminal" icon={<Terminal />} color="amber" onClick={() => onAction('dev-tools')} />
-                    <HeroLink title="Medya & Görsel" desc="EXIF ve Medya" icon={<ImageIcon />} color="rose" onClick={() => onAction('media-tools')} />
-                </div>
-
-                {/* Quick Search */}
-                <div className="relative w-full max-w-xl mx-auto mb-20 group">
-                    <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors" size={22} />
-                    <input
-                        type="text"
-                        placeholder="Hangi aracı arıyorsun?"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-3xl py-5 pl-16 pr-8 text-base focus:outline-none focus:border-blue-500/50 focus:ring-8 focus:ring-blue-500/5 transition-all text-slate-700 dark:text-slate-300 placeholder:text-slate-400 dark:placeholder:text-slate-500 shadow-2xl shadow-blue-500/10 dark:shadow-none font-medium"
-                    />
-                </div>
-            </div>
-
-            {/* Categorized Tools Menu */}
-            <div className="w-full max-w-[1240px] mx-auto">
-                <div className="flex flex-col gap-20">
-                    {/* Category: Öne Çıkanlar */}
-                    <section>
-                        <div className="flex items-center gap-3 mb-8">
-                            <div className="p-2 bg-amber-50 dark:bg-amber-500/10 rounded-lg text-amber-600 dark:text-amber-400"><Zap size={20} /></div>
-                            <h3 className="text-xl font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">Hızlı Dönüşümler</h3>
+                {/* Tablet & Desktop Header */}
+                {(file || view !== 'home') && (
+                    <header className="hidden md:flex px-8 py-5 border-b border-slate-200 dark:border-white/5 items-center justify-between bg-white/80 dark:bg-[#06070a]/80 backdrop-blur-xl sticky top-0 z-30 transition-colors duration-300">
+                        <div className="flex items-center gap-4">
+                            <h2 className="text-sm font-bold text-slate-700 dark:text-slate-400 uppercase tracking-widest leading-none">
+                                {view.replace(/-/g, ' ')}
+                            </h2>
                         </div>
-                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-                            <QuickAction title="PDF Birleştir" onClick={() => onAction('pdf-manager')} icon={<Layers size={16} />} color="blue" />
-                            <QuickAction title="Word → PDF" onClick={() => onAction('document-toolkit')} icon={<FileText size={16} />} color="red" />
-                            <QuickAction title="Medya Dönüştür" onClick={() => onAction('media-tools')} icon={<ImageIcon size={16} />} color="emerald" />
-                            <QuickAction title="Hızlı Dönüştür" onClick={() => onAction('converter')} icon={<Archive size={16} />} color="indigo" />
-                            <QuickAction title="Ofis Araçları" onClick={() => onAction('office-tools')} icon={<Globe size={16} />} color="sky" />
-                        </div>
-                    </section>
+                        {file && (
+                            <button
+                                onClick={clearFile}
+                                title="Dosyayı Kaldır"
+                                aria-label="Dosyayı Kaldır"
+                                className="text-xs font-bold text-slate-600 dark:text-slate-500 hover:text-slate-900 dark:hover:text-white bg-slate-100 dark:bg-white/5 px-4 py-2 rounded-lg border border-slate-200 dark:border-white/5 transition-all"
+                            >
+                                Dosyayı Kaldır
+                            </button>
+                        )}
+                    </header>
+                )}
 
-                    {/* Category: Tasarım & Kod */}
-                    <section>
-                        <div className="flex items-center gap-3 mb-8">
-                            <div className="p-2 bg-pink-50 dark:bg-pink-500/10 rounded-lg text-pink-600 dark:text-pink-400"><Layout size={20} /></div>
-                            <h3 className="text-xl font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">Tasarım & Kod Pro</h3>
-                        </div>
-                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-                            <QuickAction title="Tasarım Araçları" onClick={() => onAction('design-tools')} icon={<Palette size={16} />} color="pink" />
-                            <QuickAction title="JSON İşlemleri" onClick={() => onAction('dev-tools')} icon={<FileCode size={16} />} color="blue" />
-                            <QuickAction title="Veri Düzenleyici" onClick={() => onAction('data-tools')} icon={<Database size={16} />} color="emerald" />
-                            <QuickAction title="Kod Terminali" onClick={() => onAction('dev-tools')} icon={<Terminal size={16} />} color="orange" />
-                        </div>
-                    </section>
+                {/* Main Content */}
+                <main className="flex-1 overflow-y-auto w-full custom-scrollbar">
+                    {!file && view === 'home' && (
+                        <>
+                            <LandingHero onFileSelect={handleFileSelect} onToolSelect={handleToolSelect} />
+                            {isApp && (
+                                <div className="px-8 max-w-[1400px] mx-auto w-full -mt-10 pb-20">
+                                    <div className="flex items-center gap-2 mb-6 opacity-60">
+                                        <div className="h-px bg-slate-800 flex-1"></div>
+                                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 flex items-center gap-2">
+                                            <Monitor size={10} /> Bozdemir Desktop Engine Status
+                                        </span>
+                                        <div className="h-px bg-slate-800 flex-1"></div>
+                                    </div>
+                                    <DesktopDashboard />
+                                </div>
+                            )}
+                            {!isApp && (
+                                <div className="px-8 max-w-[1400px] mx-auto w-full pb-20">
+                                    <div className="flex items-center gap-2 mb-12 opacity-40">
+                                        <div className="h-px bg-slate-300 dark:bg-slate-800 flex-1"></div>
+                                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 flex items-center gap-2">
+                                            <Monitor size={10} /> Gravity Desktop Experience
+                                        </span>
+                                        <div className="h-px bg-slate-300 dark:bg-slate-800 flex-1"></div>
+                                    </div>
+                                    <DesktopPromotion />
+                                </div>
+                            )}
+                        </>
+                    )}
 
-                    {/* Category: Güvenlik & Doğrulama */}
-                    <section>
-                        <div className="flex items-center gap-3 mb-8">
-                            <div className="p-2 bg-rose-50 dark:bg-rose-500/10 rounded-lg text-rose-600 dark:text-rose-400"><ShieldCheck size={20} /></div>
-                            <h3 className="text-xl font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">Güvenlik & Doğrulama</h3>
+                    {(file || view !== 'home') && (
+                        <div className="p-4 md:p-6 lg:p-8 max-w-[1400px] mx-auto w-full animate-[fadeIn_0.5s_ease] pb-20">
+                            {view === 'home' && file && (
+                                <ActionPanel file={file} onClear={clearFile} onAction={handleAction} />
+                            )}
+
+                            {/* Dynamic Components Rendering */}
+                            <Suspense fallback={<div className="flex-1 flex items-center justify-center p-20"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div></div>}>
+                                {(view === 'pdf' || view === 'pdf-word' || view === 'word-pdf' || view === 'pdf-image' || view === 'pdf-split' || view === 'pdf-text' || view === 'imagetopdf' || view === 'exam-generator' || view === 'pdf-merge' || view === 'pdf-compress' || view === 'pdf-watermark' || view === 'excel-pdf' || view === 'pdf-excel' || view === 'ppt-pdf' || view === 'pdf-ppt' || view === 'excel-word' || view === 'document-toolkit') &&
+                                    <DocumentToolkit view={view as any} onBack={() => setView('home')} />}
+
+                                {view === 'encrypt' && <FileEncryptor file={file} onBack={() => setView('home')} />}
+                                {view === 'exif' && <ExifCleaner file={file} onBack={() => setView('home')} />}
+                                {view === 'qr' && <QrManager file={file} onBack={() => setView('home')} />}
+                                {view === 'social' && <SocialResizer file={file} onBack={() => setView('home')} />}
+                                {view === 'favicon' && <FaviconGenerator file={file} onBack={() => setView('home')} />}
+                                {view === 'units' && <UnitConverter file={file} onBack={() => setView('home')} />}
+                                {view === 'uuid' && <UuidGenerator onBack={() => setView('home')} />}
+                                {view === 'yaml' && <YamlConverter onBack={() => setView('home')} />}
+                                {view === 'jwt' && <JwtDebugger onBack={() => setView('home')} />}
+                                {view === 'url' && <UrlEncoder onBack={() => setView('home')} />}
+                                {view === 'case' && <CaseConverter onBack={() => setView('home')} />}
+                                {view === 'string' && <StringInspector onBack={() => setView('home')} />}
+                                {view === 'date-time' && <DateTimeConverter onBack={() => setView('home')} />}
+                                {view === 'sql-formatter' && <SqlFormatter onBack={() => setView('home')} />}
+                                {view === 'web-toolkit' && <WebToolkit onBack={() => setView('home')} />}
+                                {view === 'network-toolkit' && <NetworkToolkit onBack={() => setView('home')} />}
+                                {(view === 'json-csv' || view === 'json-xml' || view === 'units' || view === 'zip' || view === 'data-toolkit') &&
+                                    <DataToolkit view={view === 'data-toolkit' ? 'json-csv' : view as any} onBack={() => setView('home')} />}
+                                {(view === 'color-toolkit' || view === 'qr' || view === 'favicon' || view === 'figma-to-code' || view === 'design-toolkit') &&
+                                    <DesignToolkit view={view === 'color-toolkit' ? 'color' : (view === 'design-toolkit' ? 'color' : view as any)} onBack={() => setView('home')} />}
+                                {view === 'password-generator' && <PasswordGenerator onBack={() => setView('home')} />}
+                                {view === 'social-guide' && <SocialGuide onBack={() => setView('home')} />}
+                                {view === 'http-status' && <HttpStatusCodes onBack={() => setView('home')} />}
+
+                                {/* Core Developer & File Tools */}
+                                {view === 'json' && <JsonFormatter file={file} onBack={() => setView('home')} />}
+                                {view === 'text' && <TextAnalyzer file={file} onBack={() => setView('home')} />}
+                                {view === 'optimize' && <ImageOptimizer file={file} onBack={() => setView('home')} />}
+                                {view === 'hash' && <HashGenerator file={file} onBack={() => setView('home')} />}
+                                {view === 'inspect' && <ZipInspector file={file} onBack={() => setView('home')} />}
+                                {view === 'base64' && <Base64Viewer file={file} onBack={() => setView('home')} />}
+
+                                {/* New Toolkit Views */}
+                                {(view === 'text-cleaner' || view === 'case-converter-pro' || view === 'case' || view === 'lorem-ipsum' || view === 'markdown-editor' || view === 'mermaid' || view === 'text-diff' || view === 'text-toolkit') &&
+                                    <TextToolkit view={view === 'lorem-ipsum' ? 'lorem' : (view === 'markdown-editor' ? 'markdown' : (view === 'text-toolkit' ? 'case-converter-pro' : view as any))} onBack={() => setView('home')} />}
+
+                                {(view === 'date-calculator' || view === 'internet-speed' || view === 'file-size-calc' ||
+                                    view === 'iban-checker' || view === 'tckn-checker' || view === 'css-units' || view === 'viewport-calc') &&
+                                    <SmartCalculator view={view} onBack={() => setView('home')} />}
+
+                                {(view === 'exif-viewer' || view === 'bulk-rename' || view === 'media-toolkit') &&
+                                    <MediaToolkit view={view === 'media-toolkit' ? 'exif-viewer' : view as any} onBack={() => setView('home')} />}
+
+                                {view === 'identifier-converter' && <IdentifierConverter onBack={() => setView('home')} />}
+                                {view === 'schema-generator' && <SchemaGenerator onBack={() => setView('home')} />}
+                                {view === 'metadata-generator' && <MetadataGenerator onBack={() => setView('home')} />}
+                                {view === 'email-header-analyzer' && <EmailHeaderAnalyzer onBack={() => setView('home')} />}
+                                {view === 'check-toolkit' && <CheckToolkit onBack={() => setView('home')} />}
+                                {view === 'xml-validator' && <XmlValidator onBack={() => setView('home')} />}
+                                {view === 'exam-generator' && <ExamGenerator onBack={() => setView('home')} />}
+                                {view === 'html-to-pdf' && <HtmlToPdf onBack={() => setView('home')} />}
+                                {view === 'desktop-toolkit' && <DesktopToolkit onBack={() => setView('home')} onViewOTA={() => setView('ota-guide')} />}
+                                {view === 'ota-guide' && <OTAGuide onBack={() => setView('home')} />}
+                                {view === 'convert' && <FileConverter file={file} onBack={() => setView('home')} />}
+
+                                {/* Dev Tools consolidated dashboard or individual */}
+                                {view === 'dev-tools' && <DevTools onBack={() => setView('home')} />}
+                            </Suspense>
                         </div>
-                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-                            <QuickAction title="Doğrulama Araçları" onClick={() => onAction('check-toolkit')} icon={<ShieldCheck size={16} />} color="blue" />
-                            <QuickAction title="Hash & Güvenlik" onClick={() => onAction('security')} icon={<Lock size={16} />} color="rose" />
-                            <QuickAction title="Ağ Güvenliği" onClick={() => onAction('network-toolkit')} icon={<Globe size={16} />} color="emerald" />
+                    )}
+
+                    {/* Premium Desktop-like Footer */}
+                    <footer className="px-8 py-3 border-t border-slate-200 dark:border-white/5 bg-white/50 dark:bg-black/40 backdrop-blur-sm text-[10px] font-black text-slate-400 dark:text-slate-600 flex justify-between items-center tracking-widest uppercase mt-auto">
+                        <div className="flex items-center gap-8">
+                            <div className="flex items-center gap-4">
+                                <span className="text-slate-900 dark:text-white/80">© 2026 Gravity Web Engine</span>
+                                <div className="w-1.5 h-1.5 rounded-full bg-slate-200 dark:bg-slate-800"></div>
+                                <span className="text-blue-500 italic">Bozdemir Core v4.0-WEB</span>
+                            </div>
+
+                            <div className="hidden lg:flex items-center gap-6 text-slate-400 dark:text-slate-700">
+                                <span className="flex items-center gap-1.5">Browser Optimized</span>
+                                <span className="flex items-center gap-1.5">AES-256 Cloud-Free</span>
+                            </div>
                         </div>
-                    </section>
-                </div>
+
+                        <div className="flex items-center gap-6">
+                            <div className="flex items-center gap-2 px-3 py-1 bg-emerald-500/10 rounded-full border border-emerald-500/10">
+                                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
+                                <span className="text-emerald-500">Fast Local Engine Active</span>
+                            </div>
+                            <span className="text-slate-300 dark:text-slate-800 hidden sm:inline">Secure Sandbox Mode</span>
+                        </div>
+                    </footer>
+
+                    <RevisionNotes />
+                </main>
             </div>
         </div>
     );
-};
-
-const HeroLink = ({ title, desc, icon, color, onClick }: { title: string, desc: string, icon: React.ReactNode, color: string, onClick: () => void }) => (
-    <button
-        onClick={onClick}
-        className="group p-6 text-left bg-white dark:bg-white/[0.03] border-2 border-slate-100 dark:border-white/5 rounded-[2.5rem] transition-all duration-300 hover:border-blue-500/50 dark:hover:border-white/20 hover:-translate-y-2 active:scale-95 shadow-xl shadow-slate-200/50 dark:shadow-none relative overflow-hidden h-full"
-    >
-        <div className={`mb-6 w-14 h-14 rounded-2xl flex items-center justify-center transition-all group-hover:rotate-6
-            ${color === 'blue' ? 'bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400' : ''}
-            ${color === 'emerald' ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : ''}
-            ${color === 'indigo' ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400' : ''}
-            ${color === 'amber' ? 'bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400' : ''}
-            ${color === 'purple' ? 'bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400' : ''}
-            ${color === 'rose' ? 'bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400' : ''}
-            ${color === 'sky' ? 'bg-sky-50 dark:bg-sky-500/10 text-sky-600 dark:text-sky-400' : ''}
-            ${color === 'orange' ? 'bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400' : ''}
-            ${color === 'pink' ? 'bg-pink-50 dark:bg-pink-500/10 text-pink-600 dark:text-pink-400' : ''}
-        `}>
-            {React.isValidElement(icon) ? React.cloneElement(icon as React.ReactElement, { size: 28 } as any) : icon}
-        </div>
-        <h4 className="text-base font-black mb-1 text-slate-800 dark:text-white uppercase tracking-tight">{title}</h4>
-        <p className="text-[12px] text-slate-500 dark:text-slate-400 font-medium leading-snug">{desc}</p>
-    </button>
-);
-
-const QuickAction = ({ title, onClick, icon, color }: { title: string, onClick: () => void, icon?: React.ReactNode, color: string }) => (
-    <button
-        onClick={onClick}
-        className="group flex items-center gap-2 p-3 bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-white/5 rounded-xl hover:border-blue-300 dark:hover:border-white/10 transition-all text-left shadow-sm dark:shadow-none"
-    >
-        <div className={`p-1.5 rounded-lg transition-transform group-hover:scale-110
-            ${color === 'blue' ? 'bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400' : ''}
-            ${color === 'red' ? 'bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400' : ''}
-            ${color === 'emerald' ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : ''}
-            ${color === 'sky' ? 'bg-sky-50 dark:bg-sky-500/10 text-sky-600 dark:text-sky-400' : ''}
-            ${color === 'indigo' ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400' : ''}
-            ${color === 'orange' ? 'bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400' : ''}
-            ${color === 'pink' ? 'bg-pink-50 dark:bg-pink-500/10 text-pink-600 dark:text-pink-400' : ''}
-            ${color === 'amber' ? 'bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400' : ''}
-        `}>
-            {icon}
-        </div>
-        <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-slate-200 transition-colors whitespace-nowrap overflow-hidden text-ellipsis">{title}</span>
-    </button>
-);
-
-export default HomeView;
+}

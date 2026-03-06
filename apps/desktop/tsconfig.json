@@ -17,8 +17,10 @@
     "jsx": "react-jsx",
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"],
-      "@shared/*": ["../../packages/shared/src/*"]
+      "@/*": ["../../apps/web/src/*"],
+      "@shared/*": ["../../packages/shared/src/*"],
+      "next/link": ["./src/adapters/next-link.tsx"],
+      "next/image": ["./src/adapters/next-image.tsx"]
     }
   },
   "include": ["src", "vite-env.d.ts"],
