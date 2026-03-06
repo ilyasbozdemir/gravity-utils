@@ -1,0 +1,42 @@
+# Gravity Utils - Desktop (Electron) Build & Release Workflow
+name: Build Desktop Application
+
+on:
+  push:
+    tags:
+      - "v*" # Sadece versiyon tag'i atıldığında çalışır (örn: git tag v1.0.0 && git push origin v1.0.0)
+  workflow_dispatch: # Manuel tetikleme seçeneği
+
+permissions:
+  contents: write # GitHub Release ve Asset yüklemek için gerekli izin
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 9
+          run_install: false
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Sync Web UI to Desktop
+        run: pnpm desktop:sync
+
+      - name: Build & Publish Electron App
+        run: pnpm desktop:build
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
