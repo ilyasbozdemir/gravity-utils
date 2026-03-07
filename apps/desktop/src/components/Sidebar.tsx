@@ -132,7 +132,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onViewChange, isO
             {/* Sidebar Container */}
             <aside
                 className={`
-                    fixed top-0 left-0 z-50 h-screen w-72 
+                    fixed top-0 left-0 z-50 h-full w-72 
                     bg-white dark:bg-[#0b101b] 
                     border-r border-slate-200 dark:border-white/5
                     transform transition-transform duration-300 ease-in-out
@@ -214,7 +214,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onViewChange, isO
 
                         return (
                             <div key={cat.id} className="mb-6">
-                                <div className="flex items-center gap-2 px-3 mb-2 text-[11px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">
+                                <div className="flex items-center gap-2 px-3 mb-2 text-[11px] font-black uppercase tracking-widest text-slate-900/60 dark:text-slate-500">
                                     {cat.title}
                                 </div>
                                 <div className="space-y-0.5">

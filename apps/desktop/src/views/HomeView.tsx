@@ -146,7 +146,7 @@ export default function HomeView() {
     if (!isClient) return null; // Avoid hydration mismatch
 
     return (
-        <div className="flex h-screen overflow-hidden bg-slate-50 dark:bg-[#06070a] text-slate-900 dark:text-slate-100 transition-colors duration-300">
+        <div className="flex h-full overflow-hidden bg-slate-50 dark:bg-[#06070a] text-slate-900 dark:text-slate-100 transition-colors duration-300">
             <Sidebar
                 currentView={view}
                 onViewChange={handleAction}
@@ -182,9 +182,9 @@ export default function HomeView() {
 
                 {/* Tablet & Desktop Header */}
                 {(file || view !== 'home') && (
-                    <header className="hidden md:flex px-8 py-5 border-b border-slate-200 dark:border-white/5 items-center justify-between bg-white/80 dark:bg-[#06070a]/80 backdrop-blur-xl sticky top-0 z-30 transition-colors duration-300">
+                    <header className="hidden md:flex px-8 py-5 border-b border-slate-200 dark:border-white/5 items-center justify-between bg-white/90 dark:bg-[#06070a]/90 backdrop-blur-2xl sticky top-0 z-30 transition-colors duration-300">
                         <div className="flex items-center gap-4">
-                            <h2 className="text-sm font-bold text-slate-700 dark:text-slate-400 uppercase tracking-widest leading-none">
+                            <h2 className="text-sm font-black text-slate-800 dark:text-slate-200 uppercase tracking-[0.2em] leading-none">
                                 {view.replace(/-/g, ' ')}
                             </h2>
                         </div>
@@ -193,7 +193,7 @@ export default function HomeView() {
                                 onClick={clearFile}
                                 title="Dosyayı Kaldır"
                                 aria-label="Dosyayı Kaldır"
-                                className="text-xs font-bold text-slate-600 dark:text-slate-500 hover:text-slate-900 dark:hover:text-white bg-slate-100 dark:bg-white/5 px-4 py-2 rounded-lg border border-slate-200 dark:border-white/5 transition-all"
+                                className="text-xs font-bold text-slate-700 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white bg-slate-100 dark:bg-white/5 px-4 py-2 rounded-lg border border-slate-200 dark:border-white/5 transition-all"
                             >
                                 Dosyayı Kaldır
                             </button>
@@ -202,30 +202,30 @@ export default function HomeView() {
                 )}
 
                 {/* Main Content */}
-                <main className="flex-1 overflow-y-auto w-full custom-scrollbar">
+                <main className="flex-1 overflow-y-auto overflow-x-hidden w-full custom-scrollbar">
                     {!file && view === 'home' && (
                         <>
                             <LandingHero onFileSelect={handleFileSelect} onToolSelect={handleToolSelect} />
                             {isApp && (
                                 <div className="px-8 max-w-[1400px] mx-auto w-full -mt-10 pb-20">
-                                    <div className="flex items-center gap-2 mb-6 opacity-60">
-                                        <div className="h-px bg-slate-800 flex-1"></div>
-                                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 flex items-center gap-2">
-                                            <Monitor size={10} /> Bozdemir Desktop Engine Status
+                                    <div className="flex items-center gap-2 mb-6 opacity-80">
+                                        <div className="h-px bg-slate-200 dark:bg-slate-800 flex-1"></div>
+                                        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-600 dark:text-slate-500 flex items-center gap-2">
+                                            <Monitor size={10} className="text-blue-500" /> Bozdemir Desktop Engine Status
                                         </span>
-                                        <div className="h-px bg-slate-800 flex-1"></div>
+                                        <div className="h-px bg-slate-200 dark:bg-slate-800 flex-1"></div>
                                     </div>
                                     <DesktopDashboard />
                                 </div>
                             )}
                             {!isApp && (
                                 <div className="px-8 max-w-[1400px] mx-auto w-full pb-20">
-                                    <div className="flex items-center gap-2 mb-12 opacity-40">
-                                        <div className="h-px bg-slate-300 dark:bg-slate-800 flex-1"></div>
-                                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 flex items-center gap-2">
+                                    <div className="flex items-center gap-2 mb-12 opacity-60">
+                                        <div className="h-px bg-slate-200 dark:bg-slate-800 flex-1"></div>
+                                        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-700 dark:text-slate-400 flex items-center gap-2">
                                             <Monitor size={10} /> Gravity Desktop Experience
                                         </span>
-                                        <div className="h-px bg-slate-300 dark:bg-slate-800 flex-1"></div>
+                                        <div className="h-px bg-slate-200 dark:bg-slate-800 flex-1"></div>
                                     </div>
                                     <DesktopPromotion />
                                 </div>
@@ -306,26 +306,26 @@ export default function HomeView() {
                     )}
 
                     {/* Premium Desktop-like Footer */}
-                    <footer className="px-8 py-3 border-t border-slate-200 dark:border-white/5 bg-white/50 dark:bg-black/40 backdrop-blur-sm text-[10px] font-black text-slate-400 dark:text-slate-600 flex justify-between items-center tracking-widest uppercase mt-auto">
+                    <footer className="px-8 py-4 border-t border-slate-200 dark:border-white/5 bg-white/90 dark:bg-black/60 backdrop-blur-2xl text-[10px] font-black text-slate-900/50 dark:text-slate-400 flex justify-between items-center tracking-widest uppercase mt-auto transition-colors duration-300">
                         <div className="flex items-center gap-8">
                             <div className="flex items-center gap-4">
-                                <span className="text-slate-900 dark:text-white/80">© 2026 Gravity Web Engine</span>
-                                <div className="w-1.5 h-1.5 rounded-full bg-slate-200 dark:bg-slate-800"></div>
-                                <span className="text-blue-500 italic">Bozdemir Core v4.0-WEB</span>
+                                <span className="text-slate-900 dark:text-white font-black italic">© 2026 Gravity Web Engine</span>
+                                <div className="w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-slate-800"></div>
+                                <span className="text-blue-600 dark:text-blue-500 font-black italic">Bozdemir Core v4.1-ULTRA</span>
                             </div>
 
-                            <div className="hidden lg:flex items-center gap-6 text-slate-400 dark:text-slate-700">
-                                <span className="flex items-center gap-1.5">Browser Optimized</span>
-                                <span className="flex items-center gap-1.5">AES-256 Cloud-Free</span>
+                            <div className="hidden lg:flex items-center gap-6 text-slate-900/40 dark:text-slate-700">
+                                <span className="flex items-center gap-1.5">Differential OTA Engaged</span>
+                                <span className="flex items-center gap-1.5">Blockmap Delta Sync</span>
                             </div>
                         </div>
 
                         <div className="flex items-center gap-6">
                             <div className="flex items-center gap-2 px-3 py-1 bg-emerald-500/10 rounded-full border border-emerald-500/10">
                                 <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
-                                <span className="text-emerald-500">Fast Local Engine Active</span>
+                                <span className="text-emerald-700 dark:text-emerald-400">Native Engine Active</span>
                             </div>
-                            <span className="text-slate-300 dark:text-slate-800 hidden sm:inline">Secure Sandbox Mode</span>
+                            <span className="text-slate-900/40 dark:text-slate-800 hidden sm:inline">Blockmap Verified</span>
                         </div>
                     </footer>
 
@@ -335,3 +335,4 @@ export default function HomeView() {
         </div>
     );
 }
+
