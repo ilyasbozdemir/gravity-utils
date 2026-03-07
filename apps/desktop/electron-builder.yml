@@ -7,13 +7,26 @@ publish:
   repo: gravity-utils
   releaseType: release
 
+directories:
+  output: release
+
 files:
   - dist/**/*
   - electron/**/*
+  - package.json
+
+asar: true
 
 win:
   target: nsis
+  icon: electron/icon.ico
 mac:
   target: dmg
 linux:
   target: AppImage
+
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true

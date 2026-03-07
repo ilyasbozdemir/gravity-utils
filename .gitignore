@@ -143,6 +143,8 @@ vite.config.ts.timestamp-*
 
 out/
 dist/
+release/
+release-builds/
 dist-electron/
 .next/
 build_log.txt
