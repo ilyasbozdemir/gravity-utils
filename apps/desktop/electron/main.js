@@ -42,7 +42,7 @@ function setupProtocol() {
         // Clean hostname/dots (e.g., app://./index.html or app://index.html)
         urlPath = decodeURIComponent(urlPath).replace(/^(\.|\/)+/, '');
         
-        let baseDir = path.join(__dirname, '../dist');
+        let baseDir = path.join(__dirname, '../out');
         const outDirNormalized = path.normalize(baseDir);
         let fullPath = path.join(outDirNormalized, urlPath || 'index.html');
 

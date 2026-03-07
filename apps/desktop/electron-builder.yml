@@ -8,10 +8,10 @@ publish:
   releaseType: release
 
 directories:
-  output: release
+  output: dist
 
 files:
-  - dist/**/*
+  - out/**/*
   - electron/**/*
   - package.json
 
