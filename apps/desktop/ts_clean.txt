@@ -1,9 +1,0 @@
-﻿src/components/Sidebar.tsx(2,18): error TS2307: Cannot find module 'next/link' or its corresponding type declarations.
-src/components/Sidebar.tsx(31,50): error TS2307: Cannot find module '../utils/electron' or its corresponding type declarations.
-src/components/Sidebar.tsx(225,55): error TS7006: Parameter 'e' implicitly has an 'any' type.
-src/views/HomeView.tsx(23,86): error TS2339: Property 'JsonFormatter' does not exist on type 'typeof import("D:/Github/ilyas-bozdemir/gravity-utils/packages/shared/src/index")'.
-src/views/HomeView.tsx(34,84): error TS2339: Property 'JwtDebugger' does not exist on type 'typeof import("D:/Github/ilyas-bozdemir/gravity-utils/packages/shared/src/index")'.
-src/views/HomeView.tsx(39,85): error TS2339: Property 'SqlFormatter' does not exist on type 'typeof import("D:/Github/ilyas-bozdemir/gravity-utils/packages/shared/src/index")'.
-src/views/HomeView.tsx(49,84): error TS2339: Property 'RegexTester' does not exist on type 'typeof import("D:/Github/ilyas-bozdemir/gravity-utils/packages/shared/src/index")'.
-src/views/HomeView.tsx(60,88): error TS2339: Property 'SmartCalculator' does not exist on type 'typeof import("D:/Github/ilyas-bozdemir/gravity-utils/packages/shared/src/index")'.
-src/views/HomeView.tsx(67,92): error TS2339: Property 'EmailHeaderAnalyzer' does not exist on type 'typeof import("D:/Github/ilyas-bozdemir/gravity-utils/packages/shared/src/index")'.
