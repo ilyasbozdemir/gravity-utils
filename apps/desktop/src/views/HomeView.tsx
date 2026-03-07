@@ -8,6 +8,7 @@ import { LandingHero } from '@/components/LandingHero';
 import { ActionPanel } from '@/components/ActionPanel';
 import { RevisionNotes } from '@/components/RevisionNotes';
 import { DesktopDashboard } from '@/components/DesktopDashboard';
+const DownloadCenter = lazy(() => import('@/components/DownloadCenter').then(mod => ({ default: mod.DownloadCenter })));
 import { DesktopPromotion } from '@/components/DesktopPromotion';
 import { isElectron, useIsElectron } from '@/utils/electron';
 
@@ -216,6 +217,9 @@ export default function HomeView() {
                                         <div className="h-px bg-slate-200 dark:bg-slate-800 flex-1"></div>
                                     </div>
                                     <DesktopDashboard />
+                                    <Suspense fallback={<div className="h-40 w-full animate-pulse bg-slate-100 dark:bg-white/5 rounded-[2.5rem]"></div>}>
+                                        <DownloadCenter />
+                                    </Suspense>
                                 </div>
                             )}
                             {!isApp && (
