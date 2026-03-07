@@ -1,0 +1,9 @@
+﻿  ÔÇó electron-builder  version=26.8.1 os=10.0.26100
+  Ô¿» ENOENT: no such file or directory, open 'D:\Github\ilyas-bozdemir\gravity-utils\apps\desktop\apps\desktop\electron-builder.yml'  failedTask=build stackTrace=Error: ENOENT: no such file or directory, open 'D:\Github\ilyas-bozdemir\gravity-utils\apps\desktop\apps\desktop\electron-builder.yml'
+    at open (node:internal/fs/promises:641:25)
+    at Object.readFile (node:internal/fs/promises:1245:14)
+    at readConfig (D:\Github\ilyas-bozdemir\gravity-utils\node_modules\app-builder-lib\src\util\config\load.ts:19:16)
+    at getConfig (D:\Github\ilyas-bozdemir\gravity-utils\node_modules\app-builder-lib\src\util\config\config.ts:43:34)
+    at Packager.validateConfig (D:\Github\ilyas-bozdemir\gravity-utils\node_modules\app-builder-lib\src\packager.ts:376:27)
+    at Packager.build (D:\Github\ilyas-bozdemir\gravity-utils\node_modules\app-builder-lib\src\packager.ts:406:5)
+    at executeFinally (D:\Github\ilyas-bozdemir\gravity-utils\node_modules\builder-util\src\promise.ts:12:14)

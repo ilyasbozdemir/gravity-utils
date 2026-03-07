@@ -20,13 +20,8 @@ asar: true
 win:
   target: nsis
   icon: electron/icon.ico
-mac:
-  target: dmg
-linux:
-  target: AppImage
 
 nsis:
   oneClick: false
   allowToChangeInstallationDirectory: true
   createDesktopShortcut: true
-  createStartMenuShortcut: true

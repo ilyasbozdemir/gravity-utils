@@ -4,9 +4,31 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: 222 47% 11%;
-  --foreground: 213 31% 91%;
+@layer base {
+  :root {
+    --background: #f8fafc;
+    --foreground: #0f172a;
+    --card: #ffffff;
+    --card-foreground: #0f172a;
+    --border: #e2e8f0;
+    --muted: #f1f5f9;
+    --muted-foreground: #64748b;
+  }
+
+  .dark {
+    --background: #0b101b;
+    --foreground: #f8fafc;
+    --card: #06070a;
+    --card-foreground: #f8fafc;
+    --border: rgba(255, 255, 255, 0.05);
+    --muted: #0f172a;
+    --muted-foreground: #94a3b8;
+  }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    @apply bg-slate-50 text-slate-900 dark:bg-[#0b101b] dark:text-white antialiased transition-colors duration-300;
+  }
 }
 
 * {
@@ -20,24 +42,15 @@ input, textarea, [contenteditable="true"] {
   cursor: text;
 }
 
-body {
-  font-family: 'Inter', sans-serif;
-  @apply bg-[#0b101b] text-white antialiased;
-}
-
 /* Custom Scrollbar for Premium Look */
 ::-webkit-scrollbar {
   width: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.02);
+  background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.2);
+  @apply bg-slate-200 dark:bg-white/10 rounded-full hover:bg-slate-300 dark:hover:bg-white/20 transition-colors;
 }
 
 .drag-region {
@@ -46,4 +59,13 @@ body {
 
 .no-drag {
   -webkit-app-region: no-drag;
+}
+
+/* Glassmorphism Classes for Parity with Web */
+.glass-panel {
+  @apply bg-white/70 dark:bg-black/60 backdrop-blur-md border border-white/20 dark:border-white/5 rounded-2xl shadow-lg;
+}
+
+.glass-button {
+  @apply bg-blue-500/10 border border-blue-500/20 text-blue-600 dark:text-blue-400 px-4 py-2 rounded-lg font-medium transition-all hover:bg-blue-500/20 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-blue-500/10;
 }

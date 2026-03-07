@@ -121,6 +121,7 @@ autoUpdater.on('update-downloaded', (info) => {
     });
 });
 
+
 /**
  * Main Window Configuration
  */
@@ -335,7 +336,7 @@ app.whenReady().then(() => {
   createWindow();
   
   // 3. OTA Check
-  if (!isDev) autoUpdater.checkForUpdatesAndNotify();
+   if (!isDev) autoUpdater.checkForUpdatesAndNotify();
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();

@@ -1,6 +1,9 @@
 {
   "name": "gravity-utils-workspace",
   "private": true,
+  "version": "1.0.0",
+  "description": "Gravity Utils Monorepo",
+  "author": "Ilyas Bozdemir",
   "scripts": {
     "web:dev": "pnpm -C apps/web dev",
     "web:build": "pnpm -C apps/web build",
@@ -19,6 +22,8 @@
     "concurrently": "^8.2.2"
   },
   "dependencies": {
+    "@emotion/is-prop-valid": "^1.4.0",
+    "electron": "34.5.8",
     "sql-formatter": "^15.7.2",
     "tesseract.js": "^7.0.0"
   }
