@@ -32,5 +32,14 @@ contextBridge.exposeInMainWorld('electron', {
   reportUIError: (error) => ipcRenderer.send('report-ui-error', error),
   
   // Theming
-  sendThemeChange: (theme) => ipcRenderer.send('theme-changed', theme)
+  sendThemeChange: (theme) => ipcRenderer.send('theme-changed', theme),
+  
+  // 🖋️ Native Font Engine (Desktop Exclusive - Bozdemir)
+  // Lists all installed system fonts (TTF/OTF)
+  getSystemFonts: () => ipcRenderer.invoke('get-system-fonts'),
+  // Reads a specific font file as base64 for embedding in PDF/DOCX
+  readFontFile: (fontPath) => ipcRenderer.invoke('read-font-file', fontPath),
+  // Finds a font by display name (e.g. 'Times New Roman') → returns base64
+  // Solves multi-font PDFs where different fonts are referenced by name
+  findFontByName: (fontName) => ipcRenderer.invoke('find-font-by-name', fontName)
 });
