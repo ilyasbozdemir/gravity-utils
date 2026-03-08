@@ -53,6 +53,16 @@ export const SHARED_ENGINE = {
         const i = Math.floor(Math.log(bytes) / Math.log(k));
         return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
     },
+    // 🔄 Base64 Helper
+    arrayBufferToBase64: (buffer: ArrayBuffer) => {
+        let binary = '';
+        const bytes = new Uint8Array(buffer);
+        const len = bytes.byteLength;
+        for (let i = 0; i < len; i++) {
+            binary += String.fromCharCode(bytes[i]);
+        }
+        return btoa(binary);
+    },
     ENGINE_VERSION: 'Bozdemir Engine v3.1.0-Shared-Core-Secure'
 };
 

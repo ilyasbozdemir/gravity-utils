@@ -25,5 +25,16 @@ export const SHARED_ENGINE = {
 
     // ⚡ Performance Constants
     CHUNKING_SIZE: 1024 * 1024 * 5, // 5MB chunks
-    ENGINE_VERSION: 'Bozdemir Engine v2.0-Standalone'
+    ENGINE_VERSION: 'Bozdemir Engine v2.0-Standalone',
+
+    // 🔄 Base64 Helper
+    arrayBufferToBase64: (buffer: ArrayBuffer) => {
+        let binary = '';
+        const bytes = new Uint8Array(buffer);
+        const len = bytes.byteLength;
+        for (let i = 0; i < len; i++) {
+            binary += String.fromCharCode(bytes[i]);
+        }
+        return btoa(binary);
+    }
 };

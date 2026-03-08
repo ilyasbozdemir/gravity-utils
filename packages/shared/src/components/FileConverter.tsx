@@ -135,10 +135,27 @@ export const FileConverter: React.FC<FileConverterProps> = ({ file: initialFile 
                         });
 
                         // Wait for images to load if any
-                        await new Promise(r => setTimeout(r, 1200));
+                        await new Promise(r => setTimeout(r, 1500));
 
                         setProgress('Döküman tarayıcıda render ediliyor...');
+
+                        // 🇹🇷 Turkish Font & 🖼️ Image Unity Logic
+                        const fontData = await loadTurkishFont();
+                        const fontBase64 = SHARED_ENGINE.arrayBufferToBase64(fontData);
+
                         const pdf = new jsPDF('p', 'mm', 'a4');
+                        pdf.addFileToVFS('Roboto-Regular.ttf', fontBase64);
+                        pdf.addFont('Roboto-Regular.ttf', 'Roboto', 'normal');
+                        pdf.setFont('Roboto');
+
+                        // Inject CSS to prevent image splitting and maintain fonts
+                        const style = document.createElement('style');
+                        style.innerHTML = `
+                            .docx img { page-break-inside: avoid !important; break-inside: avoid !important; max-width: 100% !important; height: auto !important; }
+                            .docx p, .docx span, .docx div { font-family: 'Roboto', sans-serif !important; }
+                        `;
+                        container.appendChild(style);
+
                         const width = pdf.internal.pageSize.getWidth();
 
                         await pdf.html(container, {
@@ -150,7 +167,12 @@ export const FileConverter: React.FC<FileConverterProps> = ({ file: initialFile 
                             y: 0,
                             width: width,
                             windowWidth: 800,
-                            autoPaging: 'text'
+                            autoPaging: 'text',
+                            html2canvas: {
+                                useCORS: true,
+                                logging: false,
+                                scale: 2 // Improve quality
+                            }
                         });
 
                         container.innerHTML = '';

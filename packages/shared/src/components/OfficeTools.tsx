@@ -664,10 +664,26 @@ export const OfficeTools: React.FC<OfficeToolsProps> = ({ mode, onBack }) => {
                     });
 
                     // Wait for rendering
-                    await new Promise(r => setTimeout(r, 1000));
+                    await new Promise(r => setTimeout(r, 1500));
                     setFiles(prev => prev.map((f, i) => i === index ? { ...f, progress: 55 } : f));
 
+                    // 🇹🇷 Turkish Font & 🖼️ Image Unity Logic
+                    const fontData = await loadTurkishFont();
+                    const fontBase64 = SHARED_ENGINE.arrayBufferToBase64(fontData);
+
                     const pdf = new jsPDF('p', 'mm', 'a4');
+                    pdf.addFileToVFS('Roboto-Regular.ttf', fontBase64);
+                    pdf.addFont('Roboto-Regular.ttf', 'Roboto', 'normal');
+                    pdf.setFont('Roboto');
+
+                    // Inject CSS to prevent image splitting and maintain fonts
+                    const style = document.createElement('style');
+                    style.innerHTML = `
+                        .docx img { page-break-inside: avoid !important; break-inside: avoid !important; max-width: 100% !important; height: auto !important; }
+                        .docx p, .docx span, .docx div { font-family: 'Roboto', sans-serif !important; }
+                    `;
+                    container.appendChild(style);
+
                     const width = pdf.internal.pageSize.getWidth();
 
                     // Use jsPDF's html method which handles text better than manual addImage
@@ -681,7 +697,12 @@ export const OfficeTools: React.FC<OfficeToolsProps> = ({ mode, onBack }) => {
                         y: 0,
                         width: width,
                         windowWidth: 800,
-                        autoPaging: 'text'
+                        autoPaging: 'text',
+                        html2canvas: {
+                            useCORS: true,
+                            logging: false,
+                            scale: 2
+                        }
                     });
 
                     return; // Callback handles the state update
