@@ -198,7 +198,7 @@ async function generateDocx(template: WordTemplate, values: Record<string, strin
         // Split line-by-line for multi-line blocks
         const lines = filled.split('\n');
         for (const line of lines) {
-            const runs: TextRun[] = [];
+            const runs: any[] = [];
             // Parse **bold** inline markers within a line
             const parts = line.split(/(\*\*[^*]+\*\*)/g);
             for (const part of parts) {
@@ -613,10 +613,82 @@ function FillForm({ template, onBack, onGenerated }: FillFormProps) {
         Object.fromEntries(placeholders.map(p => [p, '']))
     );
     const [generating, setGenerating] = useState(false);
-    const [preview, setPreview] = useState(false);
+    const [generatingAll, setGeneratingAll] = useState(false);
 
-    const empty = placeholders.filter(p => !values[p]);
-    const allFilled = empty.length === 0;
+    // ── External data import state ─────────────────────────────────
+    const [importedRows, setImportedRows] = useState<Record<string, string>[]>([]);
+    const [importedCols, setImportedCols] = useState<string[]>([]);
+    const [selectedRowIdx, setSelectedRowIdx] = useState(0);
+    const [colMap, setColMap] = useState<Record<string, string>>({});
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const normalise = (s: string) => s.toLowerCase().replace(/[\s_\-\.]/g, '');
+
+    const autoMap = useCallback((cols: string[]) => {
+        const map: Record<string, string> = {};
+        for (const p of placeholders) {
+            const np = normalise(p);
+            const match = cols.find(c => normalise(c) === np)
+                ?? cols.find(c => normalise(c).includes(np) || np.includes(normalise(c)));
+            if (match) map[p] = match;
+        }
+        return map;
+    }, [placeholders]);
+
+    const applyRow = useCallback((idx: number, rows: Record<string, string>[], map: Record<string, string>) => {
+        const row = rows[idx] ?? {};
+        setValues(prev => {
+            const next = { ...prev };
+            for (const p of placeholders) { if (map[p] && row[map[p]] !== undefined) next[p] = row[map[p]]; }
+            return next;
+        });
+    }, [placeholders]);
+
+    const loadData = (rows: Record<string, string>[], cols: string[]) => {
+        const map = autoMap(cols);
+        setImportedCols(cols); setImportedRows(rows); setColMap(map); setSelectedRowIdx(0);
+        applyRow(0, rows, map);
+    };
+
+    function parseCSV(text: string) {
+        const lines = text.trim().split(/\r?\n/);
+        if (lines.length < 2) return { rows: [] as Record<string, string>[], cols: [] as string[] };
+        const sep = lines[0].includes(';') ? ';' : ',';
+        const splitLine = (line: string) => { const c: string[] = []; let cur = '', inQ = false; for (const ch of line) { if (ch === '"') { inQ = !inQ; } else if (ch === sep && !inQ) { c.push(cur.trim()); cur = ''; } else cur += ch; } c.push(cur.trim()); return c; };
+        const cols = splitLine(lines[0]);
+        const rows = lines.slice(1).filter(Boolean).map(l => { const cells = splitLine(l); return Object.fromEntries(cols.map((c, i) => [c, cells[i] ?? ''])); });
+        return { rows, cols };
+    }
+
+    const handleImportFile = async (file: File) => {
+        const ext = file.name.split('.').pop()?.toLowerCase();
+        try {
+            if (ext === 'json') {
+                const arr = JSON.parse(await file.text());
+                const data = Array.isArray(arr) ? arr : [arr];
+                const cols = Array.from(new Set(data.flatMap(r => Object.keys(r))));
+                loadData(data.map(r => Object.fromEntries(cols.map(c => [c, String(r[c] ?? '')]))), cols);
+                toast.success(`${data.length} kayıt yüklendi (JSON)`);
+            } else if (['csv', 'tsv', 'txt'].includes(ext!)) {
+                const { rows, cols } = parseCSV(await file.text());
+                loadData(rows, cols);
+                toast.success(`${rows.length} kayıt yüklendi (CSV)`);
+            } else if (['xlsx', 'xls'].includes(ext!)) {
+                const XLSX = await import('xlsx');
+                const wb = XLSX.read(await file.arrayBuffer(), { type: 'array' });
+                const arr: Record<string, unknown>[] = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { defval: '' }) as Record<string, unknown>[];
+                const cols = arr.length ? Object.keys(arr[0]) : [];
+                loadData(arr.map((r: Record<string, unknown>) => Object.fromEntries(cols.map(c => [c, String(r[c] ?? '')]))), cols);
+                toast.success(`${arr.length} kayıt yüklendi (Excel)`);
+            } else toast.error('Desteklenen format: CSV, JSON, XLSX');
+        } catch (e: any) { toast.error(`Dosya okunamadı: ${e.message}`); }
+    };
+
+    const setFieldCol = (placeholder: string, col: string) => {
+        const newMap = { ...colMap, [placeholder]: col };
+        setColMap(newMap);
+        if (col && importedRows.length) { const row = importedRows[selectedRowIdx] ?? {}; setValues(prev => ({ ...prev, [placeholder]: row[col] ?? '' })); }
+    };
 
     const handleGenerate = async () => {
         setGenerating(true);
@@ -626,105 +698,160 @@ function FillForm({ template, onBack, onGenerated }: FillFormProps) {
             saveAndRecord(blob, safeName, template.name, 'Word Şablon');
             toast.success(`"${template.name}" başarıyla oluşturuldu!`);
             onGenerated();
-        } catch (err: any) {
-            toast.error(`Dosya oluşturulamadı: ${err.message}`);
-        } finally {
-            setGenerating(false);
-        }
+        } catch (err: any) { toast.error(`Dosya oluşturulamadı: ${err.message}`); }
+        finally { setGenerating(false); }
     };
 
-    // Live preview text (simplified, just replaces {{}} in content)
-    const previewText = template.blocks.map(b => {
-        if (b.type === 'divider') return '─'.repeat(40);
-        return fillContent(b.content, values);
-    }).join('\n\n');
+    const handleBulkGenerate = async () => {
+        if (!importedRows.length) return;
+        setGeneratingAll(true);
+        try {
+            for (let i = 0; i < importedRows.length; i++) {
+                const row = importedRows[i];
+                const rv = { ...values };
+                for (const p of placeholders) { if (colMap[p] && row[colMap[p]] !== undefined) rv[p] = row[colMap[p]]; }
+                const blob = await generateDocx(template, rv);
+                saveAndRecord(blob, `${template.name.replace(/\s+/g, '_')}_${i + 1}_${Date.now()}.docx`, template.name, 'Word Toplu');
+                await new Promise(r => setTimeout(r, 120));
+            }
+            toast.success(`${importedRows.length} dosya oluşturuldu!`); onGenerated();
+        } catch (e: any) { toast.error(`Toplu üretim hatası: ${e.message}`); }
+        finally { setGeneratingAll(false); }
+    };
+
+    const empty = placeholders.filter(p => !values[p]);
+    const allFilled = empty.length === 0;
 
     return (
         <div className="h-full flex flex-col overflow-hidden">
             {/* Header */}
             <div className="flex items-center gap-4 px-6 py-4 border-b border-slate-200 dark:border-white/5 shrink-0">
-                <button onClick={onBack} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all active:scale-95">
+                <button onClick={onBack} title="Geri" className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all active:scale-95">
                     <ArrowLeft size={18} className="text-slate-500" />
                 </button>
                 <div className="flex items-center gap-3">
                     <span className="text-2xl">{template.icon}</span>
                     <div>
                         <h2 className="text-base font-black text-slate-900 dark:text-white">{template.name}</h2>
-                        <p className="text-[10px] text-slate-400">{placeholders.length} yer tutucuyu doldur → Word oluştur</p>
+                        <p className="text-[10px] text-slate-400">{placeholders.length} yer tutucu → Word oluştur</p>
                     </div>
                 </div>
-                <div className="ml-auto flex items-center gap-2">
-                    <button onClick={() => setPreview(v => !v)}
-                        className={`flex items-center gap-2 px-4 py-2 text-xs font-black uppercase tracking-wider rounded-xl transition-all ${preview ? 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700'}`}>
-                        Önizleme
+                <div className="ml-auto flex items-center gap-2 flex-wrap justify-end">
+                    <button onClick={() => fileInputRef.current?.click()} title="CSV / JSON / Excel veri aktar"
+                        className="flex items-center gap-1.5 px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-black uppercase tracking-wider rounded-xl transition-all active:scale-95 shadow-sm shadow-indigo-500/20">
+                        <Plus size={13} /> Veri Aktar
                     </button>
+                    <input ref={fileInputRef} type="file" accept=".csv,.tsv,.json,.xlsx,.xls,.txt" className="hidden"
+                        onChange={e => { const f = e.target.files?.[0]; if (f) handleImportFile(f); e.target.value = ''; }} />
+                    {importedRows.length > 1 && (
+                        <button onClick={handleBulkGenerate} disabled={generatingAll} title={`Tüm ${importedRows.length} kayıt için Word`}
+                            className="flex items-center gap-1.5 px-3 py-2 bg-violet-600 hover:bg-violet-700 disabled:opacity-50 text-white text-xs font-black uppercase tracking-wider rounded-xl transition-all active:scale-95 shadow-sm">
+                            {generatingAll ? <span className="animate-spin border-2 border-white border-t-transparent rounded-full w-3 h-3" /> : <Copy size={13} />}
+                            Tümünü ({importedRows.length})
+                        </button>
+                    )}
                     <button onClick={handleGenerate} disabled={generating} id="generate-docx-btn"
-                        className="flex items-center gap-2 px-5 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white text-xs font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-emerald-500/20 active:scale-95">
-                        {generating ? (
-                            <span className="animate-spin border-2 border-white border-t-transparent rounded-full w-3 h-3" />
-                        ) : <Download size={14} />}
+                        className="flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white text-xs font-black uppercase tracking-wider rounded-xl transition-all shadow-lg shadow-emerald-500/20 active:scale-95">
+                        {generating ? <span className="animate-spin border-2 border-white border-t-transparent rounded-full w-3 h-3" /> : <Download size={13} />}
                         {generating ? 'Oluşturuluyor...' : 'Word İndir'}
                     </button>
                 </div>
             </div>
 
             <div className="flex flex-1 overflow-hidden">
-                {/* Form */}
-                <div className="w-80 border-r border-slate-200 dark:border-white/5 p-5 overflow-y-auto shrink-0">
-                    {/* Progress */}
-                    <div className="mb-5">
-                        <div className="flex justify-between text-[10px] font-bold text-slate-400 mb-1.5">
-                            <span>Doldurma İlerlemesi</span>
-                            <span className={allFilled ? 'text-emerald-500' : 'text-blue-500'}>
-                                {placeholders.length - empty.length}/{placeholders.length}
-                            </span>
+                {/* ── Left: Form + Import ─────────────────────────── */}
+                <div className="w-[340px] border-r border-slate-200 dark:border-white/5 flex flex-col shrink-0 overflow-hidden">
+
+                    {/* Import Bar */}
+                    {importedRows.length > 0 && (
+                        <div className="border-b border-slate-200 dark:border-white/5 bg-indigo-50/60 dark:bg-indigo-950/20 p-4 shrink-0">
+                            <div className="flex items-center justify-between mb-2">
+                                <span className="text-[10px] font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400">
+                                    📂 Aktarılan Veri — {importedRows.length} kayıt
+                                </span>
+                                <button onClick={() => { setImportedRows([]); setImportedCols([]); setColMap({}); }} title="Veriyi temizle"
+                                    className="text-indigo-400 hover:text-red-400 p-1 rounded transition-colors">
+                                    <X size={12} />
+                                </button>
+                            </div>
+                            {/* Record selector */}
+                            <select value={selectedRowIdx} title="Kayıt seç"
+                                onChange={e => { const i = Number(e.target.value); setSelectedRowIdx(i); applyRow(i, importedRows, colMap); }}
+                                className="w-full px-2.5 py-1.5 bg-white dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-800 rounded-xl text-xs font-bold text-indigo-700 dark:text-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/30">
+                                {importedRows.map((row, i) => <option key={i} value={i}>{i + 1}. {importedCols[0] ? (row[importedCols[0]] || `Kayıt ${i + 1}`) : `Kayıt ${i + 1}`}</option>)}
+                            </select>
+                            {/* Auto-map status chips */}
+                            <div className="flex flex-wrap gap-1 mt-2">
+                                {placeholders.map(p => (
+                                    <span key={p} className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md border flex items-center gap-0.5 ${colMap[p] ? 'bg-emerald-100 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 border-emerald-300 dark:border-emerald-800'
+                                        : 'bg-slate-100 dark:bg-slate-800 text-slate-400 border-slate-200 dark:border-slate-700'}`}>
+                                        {colMap[p] ? <Check size={8} /> : <AlertCircle size={8} />} {p}
+                                    </span>
+                                ))}
+                            </div>
                         </div>
-                        <div className="h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                            <div
-                                className="h-full bg-blue-500 rounded-full transition-all duration-500"
-                                style={{ width: `${placeholders.length ? ((placeholders.length - empty.length) / placeholders.length) * 100 : 100}%` }}
-                            />
+                    )}
+
+                    {/* Fields */}
+                    <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                        {/* Progress */}
+                        <div>
+                            <div className="flex justify-between text-[10px] font-bold text-slate-400 mb-1.5">
+                                <span>Doldurma İlerlemesi</span>
+                                <span className={allFilled ? 'text-emerald-500' : 'text-blue-500'}>{placeholders.length - empty.length}/{placeholders.length}</span>
+                            </div>
+                            <div className="h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                                <div className="h-full bg-blue-500 rounded-full transition-all duration-500"
+                                    style={{ width: `${placeholders.length ? ((placeholders.length - empty.length) / placeholders.length) * 100 : 100}%` }} />
+                            </div>
                         </div>
+
+                        {placeholders.length === 0 ? (
+                            <div className="text-center py-8">
+                                <Check size={32} className="text-emerald-500 mx-auto mb-2" />
+                                <p className="text-sm font-bold text-slate-500">Yer tutucu yok</p>
+                            </div>
+                        ) : placeholders.map(p => (
+                            <div key={p}>
+                                <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1.5">
+                                    {p.replace(/_/g, ' ')}
+                                    {values[p] ? <Check size={10} className="inline ml-1 text-emerald-500" /> : <span className="text-red-400 ml-1">*</span>}
+                                </label>
+                                {/* Column select — only when data is loaded */}
+                                {importedCols.length > 0 && (
+                                    <select value={colMap[p] ?? ''} onChange={e => setFieldCol(p, e.target.value)} title={`${p} için sütun seç`}
+                                        className={`w-full mb-1.5 px-2.5 py-1.5 rounded-xl text-xs font-bold border focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all ${colMap[p] ? 'bg-indigo-50 dark:bg-indigo-950/20 border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300'
+                                            : 'bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-white/5 text-slate-500'}`}>
+                                        <option value="">— Elle gir —</option>
+                                        {importedCols.map(c => <option key={c} value={c}>{c}</option>)}
+                                    </select>
+                                )}
+                                <input type="text" value={values[p]} id={`field-${p}`}
+                                    onChange={e => { if (colMap[p]) setColMap(prev => ({ ...prev, [p]: '' })); setValues(prev => ({ ...prev, [p]: e.target.value })); }}
+                                    placeholder={colMap[p] ? `← ${colMap[p]}` : `{{${p}}}`}
+                                    className={`w-full px-3 py-2 bg-slate-50 dark:bg-slate-800/60 border rounded-xl text-sm text-slate-700 dark:text-slate-200 placeholder:text-slate-400 focus:outline-none focus:ring-2 transition-all ${values[p] ? 'border-emerald-300 dark:border-emerald-800 focus:ring-emerald-500/20' : 'border-slate-200 dark:border-white/5 focus:ring-blue-500/20'}`} />
+                            </div>
+                        ))}
+
+                        {!allFilled && empty.length > 0 && (
+                            <div className="p-3 bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800 rounded-xl flex items-start gap-2">
+                                <AlertCircle size={14} className="text-amber-500 shrink-0 mt-0.5" />
+                                <p className="text-[10px] font-bold text-amber-700 dark:text-amber-400">
+                                    {empty.length} alan boş → <code className="font-mono">[alan_adı]</code> olarak görünür.
+                                </p>
+                            </div>
+                        )}
+
+                        {importedRows.length === 0 && (
+                            <button onClick={() => fileInputRef.current?.click()}
+                                className="w-full flex items-center justify-center gap-2 py-3 border-2 border-dashed border-indigo-200 dark:border-indigo-800 rounded-2xl text-indigo-400 hover:border-indigo-400 hover:bg-indigo-50/50 dark:hover:bg-indigo-950/20 transition-all text-xs font-bold">
+                                <Plus size={13} /> CSV / JSON / Excel Veri Aktar
+                            </button>
+                        )}
                     </div>
-
-                    {placeholders.length === 0 ? (
-                        <div className="text-center py-8">
-                            <Check size={32} className="text-emerald-500 mx-auto mb-2" />
-                            <p className="text-sm font-bold text-slate-500">Yer tutucu yok</p>
-                            <p className="text-xs text-slate-400 mt-1">Şablon doğrudan oluşturulabilir.</p>
-                        </div>
-                    ) : (
-                        <div className="space-y-4">
-                            {placeholders.map(p => (
-                                <div key={p}>
-                                    <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1.5">
-                                        {p.replace(/_/g, ' ')}
-                                        {values[p] ? <Check size={10} className="inline ml-1 text-emerald-500" /> : <span className="text-red-400 ml-1">*</span>}
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={values[p]}
-                                        onChange={e => setValues(prev => ({ ...prev, [p]: e.target.value }))}
-                                        placeholder={`{{${p}}}`}
-                                        id={`field-${p}`}
-                                        className={`w-full px-3 py-2 bg-slate-50 dark:bg-slate-800/60 border rounded-xl text-sm text-slate-700 dark:text-slate-200 placeholder:text-slate-400 focus:outline-none focus:ring-2 transition-all ${values[p] ? 'border-emerald-300 dark:border-emerald-800 focus:ring-emerald-500/20' : 'border-slate-200 dark:border-white/5 focus:ring-blue-500/20'}`}
-                                    />
-                                </div>
-                            ))}
-                        </div>
-                    )}
-
-                    {!allFilled && empty.length > 0 && (
-                        <div className="mt-4 p-3 bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800 rounded-xl flex items-start gap-2">
-                            <AlertCircle size={14} className="text-amber-500 shrink-0 mt-0.5" />
-                            <p className="text-[10px] font-bold text-amber-700 dark:text-amber-400">
-                                {empty.length} alan boş. Boş bırakırsan <code className="font-mono">[alan_adı]</code> olarak görünür.
-                            </p>
-                        </div>
-                    )}
                 </div>
 
-                {/* Preview */}
+                {/* ── Right: Live Preview ───────────────────────────── */}
                 <div className="flex-1 overflow-y-auto p-8 bg-slate-50 dark:bg-slate-950/30">
                     <div className="max-w-2xl mx-auto bg-white dark:bg-[#0d1117] rounded-2xl border border-slate-200 dark:border-white/5 shadow-sm p-10 space-y-3 font-sans">
                         {template.blocks.map(block => {
@@ -735,9 +862,7 @@ function FillForm({ template, onBack, onGenerated }: FillFormProps) {
                                 <div key={block.id} className={blockTypeStyle(block.type)}>
                                     {block.type === 'bullet' && <span className="mr-2">•</span>}
                                     {text.split('\n').map((line, i) => (
-                                        <span key={i} className="block">
-                                            {line || <br />}
-                                        </span>
+                                        <span key={i} className="block">{line || <br />}</span>
                                     ))}
                                 </div>
                             );

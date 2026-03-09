@@ -99,21 +99,40 @@ class DownloadStore {
 export const downloadStore = new DownloadStore();
 
 /**
- * Trigger a native browser download using URL.createObjectURL.
- * This is guaranteed to work in Electron/Browser — no CJS compat issue.
+ * Trigger a native file save.
+ * - In Electron: uses native showSaveDialog → writeFileSync via IPC.
+ * - In browser: falls back to URL.createObjectURL + <a>.click().
  */
-function triggerDownload(blob: Blob, fileName: string) {
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = fileName;
-    document.body.appendChild(a);
-    a.click();
-    // Cleanup after short delay
-    setTimeout(() => {
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-    }, 150);
+async function triggerDownload(blob: Blob, fileName: string): Promise<void> {
+    const electronAPI = (window as any).electron;
+
+    if (electronAPI?.selectSavePath && electronAPI?.saveFileFromBuffer) {
+        // ─── Electron native save dialog ───────────────────────────────
+        try {
+            const filePath: string | null = await electronAPI.selectSavePath(fileName);
+            if (!filePath) return; // user cancelled
+
+            const buffer = await blob.arrayBuffer();
+            const result = await electronAPI.saveFileFromBuffer(filePath, Array.from(new Uint8Array(buffer)));
+            if (!result?.success) {
+                console.error('[DownloadStore] Save failed:', result?.error);
+            }
+        } catch (err) {
+            console.error('[DownloadStore] Electron save error:', err);
+        }
+    } else {
+        // ─── Browser fallback ─────────────────────────────────────────
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => {
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }, 150);
+    }
 }
 
 /**
@@ -126,7 +145,7 @@ export function saveAndRecord(
     originalName: string,
     tool: string
 ): DownloadEntry {
-    triggerDownload(blob, fileName);
+    void triggerDownload(blob, fileName);
 
     const ext = fileName.split('.').pop()?.toLowerCase() || 'bin';
     const entry = downloadStore.add({
