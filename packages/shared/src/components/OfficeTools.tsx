@@ -11,6 +11,7 @@ import { toast } from 'sonner';
 import { PDFDocument, PageSizes } from 'pdf-lib';
 import * as pdfjsLib from 'pdfjs-dist';
 import { saveAs } from 'file-saver';
+import { saveAndRecord } from '../utils/download-store';
 import { Document, Packer, Paragraph, TextRun, ImageRun, type ISectionOptions } from 'docx';
 import fontkit from '@pdf-lib/fontkit';
 import { renderAsync } from 'docx-preview';
@@ -254,7 +255,7 @@ function ImageToPdfTool({ onBack }: { onBack: () => void }) {
             setProgress(95);
             const pdfBytes = await pdfDoc.save();
             const blob = new Blob([pdfBytes as unknown as BlobPart], { type: 'application/pdf' });
-            saveAs(blob, `images-to-pdf-${Date.now()}.pdf`);
+            saveAndRecord(blob, `images-to-pdf-${Date.now()}.pdf`, 'images', 'Görsel→PDF');
             setProgress(100);
             setDone(true);
         } catch (e) {
@@ -649,66 +650,72 @@ export const OfficeTools: React.FC<OfficeToolsProps> = ({ mode, onBack }) => {
                 }
             }
 
-            // ── Word → PDF ────────────────────────────────────────────────
+            // ── Word → PDF (html2canvas → pdf-lib pipeline - cross-platform) ─────────────
             else if (mode === 'word-pdf') {
-                if (renderContainerRef.current) {
-                    setFiles(prev => prev.map((f, i) => i === index ? { ...f, progress: 20 } : f));
-                    const container = renderContainerRef.current;
-                    container.innerHTML = '';
-                    const arrayBuffer = await item.file.arrayBuffer();
-                    await renderAsync(arrayBuffer, container, undefined, {
-                        className: 'docx',
-                        inWrapper: true,
-                        ignoreLastRenderedPageBreak: false,
-                        useBase64URL: true,
-                    });
+                if (!renderContainerRef.current) throw new Error('Render container bulunamadı');
 
-                    // Wait for rendering
-                    await new Promise(r => setTimeout(r, 1500));
-                    setFiles(prev => prev.map((f, i) => i === index ? { ...f, progress: 55 } : f));
+                const container = renderContainerRef.current;
+                container.innerHTML = '';
+                setFiles(prev => prev.map((f, i) => i === index ? { ...f, progress: 15 } : f));
 
-                    // 🇹🇷 Turkish Font & 🖼️ Image Unity Logic
-                    const fontData = await loadTurkishFont();
-                    const fontBase64 = SHARED_ENGINE.arrayBufferToBase64(fontData);
+                // 1. Render DOCX to HTML
+                const arrayBuffer = await item.file.arrayBuffer();
+                await renderAsync(arrayBuffer, container, undefined, {
+                    className: 'docx',
+                    inWrapper: true,
+                    ignoreLastRenderedPageBreak: false,
+                    useBase64URL: true,
+                });
 
-                    const pdf = new jsPDF('p', 'mm', 'a4');
-                    pdf.addFileToVFS('Roboto-Regular.ttf', fontBase64);
-                    pdf.addFont('Roboto-Regular.ttf', 'Roboto', 'normal');
-                    pdf.setFont('Roboto');
+                // 2. Wait for images/fonts to settle
+                await new Promise(r => setTimeout(r, 1800));
+                setFiles(prev => prev.map((f, i) => i === index ? { ...f, progress: 40 } : f));
 
-                    // Inject CSS to prevent image splitting and maintain fonts
-                    const style = document.createElement('style');
-                    style.innerHTML = `
-                        .docx img { page-break-inside: avoid !important; break-inside: avoid !important; max-width: 100% !important; height: auto !important; }
-                        .docx p, .docx span, .docx div { font-family: 'Roboto', sans-serif !important; }
-                    `;
-                    container.appendChild(style);
+                // 3. Snapshot each A4-height chunk with html2canvas
+                const A4_WIDTH_PX = 794;  // ~210mm @96dpi
+                const A4_HEIGHT_PX = 1123; // ~297mm @96dpi
+                const SCALE = 2;           // retina quality
 
-                    const width = pdf.internal.pageSize.getWidth();
+                const totalH = container.scrollHeight;
+                const pageCount = Math.ceil(totalH / A4_HEIGHT_PX);
 
-                    // Use jsPDF's html method which handles text better than manual addImage
-                    await pdf.html(container, {
-                        callback: function (doc: any) {
-                            result = doc.output('blob');
-                            resultName = item.file.name.replace(/\.[^/.]+$/, '') + '.pdf';
-                            setFiles(prev => prev.map((f, i) => i === index ? { ...f, status: 'success', progress: 100, result, resultName } : f));
-                        },
+                // Create final PDF via pdf-lib
+                const { PDFDocument: PDFDoc } = await import('pdf-lib');
+                const pdfDoc = await PDFDoc.create();
+
+                for (let p = 0; p < pageCount; p++) {
+                    const offsetY = p * A4_HEIGHT_PX;
+                    const sliceH = Math.min(A4_HEIGHT_PX, totalH - offsetY);
+
+                    const canvas = await html2canvas(container, {
+                        useCORS: true,
+                        logging: false,
+                        scale: SCALE,
+                        width: A4_WIDTH_PX,
+                        height: sliceH,
                         x: 0,
-                        y: 0,
-                        width: width,
-                        windowWidth: 800,
-                        autoPaging: 'text',
-                        html2canvas: {
-                            useCORS: true,
-                            logging: false,
-                            scale: 2
-                        }
+                        y: offsetY,
+                        windowWidth: A4_WIDTH_PX,
+                        backgroundColor: '#ffffff',
                     });
 
-                    return; // Callback handles the state update
-                } else {
-                    throw new Error('Render container bulunamadı');
+                    const jpegDataUrl = canvas.toDataURL('image/jpeg', 0.92);
+                    const base64 = jpegDataUrl.split(',')[1];
+                    const jpegBytes = Uint8Array.from(atob(base64), c => c.charCodeAt(0));
+
+                    const page = pdfDoc.addPage([595.28, 841.89]); // A4 in pt
+                    const img = await pdfDoc.embedJpg(jpegBytes);
+                    // Scale image to fill the A4 page height proportionally
+                    const drawH = 841.89 * (sliceH / A4_HEIGHT_PX);
+                    page.drawImage(img, { x: 0, y: 841.89 - drawH, width: 595.28, height: drawH });
+
+                    const pct = 40 + Math.round(((p + 1) / pageCount) * 55);
+                    setFiles(prev => prev.map((f, i) => i === index ? { ...f, progress: pct } : f));
                 }
+
+                const pdfBytes = await pdfDoc.save();
+                result = new Blob([pdfBytes], { type: 'application/pdf' });
+                resultName = item.file.name.replace(/\.[^/.]+$/, '') + '.pdf';
             }
 
             // ── PDF → Word ────────────────────────────────────────────────
@@ -999,7 +1006,9 @@ export const OfficeTools: React.FC<OfficeToolsProps> = ({ mode, onBack }) => {
 
     const downloadFile = (item: FileState) => {
         if (!item.result) return;
-        saveAs(item.result instanceof Blob ? item.result : item.result, item.resultName || `converted-${item.file.name}`);
+        const blob = item.result instanceof Blob ? item.result : new Blob([item.result]);
+        const outName = item.resultName || `converted-${item.file.name}`;
+        saveAndRecord(blob, outName, item.file.name, config.title);
     };
 
     const previewFile = (item: FileState) => {

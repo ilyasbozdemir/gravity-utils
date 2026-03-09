@@ -91,3 +91,6 @@ export * from './components/EmailHeaderAnalyzer';
 export * from './utils/shared-core';
 export * from './utils/fontLoader';
 export * from './utils/formats';
+export * from './utils/download-store';
+export * from './components/DownloadsPanel';
+export * from './components/WordTemplates';

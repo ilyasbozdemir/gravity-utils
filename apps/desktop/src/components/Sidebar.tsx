@@ -42,7 +42,7 @@ export type ToolView =
     | 'email-header-analyzer' | 'identifier-converter' | 'schema-generator' | 'metadata-generator' | 'document-toolkit' | 'check-toolkit'
     | 'json-to-code' | 'text-diff' | 'exam-generator' | 'pdf-merge' | 'pdf-split' | 'pdf-compress' | 'pdf-watermark' | 'mermaid'
     | 'codesnap' | 'mock-generator' | 'sql-converter' | 'terminal-mastery' | 'excel-word' | 'sitemap-generator' | 'robots-txt-builder' | 'xml-validator' | 'figma-to-code' | 'html-to-pdf' | 'desktop-toolkit' | 'ota-guide'
-    | 'dev-tools' | 'media-toolkit' | 'data-toolkit' | 'design-toolkit' | 'text-toolkit';
+    | 'dev-tools' | 'media-toolkit' | 'data-toolkit' | 'design-toolkit' | 'text-toolkit' | 'word-templates';
 
 interface SidebarProps {
     currentView: ToolView;
@@ -77,6 +77,7 @@ const NAV_ITEMS: NavItem[] = [
 
     // Döküman Motoru
     { id: 'document-toolkit', title: 'PDF & Ofis Merkezi', icon: <FileText size={18} />, category: 'office' },
+    { id: 'word-templates', title: 'Word Şablon Merkezi', icon: <FileSpreadsheet size={18} />, category: 'office', addedAt: '2026-03-09' },
     { id: 'convert', title: 'Dosya Dönüştürücü', icon: <Layers size={18} />, category: 'office' },
 
     // Geliştirici & Sistem

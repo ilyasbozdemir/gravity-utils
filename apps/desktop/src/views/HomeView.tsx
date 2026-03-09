@@ -81,6 +81,7 @@ const XmlValidator = lazy(() => import('@/components/XmlValidator').then(mod => 
 const ExamGenerator = lazy(() => import('@shared/index').then(mod => ({ default: mod.ExamGenerator })));
 const FigmaToCode = lazy(() => import('@/components/FigmaToCode').then(mod => ({ default: mod.FigmaToCode })));
 const HtmlToPdf = lazy(() => import('@/components/HtmlToPdf').then(mod => ({ default: mod.HtmlToPdf })));
+const WordTemplateManager = lazy(() => import('@shared/index').then(mod => ({ default: mod.WordTemplateManager })));
 
 export default function HomeView() {
     // Extracted from web page.tsx
@@ -305,6 +306,7 @@ export default function HomeView() {
 
                                 {/* Dev Tools consolidated dashboard or individual */}
                                 {view === 'dev-tools' && <DevTools onBack={() => setView('home')} />}
+                                {view === 'word-templates' && <WordTemplateManager />}
                             </Suspense>
                         </div>
                     )}
