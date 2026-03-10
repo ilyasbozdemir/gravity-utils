@@ -1,5 +1,5 @@
-appId: com.gravity.studio
-productName: Gravity Studio
+appId: com.gravity.utils
+productName: Gravity Utils
 
 publish:
   provider: github
@@ -20,7 +20,7 @@ asar: true
 win:
   target: nsis
   icon: electron/icon.ico
-  artifactName: "Gravity Studio Setup v${version}.${ext}"
+  artifactName: "Gravity Utils Setup ${version}.${ext}"
 
 nsis:
   oneClick: false
@@ -28,6 +28,6 @@ nsis:
   allowToChangeInstallationDirectory: true
   createDesktopShortcut: true
   createStartMenuShortcut: true
-  uninstallDisplayName: "Uninstall Gravity Studio"
+  uninstallDisplayName: "Uninstall Gravity Utils"
   uninstallerIcon: electron/icon.ico
   deleteAppDataOnUninstall: false
