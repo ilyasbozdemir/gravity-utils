@@ -20,6 +20,10 @@ import { loadTurkishFont } from '../utils/fontLoader';
 import jsPDF from 'jspdf';
 import { platform } from '../platform';
 import { SHARED_ENGINE } from '../utils/shared-core';
+import {
+    pdfItemsToDocBlocks, docBlocksToDocx, excelToDocBlocks, renderedHtmlToPdfBlob,
+    type PdfTextItem
+} from '../utils/conversion-adapters';
 
 // Configure PDF.js worker
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
@@ -650,7 +654,7 @@ export const OfficeTools: React.FC<OfficeToolsProps> = ({ mode, onBack }) => {
                 }
             }
 
-            // ── Word → PDF (html2canvas → pdf-lib pipeline - cross-platform) ─────────────
+            // ── Word → PDF (html2canvas → pdf-lib, table + image aware) ────────────────
             else if (mode === 'word-pdf') {
                 if (!renderContainerRef.current) throw new Error('Render container bulunamadı');
 
@@ -658,7 +662,7 @@ export const OfficeTools: React.FC<OfficeToolsProps> = ({ mode, onBack }) => {
                 container.innerHTML = '';
                 setFiles(prev => prev.map((f, i) => i === index ? { ...f, progress: 15 } : f));
 
-                // 1. Render DOCX to HTML
+                // 1. Render DOCX to HTML (useBase64URL embeds images inline)
                 const arrayBuffer = await item.file.arrayBuffer();
                 await renderAsync(arrayBuffer, container, undefined, {
                     className: 'docx',
@@ -667,146 +671,45 @@ export const OfficeTools: React.FC<OfficeToolsProps> = ({ mode, onBack }) => {
                     useBase64URL: true,
                 });
 
-                // 2. Wait for images/fonts to settle
-                await new Promise(r => setTimeout(r, 1800));
+                // 2. Wait for images/fonts/tables to settle
+                await new Promise(r => setTimeout(r, 2000));
                 setFiles(prev => prev.map((f, i) => i === index ? { ...f, progress: 40 } : f));
 
-                // 3. Snapshot each A4-height chunk with html2canvas
-                const A4_WIDTH_PX = 794;  // ~210mm @96dpi
-                const A4_HEIGHT_PX = 1123; // ~297mm @96dpi
-                const SCALE = 2;           // retina quality
-
-                const totalH = container.scrollHeight;
-                const pageCount = Math.ceil(totalH / A4_HEIGHT_PX);
-
-                // Create final PDF via pdf-lib
-                const { PDFDocument: PDFDoc } = await import('pdf-lib');
-                const pdfDoc = await PDFDoc.create();
-
-                for (let p = 0; p < pageCount; p++) {
-                    const offsetY = p * A4_HEIGHT_PX;
-                    const sliceH = Math.min(A4_HEIGHT_PX, totalH - offsetY);
-
-                    const canvas = await html2canvas(container, {
-                        useCORS: true,
-                        logging: false,
-                        scale: SCALE,
-                        width: A4_WIDTH_PX,
-                        height: sliceH,
-                        x: 0,
-                        y: offsetY,
-                        windowWidth: A4_WIDTH_PX,
-                        backgroundColor: '#ffffff',
-                    });
-
-                    const jpegDataUrl = canvas.toDataURL('image/jpeg', 0.92);
-                    const base64 = jpegDataUrl.split(',')[1];
-                    const jpegBytes = Uint8Array.from(atob(base64), c => c.charCodeAt(0));
-
-                    const page = pdfDoc.addPage([595.28, 841.89]); // A4 in pt
-                    const img = await pdfDoc.embedJpg(jpegBytes);
-                    // Scale image to fill the A4 page height proportionally
-                    const drawH = 841.89 * (sliceH / A4_HEIGHT_PX);
-                    page.drawImage(img, { x: 0, y: 841.89 - drawH, width: 595.28, height: drawH });
-
-                    const pct = 40 + Math.round(((p + 1) / pageCount) * 55);
-                    setFiles(prev => prev.map((f, i) => i === index ? { ...f, progress: pct } : f));
-                }
-
-                const pdfBytes = await pdfDoc.save();
-                result = new Blob([pdfBytes], { type: 'application/pdf' });
+                // 3. Render to PDF using adapter (better table + image support)
+                result = await renderedHtmlToPdfBlob(container, { scale: 2 });
                 resultName = item.file.name.replace(/\.[^/.]+$/, '') + '.pdf';
             }
 
-            // ── PDF → Word ────────────────────────────────────────────────
+            // ── PDF → Word (table + heading + list aware) ───────────────────────────────
             else if (mode === 'pdf-word') {
                 setFiles(prev => prev.map((f, i) => i === index ? { ...f, progress: 10 } : f));
                 const arrayBuffer = await item.file.arrayBuffer();
                 const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
 
-                const sections: ISectionOptions[] = [];
+                const allBlocks: any[] = [];
 
-                for (let i = 1; i <= pdf.numPages; i++) {
-                    const page = await pdf.getPage(i);
+                for (let pg = 1; pg <= pdf.numPages; pg++) {
+                    const page = await pdf.getPage(pg);
+                    const viewport = page.getViewport({ scale: 1 });
                     const textContent = await page.getTextContent();
-                    const items = textContent.items as any[];
+                    const items = textContent.items as PdfTextItem[];
 
                     if (items.length === 0) {
-                        toast.info(`PDF Sayfa ${i} boş veya bir görselden oluşuyor. Metin bulunamadı.`);
-                        sections.push({ children: [new Paragraph({ text: "[Taranmış Sayfa İçeriği Ayrıştırılamadı]" })] });
-                        continue;
+                        toast.info(`PDF Sayfa ${pg} boş veya taranmış görüntü içeriyor.`);
                     }
 
-                    // Satırları grupla (Y koordinatına göre)
-                    const lines: any[][] = [];
-                    let currentLine: any[] = [];
-                    let lastY = -1;
+                    // Convert items → semantic blocks (table/heading/paragraph/list)
+                    const blocks = pdfItemsToDocBlocks(items, viewport.height);
+                    allBlocks.push(...blocks, { type: 'empty' }); // page break via empty
 
-                    // Y koordinatına göre (yukarıdan aşağıya) ve sonra X koordinatına göre sırala
-                    const sortedItems = [...items].sort((a, b) => {
-                        const yA = a.transform[5];
-                        const yB = b.transform[5];
-                        if (Math.abs(yA - yB) < 3) { // Aynı satır toleransı
-                            return a.transform[4] - b.transform[4];
-                        }
-                        return yB - yA;
-                    });
-
-                    for (const textItem of sortedItems) {
-                        const y = textItem.transform[5];
-                        if (lastY !== -1 && Math.abs(y - lastY) > 3) {
-                            lines.push(currentLine);
-                            currentLine = [];
-                        }
-                        currentLine.push(textItem);
-                        lastY = y;
-                    }
-                    if (currentLine.length > 0) lines.push(currentLine);
-
-                    const pageChildren: Paragraph[] = [];
-                    for (const line of lines) {
-                        const runs: any[] = [];
-                        let lastX = -1;
-
-                        for (const textItem of line) {
-                            const x = textItem.transform[4];
-
-                            // Kelimeler arası boşluk kontrolü (basit)
-                            if (lastX !== -1 && x - lastX > 10) {
-                                runs.push(new TextRun({ text: " ", size: Math.round(textItem.transform[0] * 2) || 22 }));
-                            }
-
-                            // Font büyüklüğünü belirle (transform[0] veya transform[3] genellikle font size'dır)
-                            // docx size birimi half-points'tir (pt * 2)
-                            const fontSize = Math.abs(Math.round(textItem.transform[0] * 2)) || 22;
-
-                            runs.push(new TextRun({
-                                text: textItem.str,
-                                size: fontSize,
-                                font: "Arial", // Varsayılan font, PDF'den eşleştirmek zordur
-                            }));
-                            lastX = x + textItem.width;
-                        }
-
-                        pageChildren.push(new Paragraph({
-                            children: runs,
-                            spacing: { before: 100, after: 100 }
-                        }));
-                    }
-
-                    sections.push({
-                        children: pageChildren
-                    });
-
-                    setFiles(prev => prev.map((f, idx) => idx === index ? { ...f, progress: 10 + Math.round((i / pdf.numPages) * 80) } : f));
+                    setFiles(prev => prev.map((f, i) => i === index ? { ...f, progress: 10 + Math.round((pg / pdf.numPages) * 80) } : f));
                 }
 
-                const wordDoc = new Document({
-                    sections,
-                    creator: "Antigravity Office Tools",
-                    title: item.file.name
-                });
-                result = await Packer.toBlob(wordDoc);
+                result = await docBlocksToDocx(
+                    allBlocks,
+                    item.file.name.replace(/\.[^/.]+$/, ''),
+                    item.file.name
+                );
                 resultName = item.file.name.replace(/\.[^/.]+$/, '') + '.docx';
             }
 
@@ -876,92 +779,36 @@ export const OfficeTools: React.FC<OfficeToolsProps> = ({ mode, onBack }) => {
                 result = await response.blob();
                 resultName = item.file.name.replace(/\.[^/.]+$/, '') + '.pdf';
             }
-            // ── Excel → Word (Structured Table) ──────────────────────────
+            // ── Excel → Word (multi-sheet, smart table adapter) ─────────────────────────
             else if (mode === 'excel-word') {
-                const { read, utils } = await import('xlsx');
-                const { Document, Packer, Paragraph, Table, TableRow, TableCell, BorderStyle, WidthType, AlignmentType, TextRun } = await import('docx');
+                const arrayBuffer = await item.file.arrayBuffer();
+                setFiles(prev => prev.map((f, i) => i === index ? { ...f, progress: 20 } : f));
 
-                let jsonData = item.gridData;
-                if (!jsonData) {
-                    const arrayBuffer = await item.file.arrayBuffer();
-                    const workbook = read(arrayBuffer, { type: 'array' });
-                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-                    jsonData = utils.sheet_to_json(firstSheet, { header: 1 }) as any[][];
+                let allBlocks: any[] = [];
+
+                if (item.gridData && item.gridData.length) {
+                    // User edited data in grid — use as single sheet
+                    allBlocks = [
+                        { type: 'heading', text: item.file.name.replace(/\.[^/.]+$/, ''), level: 1, isBold: true },
+                        {
+                            type: 'table',
+                            table: {
+                                rows: item.gridData.map((row: any[]) => row.map(cell => String(cell ?? ''))),
+                                colWidths: item.gridData[0].map(() => Math.round(100 / item.gridData![0].length)),
+                            }
+                        }
+                    ];
+                } else {
+                    const sheets = await excelToDocBlocks(arrayBuffer);
+                    for (const { blocks } of sheets) allBlocks.push(...blocks, { type: 'empty' });
                 }
 
-                // Detect if first row is a header (it usually is)
-                const hasHeader = jsonData.length > 0;
-                const tableRows = jsonData.map((row, rIdx) =>
-                    new TableRow({
-                        children: row.map(cell =>
-                            new TableCell({
-                                children: [new Paragraph({
-                                    children: [new TextRun({
-                                        text: String(cell || ""),
-                                        bold: rIdx === 0 && hasHeader,
-                                        size: rIdx === 0 ? 24 : 20,
-                                        color: rIdx === 0 ? "2D3748" : "4A5568"
-                                    })],
-                                    alignment: AlignmentType.LEFT
-                                })],
-                                width: { size: 100 / (row.length || 1), type: WidthType.PERCENTAGE },
-                                shading: rIdx === 0 ? { fill: "F7FAFC" } : undefined,
-                                margins: { top: 100, bottom: 100, left: 100, right: 100 }
-                            })
-                        ),
-                        tableHeader: rIdx === 0
-                    })
+                setFiles(prev => prev.map((f, i) => i === index ? { ...f, progress: 70 } : f));
+                result = await docBlocksToDocx(
+                    allBlocks,
+                    item.file.name.replace(/\.[^/.]+$/, ''),
+                    item.file.name
                 );
-
-                const doc = new Document({
-                    sections: [{
-                        children: [
-                            new Paragraph({
-                                children: [new TextRun({
-                                    text: item.file.name.replace(/\.[^/.]+$/, '').toUpperCase(),
-                                    bold: true,
-                                    size: 32,
-                                    color: "1A202C"
-                                })],
-                                spacing: { after: 200 }
-                            }),
-                            new Paragraph({
-                                children: [new TextRun({
-                                    text: `Dönüştürme Tarihi: ${new Date().toLocaleDateString('tr-TR')} • Veri Kaynağı: Excel`,
-                                    size: 18,
-                                    color: "718096",
-                                    italics: true
-                                })],
-                                spacing: { after: 400 }
-                            }),
-                            new Table({
-                                rows: tableRows,
-                                width: { size: 100, type: WidthType.PERCENTAGE },
-                                borders: {
-                                    top: { style: BorderStyle.SINGLE, size: 1, color: "E2E8F0" },
-                                    bottom: { style: BorderStyle.SINGLE, size: 1, color: "E2E8F0" },
-                                    left: { style: BorderStyle.SINGLE, size: 1, color: "E2E8F0" },
-                                    right: { style: BorderStyle.SINGLE, size: 1, color: "E2E8F0" },
-                                    insideHorizontal: { style: BorderStyle.SINGLE, size: 1, color: "EDF2F7" },
-                                    insideVertical: { style: BorderStyle.SINGLE, size: 1, color: "EDF2F7" }
-                                }
-                            }),
-                            new Paragraph({
-                                children: [new TextRun({
-                                    text: "--- Belge Sonu ---",
-                                    size: 16,
-                                    color: "CBD5E0"
-                                })],
-                                alignment: AlignmentType.CENTER,
-                                spacing: { before: 400 }
-                            })
-                        ]
-                    }],
-                    creator: "Gravity Utils Intelligent Assistant",
-                    title: item.file.name
-                });
-
-                result = await Packer.toBlob(doc);
                 resultName = item.file.name.replace(/\.[^/.]+$/, '') + '.docx';
             }
             // ── Fallback (mock) ──────────────────────────────────────────
