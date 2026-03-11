@@ -61,6 +61,10 @@ export const PdfManager: React.FC<PdfManagerProps> = ({ file, onBack, initialTab
     const [selectedPages, setSelectedPages] = useState<Set<number>>(new Set());
     const [mainPdfPageCount, setMainPdfPageCount] = useState<number>(0);
 
+    // Advanced Split States
+    const [splitMode, setSplitMode] = useState<'extract' | 'split-all' | 'split-visual'>('split-visual');
+    const [splitRange, setSplitRange] = useState<string>('1');
+
     const [watermarkText, setWatermarkText] = useState('GİZLİ');
     const [watermarkOpacity, setWatermarkOpacity] = useState(0.3);
     const [watermarkColor, setWatermarkColor] = useState('#ff0000');
@@ -220,26 +224,93 @@ export const PdfManager: React.FC<PdfManagerProps> = ({ file, onBack, initialTab
         setOrganizedPages(newPages);
     };
 
+    const togglePageSelection = (pageIndex: number) => {
+        const newSelected = new Set(selectedPages);
+        if (newSelected.has(pageIndex)) {
+            newSelected.delete(pageIndex);
+        } else {
+            newSelected.add(pageIndex);
+        }
+        setSelectedPages(newSelected);
+    };
+
     const handleSplit = async () => {
-        if (pdfFiles.length === 0 || (selectedPages.size === 0 && !splitPage)) return;
+        if (pdfFiles.length === 0) return;
         setProcessing(true);
         setStatusText('Sayfalar ayrılıyor (Tarayıcıda)...');
         try {
             const mainFile = pdfFiles[0].file;
             const arrayBuffer = await mainFile.arrayBuffer();
             const sourceDoc = await PDFDocument.load(arrayBuffer);
-            const newDoc = await PDFDocument.create();
+            
+            if (splitMode === 'split-all') {
+                const total = sourceDoc.getPageCount();
+                const JSZip = (await import('jszip')).default;
+                const zip = new JSZip();
 
-            const pagesToSplit = selectedPages.size > 0
-                ? Array.from(selectedPages).sort((a, b) => a - b)
-                : [splitPage];
+                for(let i = 0; i < total; i++) {
+                    const newDoc = await PDFDocument.create();
+                    const [copiedPage] = await newDoc.copyPages(sourceDoc, [i]);
+                    newDoc.addPage(copiedPage);
+                    const pdfBytes = await newDoc.save();
+                    zip.file(`${mainFile.name.replace('.pdf', '')}-sayfa-${i+1}.pdf`, pdfBytes);
+                }
+                const zipBlob = await zip.generateAsync({ type: 'blob' });
+                saveAs(zipBlob, `ayrilmis-${mainFile.name.replace('.pdf', '')}.zip`);
+                toast.success("Tüm sayfalar ayrılıp ZIP olarak indirildi.");
+            } else if (splitMode === 'split-visual') {
+                if (selectedPages.size === 0) {
+                    toast.error("Lütfen çıkarmak için sayfa seçiniz.");
+                    setProcessing(false);
+                    setStatusText('');
+                    return;
+                }
+                const pagesToSplit = Array.from(selectedPages).sort((a, b) => a - b);
+                const newDoc = await PDFDocument.create();
+                const copiedPages = await newDoc.copyPages(sourceDoc, pagesToSplit.map(p => p - 1));
+                copiedPages.forEach((page: any) => newDoc.addPage(page));
 
-            const copiedPages = await newDoc.copyPages(sourceDoc, pagesToSplit.map(p => p - 1));
-            copiedPages.forEach((page: any) => newDoc.addPage(page));
+                const pdfBytes = await newDoc.save();
+                downloadPdf(pdfBytes, `secili-sayfalar-${mainFile.name}`);
+                toast.success("Seçili sayfalar başarıyla ayrıldı.");
+            } else {
+                const pagesToExtract = new Set<number>();
+                const parts = splitRange.split(',');
+                const max = sourceDoc.getPageCount();
+                parts.forEach(p => {
+                    const range = p.trim().split('-');
+                    if (range.length === 2) {
+                        const start = parseInt(range[0]);
+                        const end = parseInt(range[1]);
+                        if (!isNaN(start) && !isNaN(end)) {
+                            for (let i = start; i <= end; i++) {
+                                if (i >= 1 && i <= max) pagesToExtract.add(i);
+                            }
+                        }
+                    } else {
+                        const num = parseInt(range[0]);
+                        if (!isNaN(num) && num >= 1 && num <= max) {
+                            pagesToExtract.add(num);
+                        }
+                    }
+                });
 
-            const pdfBytes = await newDoc.save();
-            downloadPdf(pdfBytes, `split-${mainFile.name}`);
-            toast.success("PDF başarıyla ayrıldı.");
+                if (pagesToExtract.size === 0) {
+                    toast.error("Lütfen geçerli bir sayfa veya aralık giriniz.");
+                    setProcessing(false);
+                    setStatusText('');
+                    return;
+                }
+
+                const pagesToSplit = Array.from(pagesToExtract).sort((a, b) => a - b);
+                const newDoc = await PDFDocument.create();
+                const copiedPages = await newDoc.copyPages(sourceDoc, pagesToSplit.map(p => p - 1));
+                copiedPages.forEach((page: any) => newDoc.addPage(page));
+
+                const pdfBytes = await newDoc.save();
+                downloadPdf(pdfBytes, `extracted-${mainFile.name}`);
+                toast.success("Seçili sayfalar başarıyla ayrıldı.");
+            }
         } catch (err) {
             console.error(err);
             toast.error('Dosya ayrılırken hata oluştu: ' + (err as Error).message);
@@ -1035,43 +1106,133 @@ export const PdfManager: React.FC<PdfManagerProps> = ({ file, onBack, initialTab
 
                         {/* SPLIT */}
                         {activeTab === 'split' && (
-                            <div className="max-w-md mx-auto py-10 text-center">
+                            <div className={`mx-auto ${splitMode === 'split-visual' && organizedPages.length > 0 ? 'w-full' : 'max-w-md'} py-10 text-center`}>
                                 <div className="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-6 shadow-sm">
                                     <div className="w-16 h-16 bg-red-100 dark:bg-red-900/20 rounded-2xl flex items-center justify-center mx-auto text-red-500">
                                         <Scissors size={32} />
                                     </div>
                                     <div>
-                                        <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-2">Sayfa Çıkar</h3>
+                                        <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-2">Sayfa Parçala / Çıkar</h3>
                                         <p className="text-sm text-slate-500">"{pdfFiles[0]?.name || 'Belge'}"</p>
                                     </div>
 
-                                    <div className="flex items-center justify-center gap-6 py-4">
-                                        <div className="text-left">
-                                            <label className="block text-[10px] text-slate-500 uppercase font-bold mb-1">Sayfa No</label>
-                                            <input
-                                                type="number"
-                                                min="1"
-                                                max={mainPdfPageCount || 1}
-                                                value={splitPage}
-                                                onChange={(e) => setSplitPage(Math.min(parseInt(e.target.value) || 1, mainPdfPageCount || 1))}
-                                                className="bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 w-24 text-center text-xl font-bold text-slate-800 dark:text-white focus:border-red-500 focus:outline-none transition-all"
-                                                title="Çıkarılacak Sayfa Numarası"
-                                            />
-                                        </div>
-                                        <div className="text-4xl text-slate-300 dark:text-slate-700 font-light mt-4">/</div>
-                                        <div className="text-left mt-4">
-                                            <span className="text-2xl font-bold text-slate-500 dark:text-slate-400">{mainPdfPageCount}</span>
-                                            <p className="text-[10px] text-slate-400 uppercase font-bold">Toplam</p>
-                                        </div>
+                                    <div className="flex flex-col sm:flex-row bg-slate-100 dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-slate-700 mb-2 gap-1">
+                                        <button
+                                            onClick={() => setSplitMode('split-visual')}
+                                            className={`flex-1 py-3 sm:py-2 text-xs font-bold rounded-lg transition-all ${splitMode === 'split-visual' ? 'bg-white dark:bg-slate-600 text-slate-800 dark:text-white shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'}`}
+                                        >
+                                            Görsel Seçim
+                                        </button>
+                                        <button
+                                            onClick={() => setSplitMode('extract')}
+                                            className={`flex-1 py-3 sm:py-2 text-xs font-bold rounded-lg transition-all ${splitMode === 'extract' ? 'bg-white dark:bg-slate-600 text-slate-800 dark:text-white shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'}`}
+                                        >
+                                            Aralık Yaz
+                                        </button>
+                                        <button
+                                            onClick={() => setSplitMode('split-all')}
+                                            className={`flex-1 py-3 sm:py-2 text-xs font-bold rounded-lg transition-all ${splitMode === 'split-all' ? 'bg-white dark:bg-slate-600 text-slate-800 dark:text-white shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'}`}
+                                        >
+                                            Tümünü Parçala (ZIP)
+                                        </button>
                                     </div>
+
+                                    {splitMode === 'split-visual' ? (
+                                        <div className="py-4">
+                                            {loadingThumbnails ? (
+                                                <div className="flex flex-col items-center justify-center py-10 text-slate-400 gap-4">
+                                                    <RefreshCw className="animate-spin text-red-500" size={32} />
+                                                    <p>Önizlemeler Yükleniyor...</p>
+                                                </div>
+                                            ) : (
+                                                <>
+                                                    <div className="flex items-center justify-between mb-4">
+                                                        <span className="text-sm font-bold text-slate-700 dark:text-slate-300">
+                                                            {selectedPages.size} sayfa seçildi
+                                                        </span>
+                                                        <button 
+                                                            onClick={() => {
+                                                                if(selectedPages.size === mainPdfPageCount) {
+                                                                    setSelectedPages(new Set());
+                                                                } else {
+                                                                    const all = new Set<number>();
+                                                                    for(let i=1; i<=mainPdfPageCount; i++) all.add(i);
+                                                                    setSelectedPages(all);
+                                                                }
+                                                            }}
+                                                            className="text-xs text-red-500 hover:underline font-bold"
+                                                        >
+                                                            {selectedPages.size === mainPdfPageCount ? 'Tümünü Temizle' : 'Tümünü Seç'}
+                                                        </button>
+                                                    </div>
+                                                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 text-left max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
+                                                        {organizedPages.filter(p => pdfFiles.length > 0 && p.fileId === pdfFiles[0].id).sort((a,b) => a.pageIndex - b.pageIndex).map((page) => {
+                                                            const pageNum = page.pageIndex + 1;
+                                                            const isSelected = selectedPages.has(pageNum);
+                                                            return (
+                                                                <div 
+                                                                    key={page.id} 
+                                                                    onClick={() => togglePageSelection(pageNum)}
+                                                                    className={`group relative rounded-xl border-2 transition-all cursor-pointer overflow-hidden p-1 ${isSelected ? 'border-red-500 bg-red-50 dark:bg-red-900/20 scale-[0.98]' : 'border-slate-200 dark:border-slate-700 hover:border-red-300 bg-slate-50 dark:bg-slate-800'}`}
+                                                                >
+                                                                    <div className="aspect-[3/4] rounded-lg overflow-hidden relative bg-white dark:bg-slate-900 flex items-center justify-center">
+                                                                        {page.thumbnail ? (
+                                                                            <img src={page.thumbnail} alt={`Sayfa ${pageNum}`} className="w-full h-full object-contain pointer-events-none" />
+                                                                        ) : (
+                                                                            <FileText size={24} className="text-slate-300 pointer-events-none" />
+                                                                        )}
+                                                                        
+                                                                        <div className="absolute top-2 left-2 px-1.5 py-0.5 text-[10px] font-bold rounded-md bg-slate-900/80 text-white z-10">
+                                                                            {pageNum}
+                                                                        </div>
+
+                                                                        {isSelected && (
+                                                                            <div className="absolute inset-0 bg-red-500/10 flex items-center justify-center pointer-events-none">
+                                                                                <div className="w-8 h-8 rounded-full bg-red-500 text-white flex items-center justify-center shadow-lg">
+                                                                                    <CheckCircle2 size={20} />
+                                                                                </div>
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
+                                                                </div>
+                                                            )
+                                                        })}
+                                                    </div>
+                                                </>
+                                            )}
+                                        </div>
+                                    ) : splitMode === 'extract' ? (
+                                        <div className="text-left space-y-2 py-2">
+                                            <label className="block text-[10px] text-slate-500 uppercase font-bold mb-1">Sayfa Aralığı Girin</label>
+                                            <input
+                                                type="text"
+                                                value={splitRange}
+                                                onChange={(e) => setSplitRange(e.target.value)}
+                                                placeholder={`Örn: 1, 3-5, ${mainPdfPageCount || 10}`}
+                                                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 text-sm font-bold text-slate-800 dark:text-white focus:border-red-500 focus:outline-none transition-all placeholder:text-slate-400/50"
+                                                title="Çıkarılacak Sayfa Aralıkları (örn: 1, 3-5)"
+                                            />
+                                            <p className="text-[10px] text-slate-500 mt-2 font-medium">
+                                                * Toplam <strong className="text-slate-700 dark:text-slate-300">{mainPdfPageCount}</strong> sayfa var. Virgül ve tire kullanarak sayfaları seçebilirsiniz.
+                                            </p>
+                                        </div>
+                                    ) : (
+                                        <div className="py-2">
+                                            <div className="p-4 bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800 rounded-2xl text-left">
+                                                <p className="text-xs text-red-700 dark:text-red-400 font-medium leading-relaxed">
+                                                    Bu PDF'teki <strong>{mainPdfPageCount}</strong> sayfanın tamamı ayrı PDF dosyalarına dönüştürülüp <strong>ZIP</strong> arşivi şeklinde indirilecek.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    )}
 
                                     <button
                                         onClick={handleSplit}
-                                        disabled={processing || pdfFiles.length === 0}
+                                        disabled={processing || pdfFiles.length === 0 || (splitMode === 'split-visual' && selectedPages.size === 0)}
                                         className="w-full py-4 bg-red-500 hover:bg-red-600 rounded-2xl font-bold text-white shadow-lg shadow-red-500/20 flex items-center justify-center gap-2 transition-all disabled:opacity-50 hover:-translate-y-0.5"
                                     >
                                         {processing ? <RefreshCw className="animate-spin" /> : <Download size={20} />}
-                                        {processing ? 'İşleniyor...' : 'Seçili Sayfayı İndir'}
+                                        {processing ? 'İşleniyor...' : (splitMode === 'extract' ? 'Aralıktaki Sayfaları Çıkar' : splitMode === 'split-visual' ? 'Seçili Sayfaları Çıkar' : 'ZIP Olarak Parçala')}
                                     </button>
                                 </div>
                             </div>
