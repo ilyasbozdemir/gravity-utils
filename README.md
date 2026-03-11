@@ -88,6 +88,8 @@ Uygulamayı bir Windows Setup `.exe` dosyası haline getirmek için özel derlem
    İşlem tamamlandığında derlenmiş Setup dosyası `apps/desktop/dist/` klasöründe oluşacaktır. 
    *(Örnek Çıktı: `Gravity Utils Setup 1.0.0.exe`)*
 
+   > **Not:** `dist` klasöründe birden fazla `.exe` dosyası (örneğin eski ada sahip `Gravity Studio Setup v1.0.0.exe`) görebilirsiniz. Bunun sebebi, uygulama adı veya ayarları değiştirildiğinde eski derlemelerin otomatik olarak silinmemesidir. Kurulum için her zaman **güncel isme sahip olan dosyayı** (örn. `Gravity Utils Setup 1.0.0.exe`) kullanmalısınız. Yeni bir derleme yapmadan önce eski dosyaların birikmesini önlemek için `pnpm desktop:clean` komutunu çalıştırarak klasörü temizleyebilirsiniz.
+
 ### Özel Derleme Senaryoları / Temizlik Komutları
 
 * `pnpm clean:all` : Tüm ortamı kökten temizler (Tüm `.next`, `dist`, `out`, ve `node_modules` klasörlerini uçurur). Yeni bir temiz başlangıç için birebirdir.
