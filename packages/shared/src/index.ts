@@ -89,6 +89,7 @@ export * from './components/RegexTester';
 export * from './components/SmartCalculator';
 export * from './components/EmailHeaderAnalyzer';
 export * from './utils/shared-core';
+export * from './utils/conversion-adapters';
 export * from './utils/fontLoader';
 export * from './utils/formats';
 export * from './utils/download-store';

@@ -55,18 +55,19 @@ export interface DocBlock {
 /**
  * Groups PDF text items into semantic blocks:
  * - Detects headings by font size
- * - Detects tables by aligned column X positions
+ * - Detects tables by aligned column X positions (handling uneven column counts)
  * - Detects list items by bullet prefix
  * - Falls back to paragraphs
  */
 export function pdfItemsToDocBlocks(items: PdfTextItem[], pageHeight: number): DocBlock[] {
     if (!items.length) return [];
 
-    // 1. Group items into lines by Y coordinate (tolerance: 3pt)
+    // 1. Group items into lines by Y coordinate (tolerance: 4pt)
     const lineMap = new Map<number, PdfTextItem[]>();
     for (const item of items) {
+        if (!item.str.trim() && !item.hasEOL) continue;
         const y = Math.round(item.transform[5]);
-        const key = [...lineMap.keys()].find(k => Math.abs(k - y) < 3) ?? y;
+        const key = [...lineMap.keys()].find(k => Math.abs(k - y) < 4) ?? y;
         if (!lineMap.has(key)) lineMap.set(key, []);
         lineMap.get(key)!.push(item);
     }
@@ -76,24 +77,42 @@ export function pdfItemsToDocBlocks(items: PdfTextItem[], pageHeight: number): D
         .sort((a, b) => b[0] - a[0])
         .map(([y, its]) => [y, its.sort((a, b) => a.transform[4] - b.transform[4])]);
 
-    // 2. Convert to DocLines
+    // 2. Convert to DocLines with better merging of small text chunks
     const docLines: DocLine[] = sortedLines.map(([y, its]) => {
-        const text = its.map(it => it.str).join(' ').trim();
-        const fontSize = Math.abs(Math.round(its[0].transform[0] * 2)) || 22;
+        // Merge segments that are very close to each other horizontally
+        const mergedItems: { str: string, x: number, width: number }[] = [];
+        let current: { str: string, x: number, width: number } | null = null;
+        
+        for (const it of its) {
+            const x = it.transform[4];
+            if (current && (x - (current.x + current.width) < 5)) {
+                current.str += it.str;
+                current.width += it.width;
+            } else {
+                current = { str: it.str, x, width: it.width };
+                mergedItems.push(current);
+            }
+        }
+
+        const text = mergedItems.map(it => it.str).join(' ').replace(/\s+/g, ' ').trim();
+        const fontSize = Math.abs(Math.round(its[0].transform[0] * 1.8)) || 22; // Adjusted scale
         const fontName = (its[0].fontName || '').toLowerCase();
-        const isBold = fontName.includes('bold') || fontName.includes('heavy');
+        const isBold = fontName.includes('bold') || fontName.includes('heavy') || fontName.includes('black');
         const x = its[0].transform[4];
         const width = its.reduce((sum, it) => sum + (it.width || 0), 0);
+        
         return { text, x, y, fontSize, isBold, width };
     });
 
-    // 3. Detect average body font size → baseline for heading detection
+    if (docLines.length === 0) return [];
+
+    // 3. Detect average body font size
     const fontSizes = docLines.map(l => l.fontSize).filter(s => s > 0);
     const avgFontSize = fontSizes.length
-        ? fontSizes.reduce((a, b) => a + b, 0) / fontSizes.length
+        ? fontSizes.sort((a,b) => a-b)[Math.floor(fontSizes.length / 2)] // Use median
         : 22;
 
-    // 4. Detect table candidates: lines that share similar X column positions
+    // 4. Detect table candidates
     const tableGroups = detectTableGroups(docLines);
     const tableLineIndices = new Set(tableGroups.flatMap(g => g.lineIndices));
 
@@ -112,7 +131,7 @@ export function pdfItemsToDocBlocks(items: PdfTextItem[], pageHeight: number): D
 
         // Table block
         if (tableLineIndices.has(i)) {
-            const group = tableGroups.find(g => g.lineIndices[0] === i);
+            const group = tableGroups.find(g => g.lineIndices.includes(i));
             if (group) {
                 blocks.push({ type: 'table', table: group.table });
                 i += group.lineIndices.length;
@@ -121,10 +140,10 @@ export function pdfItemsToDocBlocks(items: PdfTextItem[], pageHeight: number): D
         }
 
         // List item
-        if (/^[•\-–*▪‣◆►]\s/.test(line.text) || /^\d+[.)]\s/.test(line.text)) {
+        if (/^[•\-–—*▪‣◆►○●◘◙◦]/.test(line.text) || /^\d+[.)]\s/.test(line.text)) {
             blocks.push({
                 type: 'list-item',
-                text: line.text.replace(/^[•\-–*▪‣◆►]\s*/, '').replace(/^\d+[.)]\s*/, ''),
+                text: line.text.replace(/^[•\-–—*▪‣◆►○●◘◙◦]\s*/, '').replace(/^\d+[.)]\s*/, ''),
                 fontSize: line.fontSize,
                 isBold: line.isBold,
             });
@@ -132,10 +151,10 @@ export function pdfItemsToDocBlocks(items: PdfTextItem[], pageHeight: number): D
             continue;
         }
 
-        // Heading (large font or bold + short text)
-        if (line.fontSize > avgFontSize * 1.3 || (line.isBold && line.text.length < 80)) {
+        // Heading
+        if (line.fontSize > avgFontSize * 1.25 || (line.isBold && line.text.length < 100)) {
             const level: 1 | 2 | 3 =
-                line.fontSize > avgFontSize * 1.8 ? 1 :
+                line.fontSize > avgFontSize * 1.7 ? 1 :
                 line.fontSize > avgFontSize * 1.4 ? 2 : 3;
             blocks.push({
                 type: 'heading',
@@ -148,17 +167,21 @@ export function pdfItemsToDocBlocks(items: PdfTextItem[], pageHeight: number): D
             continue;
         }
 
-        // Paragraph — merge consecutive same-indent lines
+        // Paragraph merging
         let paraText = line.text;
+        let pIndex = i;
         while (
-            i + 1 < docLines.length &&
-            docLines[i + 1].text &&
-            !tableLineIndices.has(i + 1) &&
-            Math.abs(docLines[i + 1].x - line.x) < 20 &&
-            docLines[i + 1].fontSize <= avgFontSize * 1.3
+            pIndex + 1 < docLines.length &&
+            docLines[pIndex + 1].text &&
+            !tableLineIndices.has(pIndex + 1) &&
+            !/^[•\-–—*▪‣◆►○●◘◙◦]/.test(docLines[pIndex + 1].text) &&
+            !/^\d+[.)]\s/.test(docLines[pIndex + 1].text) &&
+            Math.abs(docLines[pIndex + 1].x - line.x) < 30 &&
+            docLines[pIndex + 1].fontSize <= avgFontSize * 1.25 &&
+            !docLines[pIndex + 1].isBold
         ) {
-            i++;
-            paraText += ' ' + docLines[i].text;
+            pIndex++;
+            paraText += ' ' + docLines[pIndex].text;
         }
 
         blocks.push({
@@ -167,7 +190,7 @@ export function pdfItemsToDocBlocks(items: PdfTextItem[], pageHeight: number): D
             fontSize: line.fontSize,
             isBold: line.isBold,
         });
-        i++;
+        i = pIndex + 1;
     }
 
     return blocks;
@@ -182,45 +205,47 @@ interface TableGroup {
 function detectTableGroups(lines: DocLine[]): TableGroup[] {
     const groups: TableGroup[] = [];
 
-    // Look for consecutive lines that have multiple X-aligned columns
     let i = 0;
     while (i < lines.length) {
         const line = lines[i];
-        const tokens = tokenizeByColumns(line);
+        const tokens = tokenizeByGaps(line);
         if (tokens.length < 2) { i++; continue; }
 
-        // Found a potential table row. Collect consecutive matching rows.
-        const colXs = tokens.map(t => t.x);
+        // Candidate for first row of table
         const tableIndices = [i];
         const tableRows: string[][] = [tokens.map(t => t.text)];
+        const colCount = tokens.length;
 
         let j = i + 1;
         while (j < lines.length) {
-            const nextTokens = tokenizeByColumns(lines[j]);
-            if (nextTokens.length < 2) break;
-
-            // Check if X positions roughly align (within 30pt tolerance)
-            const aligns = nextTokens.every(t =>
-                colXs.some(cx => Math.abs(t.x - cx) < 30)
-            );
-            if (!aligns && nextTokens.length !== tokens.length) break;
+            const nextLine = lines[j];
+            if (!nextLine.text) break;
+            
+            const nextTokens = tokenizeByGaps(nextLine);
+            // Must have similar number of columns or aligned X positions
+            const isTableLike = nextTokens.length >= 2 && 
+                (Math.abs(nextTokens.length - colCount) <= 1 || 
+                 nextTokens.some(nt => tokens.some(t => Math.abs(nt.x - t.x) < 40)));
+                 
+            if (!isTableLike) break;
 
             tableIndices.push(j);
             tableRows.push(nextTokens.map(t => t.text));
             j++;
+            if (j - i > 50) break; // Infinite loop safety
         }
 
         if (tableIndices.length >= 2) {
-            // Normalize column count
             const maxCols = Math.max(...tableRows.map(r => r.length));
-            const normalized = tableRows.map(row =>
-                [...row, ...Array(maxCols - row.length).fill('')]
-            );
-            const colWidths = Array(maxCols).fill(Math.round(100 / maxCols));
+            const normalized = tableRows.map(row => {
+                const newRow = [...row];
+                while (newRow.length < maxCols) newRow.push('');
+                return newRow;
+            });
 
             groups.push({
                 lineIndices: tableIndices,
-                table: { rows: normalized, colWidths },
+                table: { rows: normalized, colWidths: Array(maxCols).fill(Math.round(100 / maxCols)) },
             });
             i = j;
         } else {
@@ -231,13 +256,13 @@ function detectTableGroups(lines: DocLine[]): TableGroup[] {
     return groups;
 }
 
-function tokenizeByColumns(line: DocLine): { text: string; x: number }[] {
-    // Simple heuristic: if a line contains tabs or large gaps, split it
-    const parts = line.text.split(/\t+|\s{3,}/);
-    if (parts.length < 2) return [{ text: line.text, x: line.x }];
-    return parts
-        .map((t, idx) => ({ text: t.trim(), x: line.x + idx * 100 }))
-        .filter(t => t.text.length > 0);
+function tokenizeByGaps(line: DocLine): { text: string; x: number }[] {
+    // If text contains multiple spaces, it's likely columns
+    if (line.text.includes('   ')) {
+        const parts = line.text.split(/ {3,}/);
+        return parts.map((p, idx) => ({ text: p.trim(), x: line.x + idx * (line.width / parts.length) }));
+    }
+    return [{ text: line.text, x: line.x }];
 }
 
 // ─── ADAPTER: DocBlocks → DOCX (docx library) ────────────────────────────────
@@ -436,6 +461,11 @@ export interface WordToPdfOptions {
     scale?: number;       // canvas scale (default 2 = retina)
     pageWidthPx?: number; // A4 width in px at 96dpi (default 794)
     pageHeightPx?: number;// A4 height in px at 96dpi (default 1123)
+    watermark?: {
+        text?: string;
+        color?: string;
+        opacity?: number;
+    }
 }
 
 export async function renderedHtmlToPdfBlob(
@@ -443,7 +473,8 @@ export async function renderedHtmlToPdfBlob(
     opts: WordToPdfOptions = {}
 ): Promise<Blob> {
     const html2canvas = (await import('html2canvas')).default;
-    const { PDFDocument } = await import('pdf-lib');
+    const { PDFDocument, rgb, degrees } = await import('pdf-lib');
+    const { loadTurkishFont } = await import('./fontLoader');
 
     const SCALE = opts.scale ?? 2;
     const A4_W = opts.pageWidthPx ?? 794;
@@ -452,6 +483,14 @@ export async function renderedHtmlToPdfBlob(
     const totalH = container.scrollHeight;
     const pageCount = Math.ceil(totalH / A4_H);
     const pdfDoc = await PDFDocument.create();
+
+    // Load font for watermark if needed
+    let customFont: any = null;
+    if (opts.watermark?.text) {
+        const fontBytes = await loadTurkishFont();
+        pdfDoc.registerFontkit((await import('@pdf-lib/fontkit')).default);
+        customFont = await pdfDoc.embedFont(fontBytes);
+    }
 
     for (let p = 0; p < pageCount; p++) {
         const offsetY = p * A4_H;
@@ -468,8 +507,6 @@ export async function renderedHtmlToPdfBlob(
             y: offsetY,
             windowWidth: A4_W,
             backgroundColor: '#ffffff',
-            // Ensure tables and images render correctly
-            foreignObjectRendering: false,
             imageTimeout: 5000,
         });
 
@@ -481,6 +518,24 @@ export async function renderedHtmlToPdfBlob(
         const page = pdfDoc.addPage([595.28, 841.89]);
         const drawH = 841.89 * (sliceH / A4_H);
         page.drawImage(img, { x: 0, y: 841.89 - drawH, width: 595.28, height: drawH });
+
+        // Apply Watermark
+        if (opts.watermark?.text && customFont) {
+            const { text, color = '#ff0000', opacity = 0.3 } = opts.watermark;
+            const r = parseInt(color.slice(1, 3), 16) / 255;
+            const g = parseInt(color.slice(3, 5), 16) / 255;
+            const b = parseInt(color.slice(5, 7), 16) / 255;
+
+            page.drawText(text, {
+                x: 100,
+                y: 400,
+                size: 60,
+                font: customFont,
+                color: rgb(r, g, b),
+                opacity: opacity,
+                rotate: degrees(45),
+            });
+        }
     }
 
     return new Blob([await pdfDoc.save()], { type: 'application/pdf' });

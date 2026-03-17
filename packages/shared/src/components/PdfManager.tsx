@@ -13,6 +13,7 @@ import html2canvas from 'html2canvas';
 import { loadTurkishFont } from '../utils/fontLoader';
 import jsPDF from 'jspdf';
 import { SHARED_ENGINE, platform } from '@shared/index';
+import { pdfItemsToDocBlocks, docBlocksToDocx, type PdfTextItem } from '../utils/conversion-adapters';
 
 // Configure PDF.js worker
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
@@ -481,90 +482,59 @@ export const PdfManager: React.FC<PdfManagerProps> = ({ file, onBack, initialTab
                     saveAs(blob, `${mainFile.name.replace('.pdf', '')}-sayfa-${p}.jpg`);
                 }
             } else if (convertFormat === 'word') {
-                setStatusText('PDF Word formatına çevriliyor (Text-based)...');
+                setStatusText('PDF Word formatına çevriliyor (Akıllı Dönüşüm)...');
                 const arrayBuffer = await mainFile.arrayBuffer();
                 const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-                const sections: ISectionOptions[] = [];
+                
+                const allBlocks: any[] = [];
+                let hasText = false;
 
                 for (let i = 1; i <= pdf.numPages; i++) {
-                    setStatusText(`Sayfa ${i}/${pdf.numPages} çıkarılıyor...`);
+                    setStatusText(`Sayfa ${i}/${pdf.numPages} analiz ediliyor...`);
                     const page = await pdf.getPage(i);
+                    const viewport = page.getViewport({ scale: 1.5 });
                     const textContent = await page.getTextContent();
-                    const items = textContent.items as any[];
+                    const items = textContent.items as PdfTextItem[];
 
-                    if (items.length === 0) {
-                        sections.push({
-                            children: [new Paragraph({ text: "" })]
-                        });
-                        continue;
-                    }
+                    if (items.length > 0) hasText = true;
 
-                    // Satırları grupla (Y koordinatına göre)
-                    const lines: any[][] = [];
-                    let currentLine: any[] = [];
-                    let lastY = -1;
-
-                    // Y koordinatına göre (yukarıdan aşağıya) ve sonra X koordinatına göre sırala
-                    const sortedItems = [...items].sort((a, b) => {
-                        const yA = a.transform[5];
-                        const yB = b.transform[5];
-                        if (Math.abs(yA - yB) < 3) {
-                            return a.transform[4] - b.transform[4];
-                        }
-                        return yB - yA;
-                    });
-
-                    for (const textItem of sortedItems) {
-                        const y = textItem.transform[5];
-                        if (lastY !== -1 && Math.abs(y - lastY) > 3) {
-                            lines.push(currentLine);
-                            currentLine = [];
-                        }
-                        currentLine.push(textItem);
-                        lastY = y;
-                    }
-                    if (currentLine.length > 0) lines.push(currentLine);
-
-                    const pageChildren: Paragraph[] = [];
-                    for (const line of lines) {
-                        const runs: any[] = [];
-                        let lastX = -1;
-
-                        for (const textItem of line) {
-                            const x = textItem.transform[4];
-
-                            if (lastX !== -1 && x - lastX > 10) {
-                                runs.push(new TextRun({ text: " ", size: Math.round(textItem.transform[0] * 2) || 22 }));
-                            }
-
-                            const fontSize = Math.abs(Math.round(textItem.transform[0] * 2)) || 22;
-
-                            runs.push(new TextRun({
-                                text: textItem.str,
-                                size: fontSize,
-                                font: "Arial",
-                            }));
-                            lastX = x + textItem.width;
-                        }
-
-                        pageChildren.push(new Paragraph({
-                            children: runs,
-                            spacing: { before: 100, after: 100 }
-                        }));
-                    }
-
-                    sections.push({
-                        children: pageChildren
-                    });
+                    // Use improved shared adapter
+                    const blocks = pdfItemsToDocBlocks(items, viewport.height);
+                    allBlocks.push(...blocks, { type: 'empty' });
+                    setConvertProgress(Math.round((i / pdf.numPages) * 80));
                 }
 
-                const wordDoc = new Document({
-                    sections,
-                    creator: "Antigravity PDF Tools",
-                    title: mainFile.name
-                });
-                const blob = await Packer.toBlob(wordDoc);
+                // OCR Fallback if no text detected
+                if (!hasText && pdf.numPages > 0) {
+                    setStatusText("Taranmış döküman algılandı, OCR başlatılıyor...");
+                    const { createWorker } = await import('tesseract.js');
+                    const worker = await createWorker(ocrLanguage);
+                    
+                    for (let i = 1; i <= pdf.numPages; i++) {
+                        setStatusText(`OCR: Sayfa ${i}/${pdf.numPages}...`);
+                        const page = await pdf.getPage(i);
+                        const viewport = page.getViewport({ scale: 2 });
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d');
+                        canvas.width = viewport.width;
+                        canvas.height = viewport.height;
+                        await page.render({ canvasContext: ctx!, viewport }).promise;
+                        
+                        const { data: { text } } = await worker.recognize(canvas.toDataURL('image/png'));
+                        if (text.trim()) {
+                            allBlocks.push({ type: 'paragraph', text, fontSize: 22 });
+                        }
+                    }
+                    await worker.terminate();
+                }
+
+                const blob = await docBlocksToDocx(
+                    allBlocks,
+                    mainFile.name.replace(/\.[^/.]+$/, ''),
+                    mainFile.name
+                );
                 saveAs(blob, `${mainFile.name.replace('.pdf', '')}.docx`);
+                setConvertProgress(100);
             } else if (convertFormat === 'excel') {
                 setStatusText('Tablolar ayıklanıyor ve Excel\'e aktarılıyor...');
                 const arrayBuffer = await mainFile.arrayBuffer();
