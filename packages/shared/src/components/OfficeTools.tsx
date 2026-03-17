@@ -22,7 +22,7 @@ import { platform } from '../platform';
 import { SHARED_ENGINE } from '../utils/shared-core';
 import {
     pdfItemsToDocBlocks, docBlocksToDocx, excelToDocBlocks, renderedHtmlToPdfBlob,
-    type PdfTextItem
+    scanPdfFonts, type PdfTextItem, type PdfFontInfo
 } from '../utils/conversion-adapters';
 
 // Configure PDF.js worker
@@ -146,7 +146,10 @@ function ImageToPdfTool({ onBack }: { onBack: () => void }) {
 
     const handleFiles = useCallback(async (fileList: FileList | File[]) => {
         const accepted = Array.from(fileList).filter(f => f.type.startsWith('image/'));
-        if (!accepted.length) return;
+        if (!accepted.length) {
+            toast.error("Lütfen sadece resim dosyaları (.jpg, .png, .webp) yükleyin.");
+            return;
+        }
         const loaded = await Promise.all(accepted.map(loadImage));
         setImages(prev => [...prev, ...loaded]);
         setDone(false);
@@ -434,59 +437,89 @@ function ImageToPdfTool({ onBack }: { onBack: () => void }) {
                     </div>
 
                     {images.length === 0 ? (
-                        <div className="text-center py-12 text-slate-400">
-                            <ImageIcon size={48} className="mx-auto mb-3 opacity-30" />
-                            <p className="text-sm">Henüz görsel eklenmedi</p>
+                        <div className="text-center py-20 bg-slate-50/50 dark:bg-slate-800/10 rounded-[2.5rem] border-2 border-dashed border-slate-200 dark:border-slate-800 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                            <div className="w-20 h-20 bg-white dark:bg-slate-800 rounded-3xl shadow-xl shadow-slate-200/50 dark:shadow-none flex items-center justify-center mx-auto mb-6">
+                                <ImageIcon size={32} className="text-blue-500" />
+                            </div>
+                            <h3 className="text-lg font-black text-slate-800 dark:text-white uppercase tracking-tight italic">Görsel Bekleniyor</h3>
+                            <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 font-medium max-w-xs mx-auto">
+                                Birleştirmek istediğiniz görselleri bu alana sürükleyebilir veya tıklayarak seçebilirsiniz.
+                            </p>
                         </div>
                     ) : (
-                        <div className="space-y-2">
-                            <div className="flex items-center justify-between px-1 mb-2">
-                                <p className="text-xs font-bold text-slate-500 uppercase">{images.length} Görsel — sürükleyerek sırala</p>
+                        <div className="space-y-4">
+                            <div className="flex items-center justify-between px-2 mb-2">
+                                <div className="flex items-center gap-3">
+                                    <div className="px-3 py-1 bg-blue-600 text-white text-[10px] font-black rounded-lg shadow-lg shadow-blue-500/20 uppercase tracking-widest">
+                                        {images.length} GÖRSEL
+                                    </div>
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Sürükle-Bırak Aktif</p>
+                                </div>
                                 <button onClick={() => { setImages([]); setDone(false); }}
-                                    className="text-xs text-red-500 hover:text-red-600 font-medium">
-                                    Tümünü Temizle
+                                    className="px-4 py-2 text-[10px] font-black uppercase tracking-widest text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-xl transition-all flex items-center gap-2">
+                                    <X size={14} /> Tümünü Temizle
                                 </button>
                             </div>
-
-                            {images.map((item, idx) => (
-                                <div key={item.id} draggable
-                                    onDragStart={() => handleDragStart(item.id)}
-                                    onDragOver={(e) => handleDragOver(e, item.id)}
-                                    onDragEnd={handleDragEnd}
-                                    className={`flex items-center gap-3 p-3 bg-white dark:bg-slate-900 border rounded-xl transition-all cursor-grab active:cursor-grabbing ${dragItemId === item.id
-                                        ? 'border-blue-500 opacity-50 scale-95'
-                                        : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'}`}>
-                                    <GripVertical size={16} className="text-slate-300 dark:text-slate-600 shrink-0" />
-                                    <span className="text-xs font-bold text-slate-400 w-6 text-center shrink-0">{idx + 1}</span>
-                                    <div className="w-16 h-12 rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800 shrink-0 border border-slate-200 dark:border-slate-700">
-                                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                                        <img src={item.preview} alt={item.file.name} className="w-full h-full object-cover" />
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                        <p className="text-sm font-medium text-slate-700 dark:text-slate-200 truncate">{item.file.name}</p>
-                                        <div className="flex items-center gap-3 text-[10px] text-slate-400 mt-0.5">
-                                            <span>{item.width} × {item.height}px</span>
-                                            <span>{(item.file.size / 1024).toFixed(0)} KB</span>
+                            
+                            <div className="space-y-3 max-h-[650px] overflow-y-auto pr-3 custom-scrollbar">
+                                {images.map((item, idx) => (
+                                    <div 
+                                        key={item.id}
+                                        draggable
+                                        onDragStart={() => handleDragStart(item.id)}
+                                        onDragOver={(e) => handleDragOver(e, item.id)}
+                                        onDragEnd={handleDragEnd}
+                                        className={`flex items-center gap-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-3xl shadow-sm hover:shadow-xl hover:shadow-slate-200/50 dark:hover:shadow-none transition-all group cursor-move ${dragItemId === item.id ? 'opacity-40 scale-95 border-blue-500' : ''}`}
+                                    >
+                                        <div className="relative w-20 h-20 rounded-2xl overflow-hidden bg-slate-100 dark:bg-slate-800 shrink-0 border border-slate-100 dark:border-slate-800 shadow-inner">
+                                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                                            <img src={item.preview} alt={item.file.name} className="w-full h-full object-cover" />
+                                            <div className="absolute top-1 left-1 px-1.5 py-0.5 bg-black/40 backdrop-blur-md rounded text-[8px] font-black text-white italic">
+                                                #{(idx + 1).toString().padStart(2, '0')}
+                                            </div>
+                                        </div>
+                                        
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <p className="text-sm font-bold text-slate-800 dark:text-slate-100 truncate">{item.file.name}</p>
+                                            </div>
+                                            <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+                                                <div className="flex items-center gap-1.5 text-[10px] font-medium text-slate-400 italic">
+                                                    <span className="font-bold text-slate-500 not-italic">{item.width} × {item.height}</span> px
+                                                </div>
+                                                <span className="w-1 h-1 rounded-full bg-slate-200" />
+                                                <div className="flex items-center gap-1.5 text-[10px] font-medium text-slate-400 italic">
+                                                    <span className="font-bold text-slate-500 not-italic">{(item.file.size / 1024).toFixed(1)}</span> KB
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div className="flex items-center gap-2">
+                                            <div className="flex items-center bg-slate-50 dark:bg-slate-800/50 p-1 rounded-xl border border-slate-100 dark:border-slate-800 opacity-0 group-hover:opacity-100 transition-all scale-90 group-hover:scale-100">
+                                                <button onClick={() => moveImage(item.id, 'up')} disabled={idx === 0}
+                                                    title="Yukarı Taşı"
+                                                    className="p-2 hover:bg-white dark:hover:bg-slate-700 rounded-lg text-slate-400 hover:text-blue-500 disabled:opacity-20 transition-all">
+                                                    <ArrowUp size={16} />
+                                                </button>
+                                                <button onClick={() => moveImage(item.id, 'down')} disabled={idx === images.length - 1}
+                                                    title="Aşağı Taşı"
+                                                    className="p-2 hover:bg-white dark:hover:bg-slate-700 rounded-lg text-slate-400 hover:text-blue-500 disabled:opacity-20 transition-all">
+                                                    <ArrowDown size={16} />
+                                                </button>
+                                                <div className="w-px h-4 bg-slate-200 dark:bg-slate-700 mx-1" />
+                                                <button onClick={() => removeImage(item.id)}
+                                                    title="Görseli Kaldır"
+                                                    className="p-2 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-lg text-slate-400 hover:text-red-500 transition-all">
+                                                    <X size={16} />
+                                                </button>
+                                            </div>
+                                            <div className="p-2 text-slate-300 dark:text-slate-700 group-hover:text-blue-500/50 transition-colors">
+                                                <GripVertical size={20} />
+                                            </div>
                                         </div>
                                     </div>
-                                    <div className="flex flex-col gap-0.5 shrink-0">
-                                        <button onClick={() => moveImage(item.id, 'up')} disabled={idx === 0}
-                                            title="Yukarı taşı" aria-label="Yukarı taşı"
-                                            className="p-1 text-slate-400 hover:text-blue-500 disabled:opacity-20 transition-colors rounded">
-                                            <ArrowUp size={14} />
-                                        </button>
-                                        <button onClick={() => moveImage(item.id, 'down')} disabled={idx === images.length - 1}
-                                            title="Aşağı taşı" aria-label="Aşağı taşı"
-                                            className="p-1 text-slate-400 hover:text-blue-500 disabled:opacity-20 transition-colors rounded">
-                                            <ArrowDown size={14} />
-                                        </button>
-                                    </div>
-                                    <button onClick={() => removeImage(item.id)} title="Kaldır" aria-label="Görseli kaldır"
-                                        className="p-1.5 text-slate-400 hover:text-red-500 transition-colors rounded-lg shrink-0">
-                                        <X size={16} />
-                                    </button>
-                                </div>
-                            ))}
+                                ))}
+                            </div>
                         </div>
                     )}
                 </div>
@@ -505,6 +538,7 @@ export const OfficeTools: React.FC<OfficeToolsProps> = ({ mode, onBack }) => {
 
     const [files, setFiles] = useState<FileState[]>([]);
     const [orientation, setOrientation] = useState<PageOrientation>('portrait');
+    const [useDefaultFont, setUseDefaultFont] = useState(false);
     const [pageSize, setPageSize] = useState<PageSize>('a4');
     const [watermarkText, setWatermarkText] = useState('');
     const [watermarkColor, setWatermarkColor] = useState('#ff0000');
@@ -524,12 +558,14 @@ export const OfficeTools: React.FC<OfficeToolsProps> = ({ mode, onBack }) => {
             }
 
             const insights: FileInsight[] = [];
+            
+            // 1. Excel Insights
             if (gridData && gridData.length > 0) {
                 const headers = gridData[0] || [];
                 const rowCount = gridData.length;
                 const colCount = headers.length;
 
-                // 1. Geniş Tablo Kontrolü
+                // Orientation suggestion
                 if (colCount > 7 && orientation === 'portrait') {
                     insights.push({
                         id: 'orientation',
@@ -548,51 +584,36 @@ export const OfficeTools: React.FC<OfficeToolsProps> = ({ mode, onBack }) => {
                         }
                     });
                 }
+            }
 
-                // 2. Boş Sütun Kontrolü
-                const emptyCols: number[] = [];
-                for (let c = 0; c < colCount; c++) {
-                    let isEmpty = true;
-                    for (let r = 1; r < rowCount; r++) {
-                        if (gridData[r][c] !== undefined && gridData[r][c] !== null && gridData[r][c] !== '') {
-                            isEmpty = false;
-                            break;
-                        }
+            // 2. PDF Font Insights
+            if (f.name.toLowerCase().endsWith('.pdf')) {
+                try {
+                    const arrayBuffer = await f.arrayBuffer();
+                    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+                    const fontInfo = await scanPdfFonts(pdf);
+                    const riskyFonts = fontInfo.filter(fi => fi.isRisk);
+                    
+                    if (riskyFonts.length > 0) {
+                        insights.push({
+                            id: 'missing-fonts',
+                            type: 'warning',
+                            message: 'Eksik Yazı Tipleri (Font)',
+                            description: `Belgede sistemde bulunmayan ${riskyFonts.length} farklı yazı tipi tespit edildi: ${riskyFonts.slice(0, 3).map(fi => fi.name.split('+').pop()).join(', ')}${riskyFonts.length > 3 ? '...' : ''}. Bu dökümanı Word'e çevirirken görsellik bozulabilir.`,
+                            actionLabel: 'VARSAYILAN FONTO ÇEVİR',
+                            onAction: () => {
+                                setUseDefaultFont(true);
+                                toast.success("Dönüştürmede Bozdemir Default fontu (Roboto) kullanılacak.");
+                                setFiles(prev => prev.map(file => {
+                                    if (file.file === f) {
+                                        return { ...file, insights: file.insights?.filter(ins => ins.id !== 'missing-fonts') };
+                                    }
+                                    return file;
+                                }));
+                            }
+                        });
                     }
-                    if (isEmpty) emptyCols.push(c);
-                }
-
-                if (emptyCols.length > 0) {
-                    insights.push({
-                        id: 'empty-cols',
-                        type: 'warning',
-                        message: `${emptyCols.length} Boş Sütun Tespit Edildi`,
-                        description: 'Tablonuzda hiç veri içermeyen sütunlar var. Bunları kaldırmak dökümanın daha temiz görünmesini sağlar.',
-                        actionLabel: 'SÜTUNLARI TEMİZLE'
-                        // onAction will be handled in the component via index lookup
-                    });
-                }
-
-                // 3. Uzun Başlık Kontrolü
-                const longHeaders = headers.filter(h => String(h).length > 25);
-                if (longHeaders.length > 0) {
-                    insights.push({
-                        id: 'long-headers',
-                        type: 'info',
-                        message: 'Uzun Başlık Metinleri',
-                        description: 'Bazı sütun başlıkları çok uzun. Hücre içinde taşma yapabilir veya sütunları çok genişletebilir.',
-                    });
-                }
-
-                // 4. Veri Tipi Kontrolü (Sadece basit bir örnek)
-                if (rowCount > 10) {
-                    insights.push({
-                        id: 'smart-report',
-                        type: 'success',
-                        message: 'Rapor Formatı Uygun',
-                        description: 'Bu veriler yapısal bir rapor gibi duruyor. Excel -> Word dönüşümünde otomatik tablo başlıkları eklenebilir.',
-                    });
-                }
+                } catch (e) { console.warn("Font scan failed", e); }
             }
 
             return {
@@ -755,7 +776,8 @@ export const OfficeTools: React.FC<OfficeToolsProps> = ({ mode, onBack }) => {
                 result = await docBlocksToDocx(
                     allBlocks,
                     item.file.name.replace(/\.[^/.]+$/, ''),
-                    item.file.name
+                    item.file.name,
+                    { useDefaultFont }
                 );
                 resultName = item.file.name.replace(/\.[^/.]+$/, '') + '.docx';
                 setFiles(prev => prev.map((f, i) => i === index ? { ...f, progress: 100, errorMsg: undefined } : f));
@@ -1038,6 +1060,8 @@ export const OfficeTools: React.FC<OfficeToolsProps> = ({ mode, onBack }) => {
                                 value={watermarkText}
                                 onChange={(e) => setWatermarkText(e.target.value)}
                                 placeholder="Örn: GİZLİ, TASLAK..."
+                                title="Filigran metni girin"
+                                aria-label="Filigran Metni"
                                 className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500/20 outline-none transition-all shadow-sm"
                             />
                         </div>
@@ -1050,6 +1074,8 @@ export const OfficeTools: React.FC<OfficeToolsProps> = ({ mode, onBack }) => {
                                             type="color" 
                                             value={watermarkColor}
                                             onChange={(e) => setWatermarkColor(e.target.value)}
+                                            title="Filigran rengi seçin"
+                                            aria-label="Filigran Rengi"
                                             className="w-10 h-10 rounded-lg cursor-pointer border-none bg-transparent"
                                         />
                                         <span className="text-xs font-mono text-slate-500">{watermarkColor.toUpperCase()}</span>
@@ -1064,6 +1090,8 @@ export const OfficeTools: React.FC<OfficeToolsProps> = ({ mode, onBack }) => {
                                         step="0.1"
                                         value={watermarkOpacity}
                                         onChange={(e) => setWatermarkOpacity(parseFloat(e.target.value))}
+                                        title="Filigran şeffaflığı"
+                                        aria-label="Filigran Şeffaflığı"
                                         className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-blue-600"
                                     />
                                 </div>

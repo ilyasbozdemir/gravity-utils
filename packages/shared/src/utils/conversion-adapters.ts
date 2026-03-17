@@ -14,6 +14,13 @@ export interface PdfTextItem {
     hasEOL?: boolean;
 }
 
+export interface PdfFontInfo {
+    name: string;
+    isEmbedded: boolean;
+    isSystem: boolean;
+    isRisk: boolean;
+}
+
 // ─── Detected content block types ────────────────────────────────────────────
 export type DocBlockType =
     | 'heading'
@@ -269,13 +276,15 @@ function tokenizeByGaps(line: DocLine): { text: string; x: number }[] {
 export async function docBlocksToDocx(
     blocks: DocBlock[],
     title: string,
-    fileName: string
+    fileName: string,
+    options: { useDefaultFont?: boolean } = {}
 ): Promise<Blob> {
     const {
         Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell,
         BorderStyle, WidthType, AlignmentType, HeadingLevel, ShadingType
     } = await import('docx');
 
+    const DEFAULT_FONT = options.useDefaultFont ? 'Roboto' : 'Arial';
     const children: any[] = [];
 
     // Title
@@ -413,6 +422,41 @@ export async function docBlocksToDocx(
     });
 
     return Packer.toBlob(doc);
+}
+
+// ─── ADAPTER: Scan PDF for Fonts ─────────────────────────────────────────────
+/**
+ * Scans all pages of a PDF to detect missing or proprietary fonts.
+ */
+export async function scanPdfFonts(pdf: any): Promise<PdfFontInfo[]> {
+    const fonts: Record<string, PdfFontInfo> = {};
+    const systemFonts = [
+        'arial', 'times', 'courier', 'helvetica', 'symbol', 'zapfdingbats', 
+        'georgia', 'verdana', 'tahoma', 'trebuchet', 'impact', 'comic', 
+        'consolas', 'calibri', 'cambria', 'segoe'
+    ];
+
+    for (let p = 1; p <= pdf.numPages; p++) {
+        const page = await pdf.getPage(p);
+        const textContent = await page.getTextContent();
+        for (const item of textContent.items as any[]) {
+            const fontName = item.fontName;
+            if (fontName && !fonts[fontName]) {
+                const nameParts = fontName.split('+');
+                const isEmbedded = nameParts.length > 1;
+                const nameClean = (nameParts.pop() || '').toLowerCase();
+                const isSystem = systemFonts.some(f => nameClean.includes(f));
+                
+                fonts[fontName] = {
+                    name: fontName,
+                    isEmbedded,
+                    isSystem,
+                    isRisk: !isEmbedded && !isSystem
+                };
+            }
+        }
+    }
+    return Object.values(fonts);
 }
 
 // ─── ADAPTER: Excel → smart DocBlocks ────────────────────────────────────────
